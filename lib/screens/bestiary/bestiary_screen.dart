@@ -380,8 +380,8 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
       id: widget.existing?.id,
       name: _nameCtrl.text.trim(),
       isAlly: _isAlly,
-      baseInitiative: int.parse(_initCtrl.text),
-      maxHp: int.parse(_hpCtrl.text),
+      baseInitiative: int.tryParse(_initCtrl.text) ?? 0,
+      maxHp: int.tryParse(_hpCtrl.text) ?? 1,
       imageUrl: _imageUrl,
     );
     if (_isEdit) {

@@ -1,0 +1,23 @@
+# Voie du Combat du Mal
+
+**Profil :** Combattants  
+**Famille :** Voies de prestige de combattant
+
+Cette voie est destinée au pourfendeur de créatures maléfiques, chasseur de sorcière et autre inquisiteur. Elle peut aussi convenir à un barbare qui aurait une haine viscérale de la corruption.
+
+---
+
+## Rang 4 — Juste courroux (G)
+Chaque fois que le personnage est victime d'une Attaque sournoise (voie de l'assassin, profil de voleur) ou d'une Attaque mortelle (capacité de créature), il peut riposter par une attaque au contact en action gratuite.
+
+## Rang 5 — Épée de lumière (M)
+L'arme du personnage brille d'une lumière magique équivalente à une torche pour le reste du combat. Elle occasionne +1d4° DM supplémentaire aux morts-vivants, aux créatures démoniaques ou aux animaux corrompus par le mal. Alternativement, si cette voie est choisie par un barbare qui déteste la magie, la lame ne brille pas et les DM supplémentaires sont juste le fruit de sa hargne.
+
+## Rang 6 — Sentir la corruption (L)
+Le personnage se concentre et détecte si une source maléfique est présente dans un rayon de 20 m autour de lui. Il ne peut ni déterminer sa localisation, ni sa nature. Les sources maléfiques possibles sont les démons, les morts-vivants, les animaux corrompus, les artefacts maléfiques, les lieux maudits.
+
+## Rang 7 — Frappe suppressive (L)
+En plus d'infliger des DM normaux, cette attaque oblige la cible à faire un test opposé d'attaque magique contre le personnage. En cas d'échec, elle ne peut utiliser aucun pouvoir magique à son prochain tour.
+
+## Rang 8 — Résister à la corruption
+Une fois par combat, le personnage résiste totalement à un sort ou un effet magique de son choix. De plus, il est immunisé aux effets de corruption : drain, affaiblissement, pourriture, empoisonnement ou maladie provoqués par les morts-vivants, les démons ou les animaux maléfiques ou corrompus.

@@ -466,7 +466,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    final maxHp = int.parse(_hpCtrl.text);
+    final maxHp = int.tryParse(_hpCtrl.text) ?? 1;
     final baseName = _nameCtrl.text.trim();
     final provider = context.read<CombatProvider>();
 
@@ -476,7 +476,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         sessionId: widget.sessionId,
         name: name,
         isAlly: _isAlly,
-        baseInitiative: int.parse(_initCtrl.text),
+        baseInitiative: int.tryParse(_initCtrl.text) ?? 0,
         maxHp: maxHp,
         currentHp: maxHp,
         imageUrl: _imageUrl,

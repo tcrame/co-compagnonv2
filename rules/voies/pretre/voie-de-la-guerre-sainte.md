@@ -1,0 +1,21 @@
+# Voie de la Guerre Sainte
+
+**Profil :** Prêtre  
+**Famille :** Mystiques
+
+---
+
+## Rang 1 — Arme bénie (A)*
+Le prêtre effectue un court rituel et son arme est bénie pour une durée de 24 h. Lorsqu'il obtient un résultat de 1 sur son dé de DM, il relance le dé et garde le second résultat. Les DM de l'arme sont considérés comme magiques. L'arme n'est plus bénie si une autre créature l'utilise.
+
+## Rang 2 — Bouclier de la foi
+Le prêtre porte le symbole de sa foi sur son bouclier, ce qui lui confère un bonus supplémentaire de +1 en DEF lorsqu'il l'utilise. Ce bonus passe à +2 au rang 5. Comme pour l'arme bénie, le symbole de la foi n'est d'aucune utilité si le bouclier est utilisé par quelqu'un d'autre.
+
+## Rang 3 — Châtiment divin (L)
+Le prêtre effectue une attaque de contact avec un dé bonus et ajoute son CHA aux dommages. De plus, lorsqu'il utilise cette capacité, le prêtre peut dépenser 1 PM pour ajouter +1d4° aux DM d'une attaque au contact qui touche. Au rang 5, il peut dépenser 2 PM pour ajouter +2d4°.
+
+## Rang 4 — Marteau de la foi (A)*
+Le prêtre effectue un test d'attaque magique contre la DEF de sa cible (portée de 30 m). Un projectile d'énergie de la forme de l'arme du prêtre va percuter la cible, lui infligeant [2d4°+CHA] DM en cas de réussite. Si l'arme du prêtre est magique, il peut ajouter son bonus au test d'attaque et aux DM. Les DM du marteau de la foi augmentent de +1 chaque fois que le personnage atteint le rang 4 dans une autre voie de prêtre.
+
+## Rang 5 — Mot de pouvoir (A)*
+Une fois par jour, le prêtre peut prononcer un mot avec la voix de son dieu. Cela dépasse l'entendement des mortels et tous ses ennemis dans un rayon de 10 m sont étourdis pendant 1 round (pas d'action et -5 en DEF).
