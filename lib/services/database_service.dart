@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-          version: 14,
+          version: 15,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -146,6 +146,19 @@ class DatabaseService {
               "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
           await db.execute(
               "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+        }
+        if (oldVersion < 15) {
+          // Fix: web DBs created at v8-v14 may be missing these columns
+          // (onCreate used an outdated _createCombatCapacitiesTable).
+          // try/catch is intentional — columns may already exist on Android.
+          try {
+            await db.execute(
+                "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0");
+          } catch (_) {}
+          try {
+            await db.execute(
+                "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''");
+          } catch (_) {}
         }
   }
 
@@ -560,6 +573,8 @@ class DatabaseService {
         description TEXT NOT NULL DEFAULT '',
         position INTEGER NOT NULL DEFAULT 0,
         dm TEXT NOT NULL DEFAULT '',
+        is_from_voie INTEGER NOT NULL DEFAULT 0,
+        voie_catalogue_id TEXT NOT NULL DEFAULT '',
         FOREIGN KEY (character_sheet_id) REFERENCES character_sheets(id) ON DELETE CASCADE
       )
     ''');

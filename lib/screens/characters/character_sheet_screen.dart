@@ -1182,7 +1182,11 @@ class _VoieCardState extends State<_VoieCard> {
       return; // Cannot skip ranks or jump backward more than 1
     }
     setState(() => _saving = true);
-    await widget.onSetRang(newRang);
+    try {
+      await widget.onSetRang(newRang);
+    } catch (e) {
+      debugPrint('[VoieCard] onSetRang error: $e');
+    }
     if (mounted) setState(() => _saving = false);
   }
 
@@ -1337,8 +1341,10 @@ class _RangRow extends StatelessWidget {
             ? AppColors.onSurface.withValues(alpha: 0.75)
             : AppColors.onSurfaceMuted;
 
+    final effectiveOnTap = (isUnlocked || (isNext && canBuy)) && !saving ? onTap : null;
+
     return InkWell(
-      onTap: (isUnlocked || (isNext && canBuy)) && !saving ? onTap : null,
+      onTap: effectiveOnTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
