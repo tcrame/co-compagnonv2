@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -938,7 +939,13 @@ class _VoiesTab extends StatelessWidget {
     final remaining = totalPc - pcDepense;
     final voies = getVoiesPourProfil(sheet.profile);
 
-    return ListView(
+    return ScrollConfiguration(
+      // On web, disable mouse-drag scrolling so ListView doesn't intercept
+      // taps on InkWell children (mouse wheel scrolling still works).
+      behavior: ScrollConfiguration.of(context).copyWith(
+        dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.stylus},
+      ),
+      child: ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
         // ── Compteur de points de compétence ────────────────────────
@@ -1011,11 +1018,10 @@ class _VoiesTab extends StatelessWidget {
           ),
         ),
       ],
+      ),
     );
   }
 }
-
-// ── PC Counter banner ─────────────────────────────────────────────────────────
 
 class _PcCounter extends StatelessWidget {
   final int level;
