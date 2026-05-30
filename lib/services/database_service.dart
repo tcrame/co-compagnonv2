@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../constants/voies_data.dart';
 import '../models/character_sheet.dart';
@@ -28,6 +30,21 @@ class DatabaseService {
   }
 
   Future<Database> _initDb() async {
+    if (kIsWeb) {
+      // Use IndexedDB-backed SQLite for web
+      databaseFactory = databaseFactoryFfiWeb;
+      return databaseFactory.openDatabase(
+        'co_compagnon.db',
+        options: OpenDatabaseOptions(
+          version: 14,
+          onCreate: (db, version) async {
+            await _createTables(db);
+          },
+          onUpgrade: _onUpgrade,
+        ),
+      );
+    }
+
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'co_compagnon.db');
 
@@ -37,7 +54,11 @@ class DatabaseService {
       onCreate: (db, version) async {
         await _createTables(db);
       },
-      onUpgrade: (db, oldVersion, newVersion) async {
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
         if (oldVersion < 2) {
           await db.execute('''
             CREATE TABLE IF NOT EXISTS character_templates (
@@ -126,8 +147,6 @@ class DatabaseService {
           await db.execute(
               "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
         }
-      },
-    );
   }
 
   Future<void> _createTables(Database db) async {
