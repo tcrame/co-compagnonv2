@@ -114,10 +114,12 @@ class CharacterSheetProvider extends ChangeNotifier {
 
   /// Computes the total PC spent for a character based on their voie rangs.
   /// Coût : rang 1-2 = 1 PC each, rang 3-5 = 2 PC each.
+  /// Voie de peuple (IDs starting with 'peuple_') are excluded from this budget.
   int getPcDepense(int sheetId) {
     final rangs = _voieRangsCache[sheetId] ?? {};
     int total = 0;
     for (final entry in rangs.entries) {
+      if (entry.key.startsWith('peuple_')) continue; // voie de peuple excluded
       final voie = getVoieById(entry.key);
       if (voie == null) continue;
       final rangActuel = entry.value;
@@ -142,5 +144,49 @@ class CharacterSheetProvider extends ChangeNotifier {
       }
     }
     return count;
+  }
+
+  /// Sets the voie de peuple for a character, persists to DB, updates cache and sheets.
+  /// Rang 1 is always free and auto-selected (done in DB layer).
+  Future<void> setVoiePeuple(int sheetId, String voieId) async {
+    await _db.setVoiePeupleId(sheetId, voieId);
+    // Update cache: rang 1 auto-selected for non-empty voie
+    if (voieId.isNotEmpty) {
+      final cache = _voieRangsCache[sheetId] ?? {};
+      if ((cache[voieId] ?? 0) < 1) cache[voieId] = 1;
+      _voieRangsCache[sheetId] = cache;
+    }
+    // Update the in-memory sheet
+    final idx = _sheets.indexWhere((s) => s.id == sheetId);
+    if (idx != -1) {
+      _sheets[idx] = _sheets[idx].copyWith(voiePeupleId: voieId);
+    }
+    notifyListeners();
+  }
+
+  /// Stores the original peuple voie ID when Voie du Mage is chosen.
+  Future<void> setVoiePeupleOrigine(int sheetId, String origineId) async {
+    await _db.setVoiePeupleOrigineId(sheetId, origineId);
+    // Ensure rang 1 is set for the original voie in cache
+    if (origineId.isNotEmpty) {
+      final cache = _voieRangsCache[sheetId] ?? {};
+      if ((cache[origineId] ?? 0) < 1) cache[origineId] = 1;
+      _voieRangsCache[sheetId] = cache;
+    }
+    final idx = _sheets.indexWhere((s) => s.id == sheetId);
+    if (idx != -1) {
+      _sheets[idx] = _sheets[idx].copyWith(voiePeupleOrigineId: origineId);
+    }
+    notifyListeners();
+  }
+
+  /// Marks the free rang 2 of the mage heritage as taken (or resets it).
+  Future<void> setVoieMageRang2Pris(int sheetId, bool pris) async {
+    await _db.setVoieMageRang2Pris(sheetId, pris);
+    final idx = _sheets.indexWhere((s) => s.id == sheetId);
+    if (idx != -1) {
+      _sheets[idx] = _sheets[idx].copyWith(voieMageRang2Pris: pris);
+    }
+    notifyListeners();
   }
 }

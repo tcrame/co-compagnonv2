@@ -71,6 +71,14 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     setState(() => _sheet = sheet);
     if (sheet.id != null) {
       provider.loadVoieRangs(sheet.id!);
+      // Repair mage origin if needed (for characters configured before this feature)
+      if (sheet.voiePeupleId == 'peuple_voie-du-mage' &&
+          sheet.voiePeupleOrigineId.isEmpty &&
+          sheet.race.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _ensureMageOrigineId(sheet.id!);
+        });
+      }
     }
   }
 
@@ -114,6 +122,22 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     await provider.initVoiesForProfil(sheetId, newProfil);
     _syncPmBase();
     _combatTabKey.currentState?.reload();
+
+    // Restore all resources to max after profil change
+    if (mounted && _sheet != null) {
+      setState(() => _sheet = _sheet!.copyWith(
+        pvActuel: _sheet!.pvMax,
+        pmActuel: _sheet!.pmMax,
+        drActuel: _sheet!.drMax,
+        pcActuel: _sheet!.pcMax,
+      ));
+      _markDirty();
+    }
+
+    // Re-resolve voie de peuple after profil change (if a peuple is selected)
+    if (mounted && _selectedPeuple != null) {
+      await _resolvePeupleVoieForProfil(newProfil);
+    }
   }
 
   /// Auto-calcule pmBase = capacités magiques débloquées + VOL et met à jour la fiche.
@@ -122,7 +146,8 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     if (id == null) return;
     final provider = context.read<CharacterSheetProvider>();
     final magicCount = provider.getMagicCapacitesCount(id);
-    final newPmBase = magicCount + (_sheet!.volTotal);
+    // pmBase cannot go negative: a non-magical character always has 0 PM base
+    final newPmBase = (magicCount + (_sheet!.volTotal)).clamp(0, 9999);
     if (_sheet!.pmBase != newPmBase) {
       setState(() => _sheet = _sheet!.copyWith(pmBase: newPmBase));
       _markDirty();
@@ -536,12 +561,33 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                   onChanged: _markDirty,
                   voieRangs: context.watch<CharacterSheetProvider>().getVoieRangs(_sheet!.id ?? 0),
                   pcDepense: context.watch<CharacterSheetProvider>().getPcDepense(_sheet!.id ?? 0),
+                  voiePeupleId: _sheet!.voiePeupleId,
+                  voiePeupleOrigineId: _sheet!.voiePeupleOrigineId,
+                  voieMageRang2Pris: _sheet!.voieMageRang2Pris,
                   onSetRang: (voieId, rang) async {
                     final id = _sheet!.id;
                     if (id != null) {
                       await context.read<CharacterSheetProvider>().setVoieRang(id, voieId, rang);
                       _syncPmBase();
                       _combatTabKey.currentState?.reload();
+                    }
+                  },
+                  onMageRang2Pris: () async {
+                    final id = _sheet!.id;
+                    if (id == null) return;
+                    final provider = context.read<CharacterSheetProvider>();
+                    await provider.setVoieMageRang2Pris(id, true);
+                    if (mounted) {
+                      setState(() => _sheet = _sheet!.copyWith(voieMageRang2Pris: true));
+                    }
+                  },
+                  onMageRang2Reset: () async {
+                    final id = _sheet!.id;
+                    if (id == null) return;
+                    final provider = context.read<CharacterSheetProvider>();
+                    await provider.setVoieMageRang2Pris(id, false);
+                    if (mounted) {
+                      setState(() => _sheet = _sheet!.copyWith(voieMageRang2Pris: false));
                     }
                   },
                 ),
@@ -612,6 +658,24 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _showRacialDialog(newPeuple);
       });
+      // Resolve voie de peuple after racial dialog (slight delay so racial dialog shows first)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _resolvePeupleVoie(newPeuple);
+      });
+    } else {
+      // Peuple cleared: clear voie de peuple and restore resources
+      final sheetId = _sheet?.id;
+      if (sheetId != null) {
+        context.read<CharacterSheetProvider>().setVoiePeuple(sheetId, '');
+      }
+      setState(() => _sheet = _sheet!.copyWith(
+        voiePeupleId: '',
+        pvActuel: _sheet!.pvMax,
+        pmActuel: _sheet!.pmMax,
+        drActuel: _sheet!.drMax,
+        pcActuel: _sheet!.pcMax,
+      ));
+      _scheduleSave();
     }
   }
 
@@ -628,9 +692,180 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
         currentSheet: _sheet!,
         onApply: (updated) {
           _onCaracChanged(updated);
+          // Restore resources after racial bonuses are applied (pvMax etc. may have changed)
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _sheet != null) {
+              setState(() => _sheet = _sheet!.copyWith(
+                pvActuel: _sheet!.pvMax,
+                pmActuel: _sheet!.pmMax,
+                drActuel: _sheet!.drMax,
+                pcActuel: _sheet!.pcMax,
+              ));
+              _scheduleSave();
+            }
+          });
         },
       ),
     );
+  }
+
+  /// Resolves and assigns the voie de peuple when the peuple changes.
+  /// Handles: Mage voie preservation dialog, multi-choice (demi-elfe), single-choice.
+  Future<void> _resolvePeupleVoie(String peuple) async {
+    if (!mounted || _sheet == null) return;
+    final sheetId = _sheet!.id;
+    if (sheetId == null) return;
+
+    final choices = getVoiesChoixPourPeuple(peuple);
+    if (choices.isEmpty) return;
+
+    final currentVoiePeupleId = _sheet!.voiePeupleId;
+    final isMageVoieActive = currentVoiePeupleId == 'peuple_voie-du-mage';
+
+    // If voie du mage is active, ask whether to keep it or replace with peuple voie
+    if (isMageVoieActive) {
+      if (!mounted) return;
+      final keepMage = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Voie du Mage active'),
+          content: Text(
+            'Ce personnage utilise la Voie du Mage à la place de sa voie de peuple. '
+            'Voulez-vous conserver la Voie du Mage ou l\'remplacer par la voie de $peuple ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Conserver la Voie du Mage'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Appliquer voie de $peuple'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      if (keepMage == true) return; // keep voie du mage as-is
+    }
+
+    // Determine which voie to assign
+    String selectedVoieId;
+    if (choices.length == 1) {
+      selectedVoieId = choices.first.id;
+    } else {
+      // Multiple choices: show selection dialog (e.g. demi-elfe)
+      if (!mounted) return;
+      final picked = await showDialog<VoieCatalogue>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => _VoiePeupleChoixDialog(
+          peuple: peuple,
+          choices: choices,
+        ),
+      );
+      if (!mounted || picked == null) return;
+      selectedVoieId = picked.id;
+    }
+
+    await context.read<CharacterSheetProvider>().setVoiePeuple(sheetId, selectedVoieId);
+    // Clear mage heritage data when assigning a normal peuple voie
+    final provider = context.read<CharacterSheetProvider>();
+    await provider.setVoiePeupleOrigine(sheetId, '');
+    await provider.setVoieMageRang2Pris(sheetId, false);
+    if (mounted) {
+      setState(() => _sheet = _sheet!.copyWith(
+        voiePeupleId: selectedVoieId,
+        voiePeupleOrigineId: '',
+        voieMageRang2Pris: false,
+      ));
+    }
+  }
+
+  /// Ensures voiePeupleOrigineId is populated for a Mage character (read-only display only).
+  Future<void> _ensureMageOrigineId(int sheetId) async {
+    if (_sheet == null) return;
+    if (_sheet!.voiePeupleOrigineId.isNotEmpty) return;
+
+    final choices = getVoiesChoixPourPeuple(_sheet!.race);
+    if (choices.isEmpty) return;
+    final origineId = choices.first.id;
+    await context.read<CharacterSheetProvider>().setVoiePeupleOrigine(sheetId, origineId);
+    if (mounted) {
+      setState(() => _sheet = _sheet!.copyWith(voiePeupleOrigineId: origineId));
+    }
+  }
+
+  /// Resolves voie de peuple after a profil change.
+  /// If new profil is Mage: offer Voie du Mage. If not Mage + voie du mage active: revert.
+  Future<void> _resolvePeupleVoieForProfil(String newProfil) async {
+    if (!mounted || _sheet == null || _selectedPeuple == null) return;
+    final sheetId = _sheet!.id;
+    if (sheetId == null) return;
+
+    final isMageFamily = getFamilleForProfil(newProfil) == 'Mage';
+    final currentVoiePeupleId = _sheet!.voiePeupleId;
+    final isMageVoieActive = currentVoiePeupleId == 'peuple_voie-du-mage';
+
+    if (isMageFamily) {
+      if (isMageVoieActive) {
+        // Already has Voie du Mage — just ensure origineId is populated (repair if empty)
+        await _ensureMageOrigineId(sheetId);
+        return;
+      }
+      // Offer to replace peuple voie with voie du mage
+      if (!mounted) return;
+      final useMage = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Voie du Mage disponible'),
+          content: Text(
+            'Le profil $_selectedProfil appartient à la famille des Mages. '
+            'Voulez-vous remplacer votre voie de peuple par la Voie du Mage ?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Conserver la voie de peuple'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Utiliser la Voie du Mage'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      if (useMage == true) {
+        final provider = context.read<CharacterSheetProvider>();
+        final rawOrigineId = _sheet!.voiePeupleId;
+        final origineId = rawOrigineId == 'peuple_voie-du-mage' ? '' : rawOrigineId;
+        await provider.setVoiePeuple(sheetId, 'peuple_voie-du-mage');
+        String effectiveOrigineId = origineId;
+        if (effectiveOrigineId.isEmpty && _sheet!.race.isNotEmpty) {
+          final choices = getVoiesChoixPourPeuple(_sheet!.race);
+          if (choices.isNotEmpty) effectiveOrigineId = choices.first.id;
+        }
+        await provider.setVoiePeupleOrigine(sheetId, effectiveOrigineId);
+        setState(() => _sheet = _sheet!.copyWith(
+          voiePeupleId: 'peuple_voie-du-mage',
+          voiePeupleOrigineId: effectiveOrigineId,
+        ));
+        return;
+      }
+      // Fell through: assign normal peuple voie
+      await _resolvePeupleVoie(_selectedPeuple!);
+    } else {
+      if (isMageVoieActive) {
+        // Profil is not Mage anymore: remove voie du mage and apply normal peuple voie
+        await _resolvePeupleVoie(_selectedPeuple!);
+      } else {
+        // Normal profil change: re-resolve peuple voie normally
+        await _resolvePeupleVoie(_selectedPeuple!);
+      }
+    }
   }
 
   Widget _buildHeader() {
@@ -922,7 +1157,12 @@ class _VoiesTab extends StatelessWidget {
   final VoidCallback onChanged;
   final Map<String, int> voieRangs;
   final int pcDepense;
+  final String voiePeupleId;
+  final String voiePeupleOrigineId;
+  final bool voieMageRang2Pris;
   final Future<void> Function(String voieId, int rang) onSetRang;
+  final Future<void> Function() onMageRang2Pris;
+  final Future<void> Function() onMageRang2Reset;
 
   const _VoiesTab({
     required this.sheet,
@@ -930,7 +1170,12 @@ class _VoiesTab extends StatelessWidget {
     required this.onChanged,
     required this.voieRangs,
     required this.pcDepense,
+    required this.voiePeupleId,
+    required this.voiePeupleOrigineId,
+    required this.voieMageRang2Pris,
     required this.onSetRang,
+    required this.onMageRang2Pris,
+    required this.onMageRang2Reset,
   });
 
   @override
@@ -938,6 +1183,12 @@ class _VoiesTab extends StatelessWidget {
     final totalPc = sheet.level * 2;
     final remaining = totalPc - pcDepense;
     final voies = getVoiesPourProfil(sheet.profile);
+    final voiePeuple = voiePeupleId.isNotEmpty ? getVoieById(voiePeupleId) : null;
+    final isMageVoie = voiePeupleId == 'peuple_voie-du-mage';
+    final voieOrigine = (isMageVoie && voiePeupleOrigineId.isNotEmpty)
+        ? getVoieById(voiePeupleOrigineId)
+        : null;
+    final mageRang2Disponible = isMageVoie && !voieMageRang2Pris;
 
     return ScrollConfiguration(
       // On web, disable mouse-drag scrolling so ListView doesn't intercept
@@ -955,6 +1206,66 @@ class _VoiesTab extends StatelessWidget {
           pcDepense: pcDepense,
           remaining: remaining,
         ),
+        const SizedBox(height: 12),
+
+        // ── Voie de peuple ───────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(
+            'Voie de peuple',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.onSurfaceMuted,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        if (voiePeuple != null)
+          Padding(
+            padding: EdgeInsets.only(bottom: voieOrigine != null ? 8 : 12),
+            child: _VoieCard(
+              voie: voiePeuple,
+              rangActuel: voieRangs[voiePeupleId] ?? 0,
+              rangMin: 1, // rang 1 always free & locked
+              pcRestants: 999, // voie de peuple has no PC cost
+              profil: sheet.profile,
+              niveau: sheet.level,
+              onSetRang: (r) => onSetRang(voiePeupleId, r),
+              mageRang2Disponible: mageRang2Disponible,
+              onMageRang2Pris: onMageRang2Pris,
+              onMageRang2Reset: onMageRang2Reset,
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.onSurfaceMuted.withOpacity(0.2)),
+              ),
+              child: Text(
+                sheet.race.isEmpty
+                    ? 'Sélectionne un peuple pour voir ta voie de peuple.'
+                    : 'Aucune voie de peuple disponible pour "${sheet.race}".',
+                style: const TextStyle(
+                  color: AppColors.onSurfaceMuted,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        const Divider(height: 1),
+
+        // ── Héritage du Peuple (Mage uniquement) ─────────────────────
+        if (voieOrigine != null)
+          _MageHeritageSection(
+            voieOrigine: voieOrigine,
+            profil: sheet.profile,
+          ),
         const SizedBox(height: 12),
 
         // ── Voies du profil ──────────────────────────────────────────
@@ -989,6 +1300,9 @@ class _VoiesTab extends StatelessWidget {
                 profil: sheet.profile,
                 niveau: sheet.level,
                 onSetRang: (r) => onSetRang(voie.id, r),
+                mageRang2Disponible: mageRang2Disponible,
+                onMageRang2Pris: onMageRang2Pris,
+                onMageRang2Reset: onMageRang2Reset,
               ),
             );
           }),
@@ -1114,21 +1428,197 @@ Color _couleurFamille(String profil) {
   }
 }
 
+// ── Mage Heritage Section ──────────────────────────────────────────────────────
+
+/// Read-only display of rang 1 of the mage's original peuple voie.
+/// The mage only keeps rang 1 — this is purely informational.
+class _MageHeritageSection extends StatelessWidget {
+  final VoieCatalogue voieOrigine;
+  final String profil;
+
+  const _MageHeritageSection({
+    required this.voieOrigine,
+    required this.profil,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _couleurFamille(profil);
+    final cap1 = voieOrigine.capacites.where((c) => c.rang == 1).firstOrNull;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.07),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, size: 12, color: AppColors.onSurfaceMuted),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Héritage du Peuple — ${voieOrigine.nom}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (cap1 != null) _HeritageRangRow(capacite: cap1, unlocked: true, accentColor: color),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeritageRangRow extends StatelessWidget {
+  final CapaciteCatalogue capacite;
+  final bool unlocked;
+  final Color accentColor;
+  final bool freeButton;
+  final Future<void> Function()? onFree;
+
+  const _HeritageRangRow({
+    required this.capacite,
+    required this.unlocked,
+    required this.accentColor,
+    this.freeButton = false,
+    this.onFree,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Rang badge
+        Container(
+          width: 20,
+          height: 20,
+          margin: const EdgeInsets.only(top: 1, right: 8),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: unlocked ? accentColor.withValues(alpha: 0.15) : Colors.transparent,
+            border: Border.all(
+              color: unlocked ? accentColor : AppColors.onSurfaceMuted.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '${capacite.rang}',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: unlocked ? accentColor : AppColors.onSurfaceMuted,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      capacite.nom,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: unlocked ? AppColors.onSurface : AppColors.onSurfaceMuted,
+                      ),
+                    ),
+                  ),
+                  if (freeButton && onFree != null)
+                    TextButton.icon(
+                      onPressed: () => onFree!(),
+                      icon: const Icon(Icons.star_border, size: 14),
+                      label: const Text('Gratuit', style: TextStyle(fontSize: 11)),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.allyPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  if (unlocked && !freeButton)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Icon(Icons.lock_open, size: 12, color: accentColor.withValues(alpha: 0.7)),
+                    ),
+                ],
+              ),
+              if (capacite.description.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    capacite.description,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.onSurfaceMuted,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
 class _VoieCard extends StatefulWidget {
   final VoieCatalogue voie;
   final int rangActuel;
+  final int rangMin; // minimum rang (cannot decrease below this)
   final int pcRestants;
   final String profil;
   final int niveau;
   final Future<void> Function(int rang) onSetRang;
+  final bool mageRang2Disponible;
+  final Future<void> Function()? onMageRang2Pris;
+  final Future<void> Function()? onMageRang2Reset;
 
   const _VoieCard({
     required this.voie,
     required this.rangActuel,
+    this.rangMin = 0,
     required this.pcRestants,
     required this.profil,
     required this.niveau,
     required this.onSetRang,
+    this.mageRang2Disponible = false,
+    this.onMageRang2Pris,
+    this.onMageRang2Reset,
   });
 
   @override
@@ -1152,8 +1642,9 @@ class _VoieCardState extends State<_VoieCard> {
     if (_saving) return;
     int newRang;
     if (rang == widget.rangActuel) {
-      // Un-buy: decrease by one
+      // Un-buy: decrease by one, but not below rangMin
       newRang = rang - 1;
+      if (newRang < widget.rangMin) return;
     } else if (rang == widget.rangActuel + 1) {
       // Check level requirement
       final niveauRequis = niveauRequisPourRang(rang);
@@ -1166,16 +1657,19 @@ class _VoieCardState extends State<_VoieCard> {
         );
         return;
       }
-      // Check PC budget
-      final cout = _coutPourRang(rang);
-      if (widget.pcRestants < cout) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pas assez de points de compétence.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
+      // Mage free rang 2: bypass PC check
+      final isMageFreeRang2 = rang == 2 && widget.mageRang2Disponible;
+      if (!isMageFreeRang2) {
+        final cout = _coutPourRang(rang);
+        if (widget.pcRestants < cout) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pas assez de points de compétence.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
       }
       newRang = rang;
     } else {
@@ -1184,6 +1678,11 @@ class _VoieCardState extends State<_VoieCard> {
     setState(() => _saving = true);
     try {
       await widget.onSetRang(newRang);
+      if (newRang == 2 && widget.mageRang2Disponible) {
+        await widget.onMageRang2Pris?.call();
+      } else if (newRang == 1 && rang == 2 && widget.onMageRang2Reset != null) {
+        await widget.onMageRang2Reset!.call();
+      }
     } catch (e) {
       debugPrint('[VoieCard] onSetRang error: $e');
     }
@@ -1285,16 +1784,19 @@ class _VoieCardState extends State<_VoieCard> {
                     final levelOk = widget.niveau >= niveauRequis;
                     final canBuy =
                         isNext && levelOk && widget.pcRestants >= coutNext;
+                    final isMageFreeRang2 =
+                        cap.rang == 2 && isNext && levelOk && widget.mageRang2Disponible;
 
                     return _RangRow(
                       capacite: cap,
                       isUnlocked: isUnlocked,
                       isNext: isNext,
-                      canBuy: canBuy,
+                      canBuy: canBuy || isMageFreeRang2,
                       levelOk: levelOk,
                       niveauRequis: niveauRequis,
                       saving: _saving,
                       accentColor: color,
+                      isMageFreeRang2: isMageFreeRang2,
                       onTap: () => _toggleRang(cap.rang),
                     );
                   }),
@@ -1318,6 +1820,7 @@ class _RangRow extends StatelessWidget {
   final int niveauRequis;
   final bool saving;
   final Color accentColor;
+  final bool isMageFreeRang2;
   final VoidCallback onTap;
 
   const _RangRow({
@@ -1330,6 +1833,7 @@ class _RangRow extends StatelessWidget {
     required this.saving,
     required this.accentColor,
     required this.onTap,
+    this.isMageFreeRang2 = false,
   });
 
   @override
@@ -1438,6 +1942,23 @@ class _RangRow extends StatelessWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF9C27B0)),
+                          ),
+                        ),
+                      if (isMageFreeRang2)
+                        Container(
+                          margin: const EdgeInsets.only(left: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: AppColors.allyPrimary.withValues(alpha: 0.15),
+                          ),
+                          child: Text(
+                            '⭐ Gratuit',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.allyPrimary),
                           ),
                         ),
                     ],
@@ -1606,8 +2127,10 @@ class _CaracTabState extends State<_CaracTab> {
       children: [
         _buildVitaliteSection(),
         const SizedBox(height: 16),
-        _buildManaSection(),
-        const SizedBox(height: 16),
+        if (_s.pmMax > 0) ...[
+          _buildManaSection(),
+          const SizedBox(height: 16),
+        ],
         _buildRecuperationSection(),
         const SizedBox(height: 16),
         _buildRessourcesSection(),
@@ -2660,7 +3183,7 @@ class _CaracTabState extends State<_CaracTab> {
 
   Widget _buildManaSection() {
     final pct      = _s.pmMax > 0 ? (_s.pmActuel / _s.pmMax).clamp(0.0, 1.0) : 0.0;
-    final isEmpty  = _s.pmActuel <= 0;
+    final isEmpty  = _s.pmActuel <= 0 || _s.pmMax <= 0;
     const barColor = Color(0xFF6A1B9A);
 
     // Compute magic count from provider for formula display
@@ -2693,7 +3216,7 @@ class _CaracTabState extends State<_CaracTab> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Sorts(*) $magicCount  +  VOL $vol  =  ${magicCount + vol}',
+                          'Sorts(*) $magicCount  +  VOL $vol  =  ${(magicCount + vol).clamp(0, 9999)}',
                           style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.onSurfaceMuted),
@@ -5708,6 +6231,39 @@ class _ItemEffectsDialogState extends State<_ItemEffectsDialog> {
       actions: [
         FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer')),
       ],
+    );
+  }
+}
+
+/// Dialog to let the player choose their voie de peuple when multiple options exist
+/// (e.g., Demi-elfe can choose Humain, Elfe sylvain, or Haut Elfe).
+class _VoiePeupleChoixDialog extends StatelessWidget {
+  final String peuple;
+  final List<VoieCatalogue> choices;
+
+  const _VoiePeupleChoixDialog({
+    required this.peuple,
+    required this.choices,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Voie de peuple — $peuple'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Plusieurs voies de peuple sont disponibles pour ce peuple. Choisissez-en une :'),
+          const SizedBox(height: 12),
+          ...choices.map((voie) => ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.auto_stories_outlined),
+            title: Text(voie.nom),
+            onTap: () => Navigator.pop(context, voie),
+          )),
+        ],
+      ),
     );
   }
 }

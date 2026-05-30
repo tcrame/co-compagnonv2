@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-          version: 15,
+        version: 17,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 15,
+      version: 17,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -142,10 +142,14 @@ class DatabaseService {
               "ALTER TABLE character_sheets ADD COLUMN monnaie_pp INTEGER NOT NULL DEFAULT 0");
         }
         if (oldVersion < 14) {
-          await db.execute(
-              "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
-          await db.execute(
-              "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+          try {
+            await db.execute(
+                "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+          } catch (_) {}
+          try {
+            await db.execute(
+                "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+          } catch (_) {}
         }
         if (oldVersion < 15) {
           // Fix: web DBs created at v8-v14 may be missing these columns
@@ -158,6 +162,22 @@ class DatabaseService {
           try {
             await db.execute(
                 "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''");
+          } catch (_) {}
+        }
+        if (oldVersion < 16) {
+          try {
+            await db.execute(
+                "ALTER TABLE character_sheets ADD COLUMN voie_peuple_id TEXT NOT NULL DEFAULT ''");
+          } catch (_) {}
+        }
+        if (oldVersion < 17) {
+          try {
+            await db.execute(
+                "ALTER TABLE character_sheets ADD COLUMN voie_peuple_origine_id TEXT NOT NULL DEFAULT ''");
+          } catch (_) {}
+          try {
+            await db.execute(
+                "ALTER TABLE character_sheets ADD COLUMN voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0");
           } catch (_) {}
         }
   }
@@ -288,7 +308,10 @@ class DatabaseService {
         monnaie_pc INTEGER NOT NULL DEFAULT 0,
         monnaie_pa INTEGER NOT NULL DEFAULT 0,
         monnaie_po INTEGER NOT NULL DEFAULT 0,
-        monnaie_pp INTEGER NOT NULL DEFAULT 0
+        monnaie_pp INTEGER NOT NULL DEFAULT 0,
+        voie_peuple_id TEXT NOT NULL DEFAULT '',
+        voie_peuple_origine_id TEXT NOT NULL DEFAULT '',
+        voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
@@ -894,14 +917,25 @@ class DatabaseService {
   }
 
   /// Resets voie rangs for a character and initialises the 5 voies of the new profil
-  /// (all at rang 0). Existing rangs are deleted.
+  /// (all at rang 0). Only profil voies are deleted; the voie de peuple entry is preserved.
   Future<void> initVoiesForProfil(int sheetId, String profil) async {
     final db = await database;
-    await db.delete(
+    // Delete only profil voies (IDs that do NOT start with 'peuple_')
+    final existing = await db.query(
       'character_voie_rangs',
       where: 'character_sheet_id = ?',
       whereArgs: [sheetId],
     );
+    for (final row in existing) {
+      final voieId = row['voie_id'] as String;
+      if (!voieId.startsWith('peuple_')) {
+        await db.delete(
+          'character_voie_rangs',
+          where: 'character_sheet_id = ? AND voie_id = ?',
+          whereArgs: [sheetId, voieId],
+        );
+      }
+    }
     final voies = getVoiesPourProfil(profil);
     for (final voie in voies) {
       await db.insert('character_voie_rangs', {
@@ -910,6 +944,62 @@ class DatabaseService {
         'rang_actuel': 0,
       });
     }
+  }
+
+  /// Sets the voie de peuple for a character: updates character_sheets.voie_peuple_id
+  /// and automatically sets rang 1 (rang 1 is always free and auto-selected).
+  Future<void> setVoiePeupleId(int sheetId, String voieId) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'voie_peuple_id': voieId},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
+    if (voieId.isEmpty) return;
+    final existing = await db.query(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ? AND voie_id = ?',
+      whereArgs: [sheetId, voieId],
+    );
+    if (existing.isEmpty) {
+      await db.insert('character_voie_rangs', {
+        'character_sheet_id': sheetId,
+        'voie_id': voieId,
+        'rang_actuel': 1, // rang 1 is always free and auto-selected
+      });
+    } else {
+      // Ensure rang is at least 1
+      final currentRang = existing.first['rang_actuel'] as int? ?? 0;
+      if (currentRang < 1) {
+        await db.update(
+          'character_voie_rangs',
+          {'rang_actuel': 1},
+          where: 'character_sheet_id = ? AND voie_id = ?',
+          whereArgs: [sheetId, voieId],
+        );
+      }
+    }
+  }
+
+  Future<void> setVoiePeupleOrigineId(int sheetId, String origineId) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'voie_peuple_origine_id': origineId},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
+  }
+
+  Future<void> setVoieMageRang2Pris(int sheetId, bool pris) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'voie_mage_rang2_pris': pris ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
   }
 
   /// Returns true if this character has any voie rang > 0.

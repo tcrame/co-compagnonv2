@@ -103,6 +103,20 @@ class CharacterSheet {
   /// JSON-encoded Map<String, int> of bonuses from equipped/activated items
   final String equipmentBonusesJson;
 
+  /// ID of the voie de peuple currently assigned to this character.
+  /// Empty string means no voie de peuple has been chosen yet.
+  /// Special value 'peuple_voie-du-mage' means the character replaced their
+  /// peuple voie with the Voie du Mage (Mage family profiles only).
+  final String voiePeupleId;
+
+  /// When voiePeupleId == 'peuple_voie-du-mage', holds the original peuple voie
+  /// ID that was replaced (e.g. 'peuple_voie-du-nain'). Empty otherwise.
+  final String voiePeupleOrigineId;
+
+  /// Whether the Mage character has already claimed their one free rang 2
+  /// from their original peuple voie (heritage bonus).
+  final bool voieMageRang2Pris;
+
   CharacterSheet({
     this.id,
     required this.name,
@@ -151,6 +165,9 @@ class CharacterSheet {
     this.notesVoies = '',
     this.notesEffets = '',
     this.equipmentBonusesJson = '{}',
+    this.voiePeupleId = '',
+    this.voiePeupleOrigineId = '',
+    this.voieMageRang2Pris = false,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // ── Valeurs calculées ──────────────────────────────────────────────────────
@@ -263,6 +280,9 @@ class CharacterSheet {
     'notes_voies': notesVoies,
     'notes_effets': notesEffets,
     'equipment_bonuses_json': equipmentBonusesJson,
+    'voie_peuple_id': voiePeupleId,
+    'voie_peuple_origine_id': voiePeupleOrigineId,
+    'voie_mage_rang2_pris': voieMageRang2Pris ? 1 : 0,
   };
 
   factory CharacterSheet.fromMap(Map<String, dynamic> m) => CharacterSheet(
@@ -321,6 +341,9 @@ class CharacterSheet {
     notesVoies: m['notes_voies'] as String? ?? '',
     notesEffets: m['notes_effets'] as String? ?? '',
     equipmentBonusesJson: m['equipment_bonuses_json'] as String? ?? '{}',
+    voiePeupleId: m['voie_peuple_id'] as String? ?? '',
+    voiePeupleOrigineId: m['voie_peuple_origine_id'] as String? ?? '',
+    voieMageRang2Pris: (m['voie_mage_rang2_pris'] as int? ?? 0) == 1,
   );
 
   CharacterSheet copyWith({
@@ -350,6 +373,9 @@ class CharacterSheet {
     String? notesCombat, String? notesInventaire,
     String? notesVoies, String? notesEffets,
     String? equipmentBonusesJson,
+    String? voiePeupleId,
+    String? voiePeupleOrigineId,
+    bool? voieMageRang2Pris,
   }) => CharacterSheet(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -406,5 +432,8 @@ class CharacterSheet {
     notesVoies: notesVoies ?? this.notesVoies,
     notesEffets: notesEffets ?? this.notesEffets,
     equipmentBonusesJson: equipmentBonusesJson ?? this.equipmentBonusesJson,
+    voiePeupleId: voiePeupleId ?? this.voiePeupleId,
+    voiePeupleOrigineId: voiePeupleOrigineId ?? this.voiePeupleOrigineId,
+    voieMageRang2Pris: voieMageRang2Pris ?? this.voieMageRang2Pris,
   );
 }
