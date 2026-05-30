@@ -245,20 +245,41 @@ class ParticipantCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Initiative badge
-                  Column(
+                  // Initiative + DEF badges
+                  Row(
                     children: [
-                      Text(
-                        '${p.rolledInitiative}',
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                        ),
+                      Column(
+                        children: [
+                          Text(
+                            '${p.def}',
+                            style: TextStyle(
+                              color: Colors.blueGrey.shade300,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
+                          ),
+                          Text(
+                            'def',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ),
-                      Text(
-                        'init',
-                        style: Theme.of(context).textTheme.bodySmall,
+                      const SizedBox(width: 14),
+                      Column(
+                        children: [
+                          Text(
+                            '${p.rolledInitiative}',
+                            style: TextStyle(
+                              color: color,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                            ),
+                          ),
+                          Text(
+                            'init',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ),
                     ],
                   ),

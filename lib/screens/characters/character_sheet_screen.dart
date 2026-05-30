@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
 import '../../constants/cof2_data.dart';
+import '../../constants/voies_data.dart';
 import '../../models/character_sheet.dart';
 import '../../models/combat_armor.dart';
 import '../../models/combat_capacity.dart';
@@ -31,6 +32,9 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
   bool _dirty = false;
   bool _saving = false;
   Timer? _saveTimer;
+
+  // Key to allow reload of combat tab after voie rang changes
+  final GlobalKey<_CombatTabState> _combatTabKey = GlobalKey<_CombatTabState>();
 
   // Dice roll log (in-memory, most recent first)
   final List<DiceLogEntry> _diceLog = [];
@@ -64,6 +68,64 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     final sheet = sheets[idx];
     _initControllers(sheet);
     setState(() => _sheet = sheet);
+    if (sheet.id != null) {
+      provider.loadVoieRangs(sheet.id!);
+    }
+  }
+
+  Future<void> _onProfilChanged(String? newProfil) async {
+    if (newProfil == null || _sheet == null) return;
+    final sheetId = _sheet!.id;
+    if (sheetId == null) return;
+
+    final provider = context.read<CharacterSheetProvider>();
+    final hasRangs = await provider.hasAnyRangUnlocked(sheetId);
+
+    if (hasRangs && mounted) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Changer de profil ?'),
+          content: const Text(
+            'Changer de profil réinitialisera tous les rangs de voies débloqués. '
+            'Cette action est irréversible.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Confirmer'),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true) return;
+    }
+
+    setState(() {
+      _selectedProfil = newProfil;
+      _sheet = _sheet!.copyWith(profile: newProfil);
+    });
+    _markDirty();
+    await provider.initVoiesForProfil(sheetId, newProfil);
+    _syncPmBase();
+    _combatTabKey.currentState?.reload();
+  }
+
+  /// Auto-calcule pmBase = capacités magiques débloquées + VOL et met à jour la fiche.
+  void _syncPmBase() {
+    final id = _sheet?.id;
+    if (id == null) return;
+    final provider = context.read<CharacterSheetProvider>();
+    final magicCount = provider.getMagicCapacitesCount(id);
+    final newPmBase = magicCount + (_sheet!.volTotal);
+    if (_sheet!.pmBase != newPmBase) {
+      setState(() => _sheet = _sheet!.copyWith(pmBase: newPmBase));
+      _markDirty();
+    }
   }
 
   void _initControllers(CharacterSheet sheet) {
@@ -450,6 +512,7 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                 ),
                 _NotesTab(controller: _descCtrl, hint: 'Notes biographiques, apparence, personnalité…', onChanged: _markDirty),
                 _CombatTab(
+                  key: _combatTabKey,
                   sheetId: widget.sheetId,
                   sheet: _sheet!,
                   onSheetChanged: (s) {
@@ -458,8 +521,29 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                   },
                   onDiceRoll: _addDiceLog,
                 ),
-                _InventaireTab(sheetId: widget.sheetId),
-                _VoiesTab(sheet: _sheet!, controller: _voiesCtrl, onChanged: _markDirty),
+                _InventaireTab(
+                  sheetId: widget.sheetId,
+                  sheet: _sheet!,
+                  onSheetChanged: (s) {
+                    setState(() => _sheet = s);
+                    _scheduleSave();
+                  },
+                ),
+                _VoiesTab(
+                  sheet: _sheet!,
+                  controller: _voiesCtrl,
+                  onChanged: _markDirty,
+                  voieRangs: context.watch<CharacterSheetProvider>().getVoieRangs(_sheet!.id ?? 0),
+                  pcDepense: context.watch<CharacterSheetProvider>().getPcDepense(_sheet!.id ?? 0),
+                  onSetRang: (voieId, rang) async {
+                    final id = _sheet!.id;
+                    if (id != null) {
+                      await context.read<CharacterSheetProvider>().setVoieRang(id, voieId, rang);
+                      _syncPmBase();
+                      _combatTabKey.currentState?.reload();
+                    }
+                  },
+                ),
                 _NotesTab(controller: _effetsCtrl, hint: 'Effets actifs, malédictions, bénédictions…', onChanged: _markDirty),
               ],
             ),
@@ -661,13 +745,7 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                   label: 'Profil',
                   value: _selectedProfil,
                   items: kTousProfils,
-                  onChanged: (v) {
-                    setState(() {
-                      _selectedProfil = v;
-                      _sheet = _sheet!.copyWith(profile: v ?? '');
-                    });
-                    _markDirty();
-                  },
+                  onChanged: (v) => _onProfilChanged(v),
                   badge: _selectedProfil != null
                       ? getFamilleForProfil(_selectedProfil!)
                       : null,
@@ -841,86 +919,574 @@ class _VoiesTab extends StatelessWidget {
   final CharacterSheet sheet;
   final TextEditingController controller;
   final VoidCallback onChanged;
+  final Map<String, int> voieRangs;
+  final int pcDepense;
+  final Future<void> Function(String voieId, int rang) onSetRang;
 
   const _VoiesTab({
     required this.sheet,
     required this.controller,
     required this.onChanged,
+    required this.voieRangs,
+    required this.pcDepense,
+    required this.onSetRang,
   });
 
   @override
   Widget build(BuildContext context) {
     final totalPc = sheet.level * 2;
+    final remaining = totalPc - pcDepense;
+    final voies = getVoiesPourProfil(sheet.profile);
 
-    return Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       children: [
         // ── Compteur de points de compétence ────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFB300).withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: const Color(0xFFFFB300).withValues(alpha: 0.45)),
-            ),
-            child: Row(
+        _PcCounter(
+          level: sheet.level,
+          totalPc: totalPc,
+          pcDepense: pcDepense,
+          remaining: remaining,
+        ),
+        const SizedBox(height: 12),
+
+        // ── Voies du profil ──────────────────────────────────────────
+        if (voies.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
               children: [
-                const Text('🎓', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Points de compétence',
-                          style: TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.bold)),
-                      Text(
-                        'Niveau ${sheet.level}  ×  2  =  $totalPc pts disponibles',
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.onSurfaceMuted),
-                      ),
-                    ],
-                  ),
+                const Icon(Icons.menu_book_outlined,
+                    size: 40, color: AppColors.onSurfaceMuted),
+                const SizedBox(height: 8),
+                Text(
+                  sheet.profile.isEmpty
+                      ? 'Sélectionne un profil pour voir les voies disponibles.'
+                      : 'Aucune voie trouvée pour le profil "${sheet.profile}".',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: AppColors.onSurfaceMuted, fontSize: 13),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFB300),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$totalPc',
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
+              ],
+            ),
+          )
+        else
+          ...voies.map((voie) {
+            final rangActuel = voieRangs[voie.id] ?? 0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _VoieCard(
+                voie: voie,
+                rangActuel: rangActuel,
+                pcRestants: remaining,
+                profil: sheet.profile,
+                niveau: sheet.level,
+                onSetRang: (r) => onSetRang(voie.id, r),
+              ),
+            );
+          }),
+
+        const SizedBox(height: 16),
+
+        // ── Notes libres ─────────────────────────────────────────────
+        const Divider(),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text(
+            'Notes libres',
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceMuted),
+          ),
+        ),
+        TextField(
+          controller: controller,
+          onChanged: (_) => onChanged(),
+          maxLines: 6,
+          textAlignVertical: TextAlignVertical.top,
+          decoration: const InputDecoration(
+            hintText: 'Capacités spéciales, notes de progression…',
+            alignLabelWithHint: true,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── PC Counter banner ─────────────────────────────────────────────────────────
+
+class _PcCounter extends StatelessWidget {
+  final int level;
+  final int totalPc;
+  final int pcDepense;
+  final int remaining;
+
+  const _PcCounter({
+    required this.level,
+    required this.totalPc,
+    required this.pcDepense,
+    required this.remaining,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isOverBudget = remaining < 0;
+    final accentColor =
+        isOverBudget ? Colors.red : const Color(0xFFFFB300);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: accentColor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: accentColor.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          const Text('🎓', style: TextStyle(fontSize: 22)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Points de compétence',
+                    style: TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  'Niv. $level × 2 = $totalPc pts   •   Dépensés : $pcDepense',
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.onSurfaceMuted),
                 ),
               ],
             ),
           ),
-        ),
-        // ── Notes libres ─────────────────────────────────────────────
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: TextField(
-              controller: controller,
-              onChanged: (_) => onChanged(),
-              maxLines: null,
-              expands: true,
-              textAlignVertical: TextAlignVertical.top,
-              decoration: const InputDecoration(
-                hintText: 'Voies de progression, capacités spéciales…',
-                alignLabelWithHint: true,
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '$remaining',
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Voie Card ─────────────────────────────────────────────────────────────────
+
+/// Niveau de personnage requis pour débloquer un rang donné.
+/// Rang: 1→1, 2→2, 3→3, 4→5, 5→7
+int niveauRequisPourRang(int rang) {
+  const Map<int, int> _requis = {1: 1, 2: 2, 3: 3, 4: 5, 5: 7};
+  return _requis[rang] ?? 1;
+}
+
+Color _couleurFamille(String profil) {
+  final famille = getFamilleForProfil(profil);
+  switch (famille) {
+    case 'Aventurier':
+      return const Color(0xFF2E7D32);
+    case 'Combattant':
+      return const Color(0xFFC62828);
+    case 'Mage':
+      return const Color(0xFF1565C0);
+    case 'Mystique':
+      return const Color(0xFF6A1B9A);
+    default:
+      return AppColors.onSurfaceMuted;
+  }
+}
+
+class _VoieCard extends StatefulWidget {
+  final VoieCatalogue voie;
+  final int rangActuel;
+  final int pcRestants;
+  final String profil;
+  final int niveau;
+  final Future<void> Function(int rang) onSetRang;
+
+  const _VoieCard({
+    required this.voie,
+    required this.rangActuel,
+    required this.pcRestants,
+    required this.profil,
+    required this.niveau,
+    required this.onSetRang,
+  });
+
+  @override
+  State<_VoieCard> createState() => _VoieCardState();
+}
+
+class _VoieCardState extends State<_VoieCard> {
+  bool _expanded = false;
+  bool _saving = false;
+
+  /// Coût en PC pour passer du rang actuel au rang N.
+  int _coutPourRang(int rang) {
+    int cost = 0;
+    for (int r = widget.rangActuel + 1; r <= rang; r++) {
+      cost += r <= 2 ? 1 : 2;
+    }
+    return cost;
+  }
+
+  Future<void> _toggleRang(int rang) async {
+    if (_saving) return;
+    int newRang;
+    if (rang == widget.rangActuel) {
+      // Un-buy: decrease by one
+      newRang = rang - 1;
+    } else if (rang == widget.rangActuel + 1) {
+      // Check level requirement
+      final niveauRequis = niveauRequisPourRang(rang);
+      if (widget.niveau < niveauRequis) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Niveau $niveauRequis requis pour ce rang.'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      // Check PC budget
+      final cout = _coutPourRang(rang);
+      if (widget.pcRestants < cout) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pas assez de points de compétence.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      newRang = rang;
+    } else {
+      return; // Cannot skip ranks or jump backward more than 1
+    }
+    setState(() => _saving = true);
+    await widget.onSetRang(newRang);
+    if (mounted) setState(() => _saving = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _couleurFamille(widget.profil);
+    final rang = widget.rangActuel;
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: color.withValues(alpha: 0.35)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          // ── Header (tappable) ────────────────────────────────────────
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              color: color.withValues(alpha: 0.07),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.voie.nom,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: color),
+                    ),
+                  ),
+                  // Rang dots
+                  Row(
+                    children: List.generate(5, (i) {
+                      final r = i + 1;
+                      final unlocked = r <= rang;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: unlocked
+                                ? color
+                                : color.withValues(alpha: 0.15),
+                            border: Border.all(
+                              color: color.withValues(
+                                  alpha: unlocked ? 1.0 : 0.35),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 18,
+                    color: AppColors.onSurfaceMuted,
+                  ),
+                ],
               ),
             ),
           ),
+
+          // ── Body (expanded) ──────────────────────────────────────────
+          if (_expanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.voie.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        widget.voie.description,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.onSurfaceMuted,
+                            fontStyle: FontStyle.italic),
+                      ),
+                    ),
+                  ...widget.voie.capacites.map((cap) {
+                    final isUnlocked = cap.rang <= rang;
+                    final isNext = cap.rang == rang + 1;
+                    final coutNext = isNext ? _coutPourRang(cap.rang) : 0;
+                    final niveauRequis = niveauRequisPourRang(cap.rang);
+                    final levelOk = widget.niveau >= niveauRequis;
+                    final canBuy =
+                        isNext && levelOk && widget.pcRestants >= coutNext;
+
+                    return _RangRow(
+                      capacite: cap,
+                      isUnlocked: isUnlocked,
+                      isNext: isNext,
+                      canBuy: canBuy,
+                      levelOk: levelOk,
+                      niveauRequis: niveauRequis,
+                      saving: _saving,
+                      accentColor: color,
+                      onTap: () => _toggleRang(cap.rang),
+                    );
+                  }),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Rang Row ──────────────────────────────────────────────────────────────────
+
+class _RangRow extends StatelessWidget {
+  final CapaciteCatalogue capacite;
+  final bool isUnlocked;
+  final bool isNext;
+  final bool canBuy;
+  final bool levelOk;
+  final int niveauRequis;
+  final bool saving;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _RangRow({
+    required this.capacite,
+    required this.isUnlocked,
+    required this.isNext,
+    required this.canBuy,
+    required this.levelOk,
+    required this.niveauRequis,
+    required this.saving,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final lockedByLevel = !isUnlocked && !levelOk;
+    final textColor = isUnlocked
+        ? AppColors.onSurface
+        : (isNext && canBuy)
+            ? AppColors.onSurface.withValues(alpha: 0.75)
+            : AppColors.onSurfaceMuted;
+
+    return InkWell(
+      onTap: (isUnlocked || (isNext && canBuy)) && !saving ? onTap : null,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          color: isUnlocked
+              ? accentColor.withValues(alpha: 0.12)
+              : Colors.transparent,
+          border: isUnlocked
+              ? Border.all(color: accentColor.withValues(alpha: 0.30))
+              : null,
         ),
-      ],
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Rang badge
+            Container(
+              width: 24,
+              height: 24,
+              margin: const EdgeInsets.only(top: 1, right: 8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isUnlocked
+                    ? accentColor
+                    : accentColor.withValues(alpha: 0.10),
+                border: Border.all(
+                  color: isUnlocked
+                      ? accentColor
+                      : accentColor.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  '${capacite.rang}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: isUnlocked ? Colors.white : textColor,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          capacite.nom,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isUnlocked
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                      if (capacite.type.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: accentColor.withValues(alpha: 0.15),
+                          ),
+                          child: Text(
+                            capacite.type,
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: accentColor),
+                          ),
+                        ),
+                      if (capacite.isMagique)
+                        Container(
+                          margin: const EdgeInsets.only(left: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: const Color(0xFF6A1B9A).withValues(alpha: 0.18),
+                          ),
+                          child: const Text(
+                            '✨ Sort',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF9C27B0)),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    capacite.description,
+                    style: TextStyle(fontSize: 11, color: textColor),
+                  ),
+                  // Level requirement badge
+                  if (lockedByLevel)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_clock,
+                              size: 11, color: Colors.orange),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Niveau $niveauRequis requis',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Unlock/lock icon
+            if (isUnlocked)
+              Padding(
+                padding: const EdgeInsets.only(left: 6, top: 2),
+                child: Icon(Icons.lock_open,
+                    size: 14, color: accentColor),
+              )
+            else if (isNext && canBuy)
+              Padding(
+                padding: const EdgeInsets.only(left: 6, top: 2),
+                child: Icon(Icons.add_circle_outline,
+                    size: 14,
+                    color: accentColor.withValues(alpha: 0.7)),
+              )
+            else if (lockedByLevel)
+              const Padding(
+                padding: EdgeInsets.only(left: 6, top: 2),
+                child: Icon(Icons.lock_clock,
+                    size: 14, color: Colors.orange),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(left: 6, top: 2),
+                child: Icon(Icons.lock_outline,
+                    size: 14,
+                    color: AppColors.onSurfaceMuted.withValues(alpha: 0.5)),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -954,6 +1520,7 @@ class _NotesTab extends StatelessWidget {
     );
   }
 }
+
 
 // ── Carac Tab ─────────────────────────────────────────────────────────────────
 
@@ -1002,6 +1569,9 @@ class _CaracTabState extends State<_CaracTab> {
         encArmure: widget.sheet.encArmure,
         encAutre: widget.sheet.encAutre,
         equipmentBonusesJson: widget.sheet.equipmentBonusesJson,
+        // PM base auto-calculé depuis les voies
+        pmBase: widget.sheet.pmBase,
+        pmBonus: widget.sheet.pmBonus,
         // Jauges actuel synchronisées depuis le parent (level-up, combat, etc.)
         pvActuel: widget.sheet.pvActuel,
         pmActuel: widget.sheet.pmActuel,
@@ -2081,6 +2651,11 @@ class _CaracTabState extends State<_CaracTab> {
     final isEmpty  = _s.pmActuel <= 0;
     const barColor = Color(0xFF6A1B9A);
 
+    // Compute magic count from provider for formula display
+    final provider = context.watch<CharacterSheetProvider>();
+    final magicCount = _s.id != null ? provider.getMagicCapacitesCount(_s.id!) : 0;
+    final vol = _s.volTotal;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2091,12 +2666,41 @@ class _CaracTabState extends State<_CaracTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Base + Bonus ──────────────────────────────────────────
-                _colHeaders(['Base', 'Bonus']),
+                // ── Formule auto-calculée ─────────────────────────────────
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: barColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: barColor.withValues(alpha: 0.25)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('✨', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Sorts(*) $magicCount  +  VOL $vol  =  ${magicCount + vol}',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.onSurfaceMuted),
+                        ),
+                      ),
+                      Text(
+                        'Base : ${_s.pmBase}',
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.onSurfaceMuted),
+                      ),
+                    ],
+                  ),
+                ),
+                // ── Bonus ─────────────────────────────────────────────────
+                _colHeaders(['Bonus']),
                 Row(
                   children: [
-                    _labelCell('PM'),
-                    _intCell(_s.pmBase, (v) => _update(_s.copyWith(pmBase: v))),
+                    _labelCell('PM +'),
                     _intCell(_s.pmBonus, (v) => _update(_s.copyWith(pmBonus: v))),
                   ],
                 ),
@@ -2694,7 +3298,9 @@ class _RacialDialogState extends State<_RacialDialog> {
 
 class _InventaireTab extends StatefulWidget {
   final int sheetId;
-  const _InventaireTab({required this.sheetId});
+  final CharacterSheet sheet;
+  final ValueChanged<CharacterSheet> onSheetChanged;
+  const _InventaireTab({required this.sheetId, required this.sheet, required this.onSheetChanged});
 
   @override
   State<_InventaireTab> createState() => _InventaireTabState();
@@ -2782,6 +3388,11 @@ class _InventaireTabState extends State<_InventaireTab>
     }
   }
 
+  Future<void> _saveMonnaie(CharacterSheet updated) async {
+    await DatabaseService().updateCharacterSheet(updated);
+    widget.onSheetChanged(updated);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -2789,8 +3400,16 @@ class _InventaireTabState extends State<_InventaireTab>
       return const Center(child: CircularProgressIndicator());
     }
 
+    final s = widget.sheet;
+
     return Column(
       children: [
+        // ── Monnaie ──────────────────────────────────────────────────────────
+        _MonnaieWidget(
+          sheet: s,
+          onChanged: _saveMonnaie,
+        ),
+        const Divider(height: 1),
         // Header row
         Container(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -2862,6 +3481,477 @@ class _InventaireTabState extends State<_InventaireTab>
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── Monnaie Widget ────────────────────────────────────────────────────────────
+
+class _MonnaieWidget extends StatelessWidget {
+  final CharacterSheet sheet;
+  final Future<void> Function(CharacterSheet) onChanged;
+
+  const _MonnaieWidget({required this.sheet, required this.onChanged});
+
+  // Total fortune en PC
+  int get _totalPC =>
+      sheet.monnaiePC + sheet.monnaiePA * 10 + sheet.monnaiePO * 100 + sheet.monnaiePP * 1000;
+
+  /// Normalise vers les grosses pièces :
+  /// PC→PA dès 10 PC, PA→PO dès 10 PA, PO→PP seulement à partir de 100 PO.
+  static ({int pc, int pa, int po, int pp}) _normalize(int pc, int pa, int po, int pp) {
+    if (pc >= 10) { pa += pc ~/ 10; pc = pc % 10; }
+    if (pa >= 10) { po += pa ~/ 10; pa = pa % 10; }
+    if (po >= 100) { pp += po ~/ 10; po = po % 10; }
+    return (pc: pc, pa: pa, po: po, pp: pp);
+  }
+
+  void _edit(BuildContext context, String label, Color color, int current,
+      Future<void> Function(int) onSave) async {
+    final ctrl = TextEditingController(text: current.toString());
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Container(
+              width: 12, height: 12,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            Text(label),
+          ],
+        ),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Quantité',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          FilledButton(
+            onPressed: () {
+              final v = int.tryParse(ctrl.text.trim()) ?? current;
+              Navigator.pop(ctx, v.clamp(0, 999999));
+            },
+            child: const Text('Valider'),
+          ),
+        ],
+      ),
+    );
+    if (result != null) await onSave(result);
+  }
+
+  Future<void> _pay(BuildContext context) async {
+    // Dialog d'entrée : montant + dénomination
+    String denom = 'PC';
+    final amountCtrl = TextEditingController();
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setS) {
+        final mult = {'PC': 1, 'PA': 10, 'PO': 100, 'PP': 1000}[denom]!;
+        final amount = int.tryParse(amountCtrl.text.trim()) ?? 0;
+        final costPC = amount * mult;
+        final enough = costPC <= _totalPC;
+
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.payments_outlined, size: 20),
+              SizedBox(width: 8),
+              Text('Payer'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: amountCtrl,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                      onChanged: (_) => setS(() {}),
+                      decoration: const InputDecoration(
+                        labelText: 'Montant',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: denom,
+                    items: const [
+                      DropdownMenuItem(value: 'PC', child: Text('PC')),
+                      DropdownMenuItem(value: 'PA', child: Text('PA')),
+                      DropdownMenuItem(value: 'PO', child: Text('PO')),
+                      DropdownMenuItem(value: 'PP', child: Text('PP')),
+                    ],
+                    onChanged: (v) { if (v != null) setS(() => denom = v); },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (amount > 0) ...[
+                Text(
+                  'Coût : $costPC PC équivalents',
+                  style: TextStyle(fontSize: 12, color: AppColors.onSurfaceMuted),
+                ),
+                Text(
+                  'Bourse : ${_totalPC} PC disponibles',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: enough ? AppColors.onSurfaceMuted : Colors.red,
+                  ),
+                ),
+                if (!enough)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.warning_amber_rounded, size: 16, color: Colors.red),
+                        SizedBox(width: 4),
+                        Text('Fonds insuffisants', style: TextStyle(color: Colors.red, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+            FilledButton(
+              onPressed: () {
+                final a = int.tryParse(amountCtrl.text.trim()) ?? 0;
+                if (a <= 0) return;
+                final m = {'PC': 1, 'PA': 10, 'PO': 100, 'PP': 1000}[denom]!;
+                Navigator.pop(ctx, {'costPC': a * m});
+              },
+              child: const Text('Payer'),
+            ),
+          ],
+        );
+      }),
+    );
+
+    if (result == null) return;
+    final costPC = result['costPC'] as int;
+
+    if (costPC > _totalPC) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Fonds insuffisants pour effectuer ce paiement.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Déduire en priorisant les petites pièces ; le change reste en PC (pas de regroupement)
+    int rem = costPC;
+    int newPC = sheet.monnaiePC;
+    int newPA = sheet.monnaiePA;
+    int newPO = sheet.monnaiePO;
+    int newPP = sheet.monnaiePP;
+
+    // 1. Utiliser les PC existants
+    final usePC = newPC.clamp(0, rem);
+    newPC -= usePC; rem -= usePC;
+
+    // 2. Casser des PA si besoin
+    if (rem > 0 && newPA > 0) {
+      final paUsed = ((rem + 9) ~/ 10).clamp(0, newPA);
+      final pcBroken = paUsed * 10;
+      final used = rem.clamp(0, pcBroken);
+      newPA -= paUsed;
+      newPC += pcBroken - used; // change rendu en PC
+      rem -= used;
+    }
+
+    // 3. Casser des PO si besoin
+    if (rem > 0 && newPO > 0) {
+      final poUsed = ((rem + 99) ~/ 100).clamp(0, newPO);
+      final pcBroken = poUsed * 100;
+      final used = rem.clamp(0, pcBroken);
+      newPO -= poUsed;
+      newPC += pcBroken - used;
+      rem -= used;
+    }
+
+    // 4. Casser des PP si besoin
+    if (rem > 0 && newPP > 0) {
+      final ppUsed = ((rem + 999) ~/ 1000).clamp(0, newPP);
+      final pcBroken = ppUsed * 1000;
+      final used = rem.clamp(0, pcBroken);
+      newPP -= ppUsed;
+      newPC += pcBroken - used;
+      rem -= used;
+    }
+
+    // 5. Normaliser le change vers les grosses pièces (seuils : 10 PC→PA, 10 PA→PO, 100 PO→PP)
+    final n = _normalize(newPC, newPA, newPO, newPP);
+    newPC = n.pc; newPA = n.pa; newPO = n.po; newPP = n.pp;
+
+    await onChanged(sheet.copyWith(
+      monnaiePC: newPC, monnaiePA: newPA,
+      monnaiePO: newPO, monnaiePP: newPP,
+    ));
+
+    if (context.mounted) {
+      final parts = [
+        if (newPP > 0) '$newPP PP',
+        if (newPO > 0) '$newPO PO',
+        if (newPA > 0) '$newPA PA',
+        if (newPC > 0) '$newPC PC',
+      ];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Paiement effectué — reste : ${parts.isEmpty ? "0 PC" : parts.join("  ")}'),
+          backgroundColor: Colors.green.shade700,
+        ),
+      );
+    }
+  }
+
+  Future<void> _gain(BuildContext context) async {
+    String denom = 'PC';
+    final amountCtrl = TextEditingController();
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setS) {
+        final mult = {'PC': 1, 'PA': 10, 'PO': 100, 'PP': 1000}[denom]!;
+        final amount = int.tryParse(amountCtrl.text.trim()) ?? 0;
+        final gainPC = amount * mult;
+
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.add_circle_outline, size: 20, color: Colors.green),
+              SizedBox(width: 8),
+              Text('Gain d\'argent'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: amountCtrl,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                      onChanged: (_) => setS(() {}),
+                      decoration: const InputDecoration(
+                        labelText: 'Montant',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  DropdownButton<String>(
+                    value: denom,
+                    items: const [
+                      DropdownMenuItem(value: 'PC', child: Text('PC')),
+                      DropdownMenuItem(value: 'PA', child: Text('PA')),
+                      DropdownMenuItem(value: 'PO', child: Text('PO')),
+                      DropdownMenuItem(value: 'PP', child: Text('PP')),
+                    ],
+                    onChanged: (v) { if (v != null) setS(() => denom = v); },
+                  ),
+                ],
+              ),
+              if (amount > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Gain : $gainPC PC équivalents',
+                  style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceMuted),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700),
+              onPressed: () {
+                final a = int.tryParse(amountCtrl.text.trim()) ?? 0;
+                if (a <= 0) return;
+                final m = {'PC': 1, 'PA': 10, 'PO': 100, 'PP': 1000}[denom]!;
+                Navigator.pop(ctx, {'gainPC': a * m});
+              },
+              child: const Text('Recevoir'),
+            ),
+          ],
+        );
+      }),
+    );
+
+    if (result == null) return;
+    final gainPC = result['gainPC'] as int;
+
+    // Ajouter en PC puis normaliser vers les grosses pièces
+    int newPC = sheet.monnaiePC + gainPC;
+    int newPA = sheet.monnaiePA;
+    int newPO = sheet.monnaiePO;
+    int newPP = sheet.monnaiePP;
+
+    final n = _normalize(newPC, newPA, newPO, newPP);
+    newPC = n.pc; newPA = n.pa; newPO = n.po; newPP = n.pp;
+
+    await onChanged(sheet.copyWith(
+      monnaiePC: newPC, monnaiePA: newPA,
+      monnaiePO: newPO, monnaiePP: newPP,
+    ));
+
+    if (context.mounted) {
+      final parts = [
+        if (newPP > 0) '$newPP PP',
+        if (newPO > 0) '$newPO PO',
+        if (newPA > 0) '$newPA PA',
+        if (newPC > 0) '$newPC PC',
+      ];
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Argent reçu — bourse : ${parts.isEmpty ? "0 PC" : parts.join("  ")}'),
+          backgroundColor: Colors.green.shade700,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('Monnaie', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.onSurfaceMuted)),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => _gain(context),
+                icon: const Icon(Icons.add_circle_outline, size: 16, color: Colors.green),
+                label: const Text('Gain', style: TextStyle(fontSize: 12, color: Colors.green)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(width: 4),
+              TextButton.icon(
+                onPressed: () => _pay(context),
+                icon: const Icon(Icons.payments_outlined, size: 16),
+                label: const Text('Payer', style: TextStyle(fontSize: 12)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              _CoinTile(
+                label: 'PC', sublabel: 'Cuivre', color: const Color(0xFFB87333),
+                value: sheet.monnaiePC,
+                onTap: () => _edit(context, 'Pièces de Cuivre (PC)', const Color(0xFFB87333), sheet.monnaiePC,
+                    (v) => onChanged(sheet.copyWith(monnaiePC: v))),
+              ),
+              const SizedBox(width: 8),
+              _CoinTile(
+                label: 'PA', sublabel: 'Argent', color: const Color(0xFF9E9E9E),
+                value: sheet.monnaiePA,
+                onTap: () => _edit(context, 'Pièces d\'Argent (PA)', const Color(0xFF9E9E9E), sheet.monnaiePA,
+                    (v) => onChanged(sheet.copyWith(monnaiePA: v))),
+              ),
+              const SizedBox(width: 8),
+              _CoinTile(
+                label: 'PO', sublabel: 'Or', color: const Color(0xFFFFD700),
+                value: sheet.monnaiePO,
+                onTap: () => _edit(context, 'Pièces d\'Or (PO)', const Color(0xFFFFD700), sheet.monnaiePO,
+                    (v) => onChanged(sheet.copyWith(monnaiePO: v))),
+              ),
+              const SizedBox(width: 8),
+              _CoinTile(
+                label: 'PP', sublabel: 'Platine', color: const Color(0xFF90CAF9),
+                value: sheet.monnaiePP,
+                onTap: () => _edit(context, 'Pièces de Platine (PP)', const Color(0xFF90CAF9), sheet.monnaiePP,
+                    (v) => onChanged(sheet.copyWith(monnaiePP: v))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text('1 PP = 10 PO  •  1 PO = 10 PA  •  1 PA = 10 PC',
+              style: TextStyle(fontSize: 10, color: AppColors.onSurfaceMuted)),
+        ],
+      ),
+    );
+  }
+}
+
+class _CoinTile extends StatelessWidget {
+  final String label;
+  final String sublabel;
+  final Color color;
+  final int value;
+  final VoidCallback onTap;
+
+  const _CoinTile({
+    required this.label, required this.sublabel,
+    required this.color, required this.value, required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withValues(alpha: 0.4)),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 10, height: 10,
+                    margin: const EdgeInsets.only(right: 4),
+                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                  ),
+                  Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value.toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(sublabel, style: const TextStyle(fontSize: 9, color: AppColors.onSurfaceMuted)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -3368,6 +4458,7 @@ class _CombatTab extends StatefulWidget {
   final ValueChanged<DiceLogEntry>? onDiceRoll;
 
   const _CombatTab({
+    super.key,
     required this.sheetId,
     required this.sheet,
     required this.onSheetChanged,
@@ -3408,6 +4499,9 @@ class _CombatTabState extends State<_CombatTab>
       _loading = false;
     });
   }
+
+  /// Called externally (e.g. after voie rang changes) to refresh the capacities list.
+  Future<void> reload() => _load();
 
   Future<void> _recalc() async {
     final updated = await _db.recalculateEquipmentBonuses(widget.sheetId);
@@ -3825,6 +4919,8 @@ class _CombatTabState extends State<_CombatTab>
                   description: descCtrl.text,
                   position: existing?.position ?? 0,
                   dm: dmCtrl.text.trim(),
+                  isFromVoie: existing?.isFromVoie ?? false,
+                  voieCatalogueId: existing?.voieCatalogueId ?? '',
                 ));
               },
               child: const Text('Valider'),
@@ -4355,6 +5451,7 @@ class _CapacityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAuto = capacity.isFromVoie;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
@@ -4378,8 +5475,12 @@ class _CapacityRow extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: capacity.activated ? FontWeight.bold : FontWeight.normal)),
-                Row(
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
                   children: [
+                    if (isAuto)
+                      _inlineChip('⚔ Voie', bg: Colors.orange.withValues(alpha: 0.2)),
                     if (capacity.isMagique) _inlineChip('Magique', bg: Colors.purple.withValues(alpha: 0.2)),
                     if (capacity.voie.isNotEmpty) _inlineChip(capacity.voie),
                     _inlineChip('Rang ${capacity.rang}'),
@@ -4409,8 +5510,10 @@ class _CapacityRow extends StatelessWidget {
               const PopupMenuItem(value: 'edit', child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Modifier'), dense: true)),
               const PopupMenuItem(value: 'effects', child: ListTile(leading: Icon(Icons.auto_awesome_outlined), title: Text('Effets'), dense: true)),
               PopupMenuItem(value: 'desc', child: ListTile(leading: Icon(capacity.description.isNotEmpty ? Icons.description : Icons.description_outlined), title: const Text('Description'), dense: true)),
-              const PopupMenuDivider(),
-              PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete_outline, color: AppColors.enemyPrimary), title: Text('Supprimer', style: TextStyle(color: AppColors.enemyPrimary)), dense: true)),
+              if (!isAuto) ...[
+                const PopupMenuDivider(),
+                PopupMenuItem(value: 'delete', child: ListTile(leading: Icon(Icons.delete_outline, color: AppColors.enemyPrimary), title: Text('Supprimer', style: TextStyle(color: AppColors.enemyPrimary)), dense: true)),
+              ],
             ],
           ),
         ],

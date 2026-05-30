@@ -143,7 +143,7 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
             title: Text(t.name,
                 style: Theme.of(context).textTheme.titleMedium),
             subtitle: Text(
-              'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}',
+              'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  •  DEF: ${t.def}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             trailing: IconButton(
@@ -203,6 +203,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _initCtrl;
   late final TextEditingController _hpCtrl;
+  late final TextEditingController _defCtrl;
   late bool _isAlly;
   String? _imageUrl;
 
@@ -216,6 +217,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
     _initCtrl =
         TextEditingController(text: t != null ? '${t.baseInitiative}' : '');
     _hpCtrl = TextEditingController(text: t != null ? '${t.maxHp}' : '');
+    _defCtrl = TextEditingController(text: t != null ? '${t.def}' : '10');
     _isAlly = t?.isAlly ?? true;
     _imageUrl = t?.imageUrl;
   }
@@ -225,6 +227,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
     _nameCtrl.dispose();
     _initCtrl.dispose();
     _hpCtrl.dispose();
+    _defCtrl.dispose();
     super.dispose();
   }
 
@@ -308,6 +311,20 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
                     },
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _defCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(
+                      labelText: 'DEF',
+                      prefixIcon: Icon(Icons.shield_outlined),
+                    ),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Requis' : null,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -382,6 +399,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet> {
       isAlly: _isAlly,
       baseInitiative: int.tryParse(_initCtrl.text) ?? 0,
       maxHp: int.tryParse(_hpCtrl.text) ?? 1,
+      def: int.tryParse(_defCtrl.text) ?? 10,
       imageUrl: _imageUrl,
     );
     if (_isEdit) {

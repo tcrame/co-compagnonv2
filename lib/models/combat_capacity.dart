@@ -11,6 +11,10 @@ class CombatCapacity {
   final int position;
   /// Free text damage expression e.g. "1d6", "2d8+3" (may be empty)
   final String dm;
+  /// True if this capacity was auto-added from a voie (cannot be manually deleted)
+  final bool isFromVoie;
+  /// The voie catalogue ID (e.g. "magicien_voie-de-la-magie-destructrice") — empty for manual entries
+  final String voieCatalogueId;
 
   const CombatCapacity({
     this.id,
@@ -24,6 +28,8 @@ class CombatCapacity {
     this.description = '',
     this.position = 0,
     this.dm = '',
+    this.isFromVoie = false,
+    this.voieCatalogueId = '',
   });
 
   Map<String, dynamic> toMap() => {
@@ -38,6 +44,8 @@ class CombatCapacity {
     'description': description,
     'position': position,
     'dm': dm,
+    'is_from_voie': isFromVoie ? 1 : 0,
+    'voie_catalogue_id': voieCatalogueId,
   };
 
   factory CombatCapacity.fromMap(Map<String, dynamic> m) => CombatCapacity(
@@ -52,6 +60,8 @@ class CombatCapacity {
     description: m['description'] as String? ?? '',
     position: m['position'] as int? ?? 0,
     dm: m['dm'] as String? ?? '',
+    isFromVoie: (m['is_from_voie'] as int? ?? 0) == 1,
+    voieCatalogueId: m['voie_catalogue_id'] as String? ?? '',
   );
 
   CombatCapacity copyWith({
@@ -66,6 +76,8 @@ class CombatCapacity {
     String? description,
     int? position,
     String? dm,
+    bool? isFromVoie,
+    String? voieCatalogueId,
   }) => CombatCapacity(
     id: id ?? this.id,
     characterSheetId: characterSheetId ?? this.characterSheetId,
@@ -78,5 +90,7 @@ class CombatCapacity {
     description: description ?? this.description,
     position: position ?? this.position,
     dm: dm ?? this.dm,
+    isFromVoie: isFromVoie ?? this.isFromVoie,
+    voieCatalogueId: voieCatalogueId ?? this.voieCatalogueId,
   );
 }

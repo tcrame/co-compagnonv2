@@ -6,6 +6,7 @@ class Participant {
   final int baseInitiative;
   final int maxHp;
   final int currentHp;
+  final int def;
   final String? imageUrl;
 
   // Computed during combat — not persisted
@@ -19,6 +20,7 @@ class Participant {
     required this.baseInitiative,
     required this.maxHp,
     required this.currentHp,
+    this.def = 10,
     this.imageUrl,
     this.rolledInitiative,
   });
@@ -31,6 +33,7 @@ class Participant {
         'base_initiative': baseInitiative,
         'max_hp': maxHp,
         'current_hp': currentHp,
+        'def': def,
         'image_url': imageUrl,
       };
 
@@ -42,6 +45,7 @@ class Participant {
         baseInitiative: map['base_initiative'] as int,
         maxHp: map['max_hp'] as int,
         currentHp: map['current_hp'] as int,
+        def: (map['def'] as int?) ?? 10,
         imageUrl: map['image_url'] as String?,
       );
 
@@ -53,6 +57,7 @@ class Participant {
     int? baseInitiative,
     int? maxHp,
     int? currentHp,
+    int? def,
     String? imageUrl,
     int? rolledInitiative,
     bool clearImageUrl = false,
@@ -65,6 +70,7 @@ class Participant {
         baseInitiative: baseInitiative ?? this.baseInitiative,
         maxHp: maxHp ?? this.maxHp,
         currentHp: currentHp ?? this.currentHp,
+        def: def ?? this.def,
         imageUrl: clearImageUrl ? null : (imageUrl ?? this.imageUrl),
         rolledInitiative: rolledInitiative ?? this.rolledInitiative,
       );

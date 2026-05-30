@@ -87,6 +87,12 @@ class CharacterSheet {
   // ── Points de compétence ───────────────────────────────────────────────────
   final int pointsCompetence;
 
+  // ── Monnaie ────────────────────────────────────────────────────────────────
+  final int monnaiePC; // pièces de cuivre
+  final int monnaiePA; // pièces d'argent  (1 PA = 10 PC)
+  final int monnaiePO; // pièces d'or       (1 PO = 10 PA)
+  final int monnaiePP; // pièces de platine (1 PP = 10 PO)
+
   // ── Notes par onglet ───────────────────────────────────────────────────────
   final String description;
   final String notesCombat;
@@ -135,6 +141,9 @@ class CharacterSheet {
     this.encArmure = 0, this.encAutre = 0,
     // Points de compétence
     this.pointsCompetence = 0,
+    // Monnaie
+    this.monnaiePC = 0, this.monnaiePA = 0,
+    this.monnaiePO = 0, this.monnaiePP = 0,
     // Notes
     this.description = '',
     this.notesCombat = '',
@@ -246,6 +255,8 @@ class CharacterSheet {
     'pc_base': pcBase, 'pc_bonus': pcBonus, 'pc_actuel': pcActuel,
     'enc_armure': encArmure, 'enc_autre': encAutre,
     'points_competence': pointsCompetence,
+    'monnaie_pc': monnaiePC, 'monnaie_pa': monnaiePA,
+    'monnaie_po': monnaiePO, 'monnaie_pp': monnaiePP,
     'description': description,
     'notes_combat': notesCombat,
     'notes_inventaire': notesInventaire,
@@ -300,6 +311,10 @@ class CharacterSheet {
     encArmure: m['enc_armure'] as int? ?? 0,
     encAutre: m['enc_autre'] as int? ?? 0,
     pointsCompetence: m['points_competence'] as int? ?? 0,
+    monnaiePC: m['monnaie_pc'] as int? ?? 0,
+    monnaiePA: m['monnaie_pa'] as int? ?? 0,
+    monnaiePO: m['monnaie_po'] as int? ?? 0,
+    monnaiePP: m['monnaie_pp'] as int? ?? 0,
     description: m['description'] as String? ?? '',
     notesCombat: m['notes_combat'] as String? ?? '',
     notesInventaire: m['notes_inventaire'] as String? ?? '',
@@ -330,6 +345,7 @@ class CharacterSheet {
     int? pcBase, int? pcBonus, int? pcActuel,
     int? encArmure, int? encAutre,
     int? pointsCompetence,
+    int? monnaiePC, int? monnaiePA, int? monnaiePO, int? monnaiePP,
     String? description,
     String? notesCombat, String? notesInventaire,
     String? notesVoies, String? notesEffets,
@@ -380,6 +396,10 @@ class CharacterSheet {
     encArmure: encArmure ?? this.encArmure,
     encAutre: encAutre ?? this.encAutre,
     pointsCompetence: pointsCompetence ?? this.pointsCompetence,
+    monnaiePC: monnaiePC ?? this.monnaiePC,
+    monnaiePA: monnaiePA ?? this.monnaiePA,
+    monnaiePO: monnaiePO ?? this.monnaiePO,
+    monnaiePP: monnaiePP ?? this.monnaiePP,
     description: description ?? this.description,
     notesCombat: notesCombat ?? this.notesCombat,
     notesInventaire: notesInventaire ?? this.notesInventaire,

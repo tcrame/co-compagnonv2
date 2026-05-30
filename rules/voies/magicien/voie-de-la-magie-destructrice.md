@@ -17,7 +17,5 @@ Le magicien choisit une cible située à moins de 30 m. Si son attaque magique r
 ## Rang 4 — Explosion de feu (A)*
 Le magicien choisit un point situé à moins de 30 m. Toutes les créatures (y compris le magicien et ses compagnons) se trouvant dans un rayon de 5 m autour de ce point subissent [4d4°+INT] DM et peuvent effectuer un test d'AGI difficulté [10 + INT] pour ne subir que la moitié des DM.
 
-## Rang 5 — Appel ��������
-
-
-> de la foudre (A)* : Le magicien projette des traits de foudre sur toutes les cibles de son choix dans un rayon de 10 m autour de lui. Il fait un seul test d'attaque magique et toutes les créatures ciblées dont il atteint la DEF subissent [2d4°+INT] DM d'électricité. Note : Le joueur peut décider de substituer un élément à un autre lors de l'acquisition d'un sort, par exemple Mains électriques, Explosion acide et Tempête de glace. Toutefois ce choix est définitif.
+## Rang 5 — Appel de la foudre (A)* 
+Le magicien projette des traits de foudre sur toutes les cibles de son choix dans un rayon de 10 m autour de lui. Il fait un seul test d'attaque magique et toutes les créatures ciblées dont il atteint la DEF subissent [2d4°+INT] DM d'électricité. Note : Le joueur peut décider de substituer un élément à un autre lors de l'acquisition d'un sort, par exemple Mains électriques, Explosion acide et Tempête de glace. Toutefois ce choix est définitif.

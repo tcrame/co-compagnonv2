@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
+import '../../models/character_sheet.dart';
 import '../../models/character_template.dart';
 import '../../models/combat_session.dart';
 import '../../models/participant.dart';
 import '../../providers/bestiary_provider.dart';
+import '../../providers/character_sheet_provider.dart';
 import '../../providers/combat_provider.dart';
 import '../../widgets/dice_roller_sheet.dart';
 import '../../widgets/image_picker_field.dart';
@@ -140,7 +142,7 @@ class _SessionScreenState extends State<SessionScreen> {
             title: Text(p.name,
                 style: Theme.of(context).textTheme.titleMedium),
             subtitle: Text(
-              'Init: ${p.baseInitiative}  •  PV: ${p.maxHp}',
+              'Init: ${p.baseInitiative}  •  PV: ${p.maxHp}  •  DEF: ${p.def}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             trailing: Icon(Icons.drag_handle, color: Colors.grey.shade600),
@@ -231,6 +233,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
   final _nameCtrl = TextEditingController();
   final _initCtrl = TextEditingController();
   final _hpCtrl = TextEditingController();
+  final _defCtrl = TextEditingController(text: '10');
   bool _isAlly = true;
   int _quantity = 1;
   String? _imageUrl;
@@ -240,6 +243,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
     _nameCtrl.dispose();
     _initCtrl.dispose();
     _hpCtrl.dispose();
+    _defCtrl.dispose();
     super.dispose();
   }
 
@@ -266,6 +270,19 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
                   icon: const Icon(Icons.close),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            // Bouton Personnages
+            OutlinedButton.icon(
+              onPressed: () => _pickFromCharacters(context),
+              icon: const Icon(Icons.person_pin, size: 18),
+              label: const Text('Depuis les personnages'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 40),
+                side: BorderSide(
+                    color: AppColors.allyPrimary.withValues(alpha: 0.6)),
+                foregroundColor: AppColors.allyPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             // Bouton Bestiaire
@@ -349,6 +366,20 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
                       }
                       return null;
                     },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _defCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(
+                      labelText: 'DEF',
+                      prefixIcon: Icon(Icons.shield_outlined),
+                    ),
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Requis' : null,
                   ),
                 ),
               ],
@@ -479,6 +510,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         baseInitiative: int.tryParse(_initCtrl.text) ?? 0,
         maxHp: maxHp,
         currentHp: maxHp,
+        def: int.tryParse(_defCtrl.text) ?? 10,
         imageUrl: _imageUrl,
       ));
     }
@@ -515,8 +547,45 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         _nameCtrl.text = selected.name;
         _initCtrl.text = '${selected.baseInitiative}';
         _hpCtrl.text = '${selected.maxHp}';
+        _defCtrl.text = '${selected.def}';
         _isAlly = selected.isAlly;
         _imageUrl = selected.imageUrl;
+      });
+    }
+  }
+
+  Future<void> _pickFromCharacters(BuildContext context) async {
+    final sheetProvider = context.read<CharacterSheetProvider>();
+    if (sheetProvider.sheets.isEmpty) {
+      await sheetProvider.loadSheets();
+    }
+
+    if (!context.mounted) return;
+
+    final sheets = sheetProvider.sheets;
+    if (sheets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucun personnage créé.')),
+      );
+      return;
+    }
+
+    final selected = await showModalBottomSheet<CharacterSheet>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _CharacterPickerSheet(sheets: sheets),
+    );
+
+    if (selected != null) {
+      setState(() {
+        _nameCtrl.text = selected.name;
+        _initCtrl.text = '${selected.initTotal}';
+        _hpCtrl.text = '${selected.pvMax}';
+        _defCtrl.text = '${selected.defTotal}';
+        _isAlly = true;
       });
     }
   }
@@ -593,10 +662,94 @@ class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
                           title: Text(t.name,
                               style: Theme.of(context).textTheme.titleMedium),
                           subtitle: Text(
-                            'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  •  ${t.isAlly ? 'Aventurier' : 'Ennemi'}',
+                            'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  •  DEF: ${t.def}  •  ${t.isAlly ? 'Aventurier' : 'Ennemi'}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           onTap: () => Navigator.pop(ctx, t),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CharacterPickerSheet extends StatefulWidget {
+  final List<CharacterSheet> sheets;
+  const _CharacterPickerSheet({required this.sheets});
+
+  @override
+  State<_CharacterPickerSheet> createState() => _CharacterPickerSheetState();
+}
+
+class _CharacterPickerSheetState extends State<_CharacterPickerSheet> {
+  String _search = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = widget.sheets
+        .where((s) => s.name.toLowerCase().contains(_search.toLowerCase()))
+        .toList();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Choisir un personnage',
+                  style: Theme.of(context).textTheme.titleLarge),
+              IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            autofocus: false,
+            decoration: const InputDecoration(
+              hintText: 'Rechercher…',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: (v) => setState(() => _search = v),
+          ),
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.45,
+            ),
+            child: filtered.isEmpty
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('Aucun résultat'),
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                    itemBuilder: (ctx, i) {
+                      final s = filtered[i];
+                      return Card(
+                        child: ListTile(
+                          leading: ParticipantAvatar(
+                            name: s.name,
+                            isAlly: true,
+                            radius: 20,
+                          ),
+                          title: Text(s.name,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          subtitle: Text(
+                            'Niv. ${s.level}  •  ${s.profile.isNotEmpty ? s.profile : 'Sans profil'}  •  Init: ${s.initTotal}  •  PV: ${s.pvMax}  •  DEF: ${s.defTotal}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          onTap: () => Navigator.pop(ctx, s),
                         ),
                       );
                     },

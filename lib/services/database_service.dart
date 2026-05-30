@@ -33,7 +33,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 10,
+      version: 14,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -101,6 +101,31 @@ class DatabaseService {
           await db.execute(
               "ALTER TABLE character_sheets ADD COLUMN points_competence INTEGER NOT NULL DEFAULT 0");
         }
+        if (oldVersion < 11) {
+          await _createCharacterVoieRangsTable(db);
+        }
+        if (oldVersion < 12) {
+          await db.execute(
+              "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0");
+          await db.execute(
+              "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''");
+        }
+        if (oldVersion < 13) {
+          await db.execute(
+              "ALTER TABLE character_sheets ADD COLUMN monnaie_pc INTEGER NOT NULL DEFAULT 0");
+          await db.execute(
+              "ALTER TABLE character_sheets ADD COLUMN monnaie_pa INTEGER NOT NULL DEFAULT 0");
+          await db.execute(
+              "ALTER TABLE character_sheets ADD COLUMN monnaie_po INTEGER NOT NULL DEFAULT 0");
+          await db.execute(
+              "ALTER TABLE character_sheets ADD COLUMN monnaie_pp INTEGER NOT NULL DEFAULT 0");
+        }
+        if (oldVersion < 14) {
+          await db.execute(
+              "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+          await db.execute(
+              "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
+        }
       },
     );
   }
@@ -123,6 +148,7 @@ class DatabaseService {
         base_initiative INTEGER NOT NULL,
         max_hp INTEGER NOT NULL,
         current_hp INTEGER NOT NULL,
+        def INTEGER NOT NULL DEFAULT 10,
         image_url TEXT,
         FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
       )
@@ -134,6 +160,7 @@ class DatabaseService {
         is_ally INTEGER NOT NULL,
         base_initiative INTEGER NOT NULL,
         max_hp INTEGER NOT NULL,
+        def INTEGER NOT NULL DEFAULT 10,
         image_url TEXT
       )
     ''');
@@ -152,6 +179,7 @@ class DatabaseService {
     await _createCombatArmorsTable(db);
     await _createCombatCapacitiesTable(db);
     await _createItemEffectsTable(db);
+    await _createCharacterVoieRangsTable(db);
   }
 
   Future<void> _createCharacterSheetsTable(Database db) async {
@@ -223,7 +251,12 @@ class DatabaseService {
         notes_inventaire TEXT NOT NULL DEFAULT '',
         notes_voies TEXT NOT NULL DEFAULT '',
         notes_effets TEXT NOT NULL DEFAULT '',
-        equipment_bonuses_json TEXT NOT NULL DEFAULT '{}'
+        equipment_bonuses_json TEXT NOT NULL DEFAULT '{}',
+        points_competence INTEGER NOT NULL DEFAULT 0,
+        monnaie_pc INTEGER NOT NULL DEFAULT 0,
+        monnaie_pa INTEGER NOT NULL DEFAULT 0,
+        monnaie_po INTEGER NOT NULL DEFAULT 0,
+        monnaie_pp INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
@@ -615,6 +648,64 @@ class DatabaseService {
         where: "item_type = 'capacity' AND item_id = ?", whereArgs: [id]);
   }
 
+  /// Inserts an auto-managed combat capacity from a voie (skips if already present).
+  Future<void> upsertVoieCombatCapacity({
+    required int sheetId,
+    required String voieCatalogueId,
+    required int rang,
+    required String voieNom,
+    required String nom,
+    required String description,
+    required bool isMagique,
+  }) async {
+    final db = await database;
+    final existing = await db.query(
+      'combat_capacities',
+      where: 'character_sheet_id = ? AND voie_catalogue_id = ? AND rang = ? AND is_from_voie = 1',
+      whereArgs: [sheetId, voieCatalogueId, rang],
+      limit: 1,
+    );
+    if (existing.isNotEmpty) return; // already present
+    final position = Sqflite.firstIntValue(await db.rawQuery(
+          'SELECT COUNT(*) FROM combat_capacities WHERE character_sheet_id = ?',
+          [sheetId])) ?? 0;
+    await db.insert('combat_capacities', {
+      'character_sheet_id': sheetId,
+      'name': nom,
+      'is_magique': isMagique ? 1 : 0,
+      'voie': voieNom,
+      'rang': rang,
+      'portee': 0,
+      'activated': 0,
+      'description': description,
+      'position': position,
+      'dm': '',
+      'is_from_voie': 1,
+      'voie_catalogue_id': voieCatalogueId,
+    });
+  }
+
+  /// Deletes auto-managed combat capacities for a voie starting from [fromRang].
+  Future<void> deleteVoieCombatCapacitiesFromRang(
+      int sheetId, String voieCatalogueId, int fromRang) async {
+    final db = await database;
+    await db.delete(
+      'combat_capacities',
+      where: 'character_sheet_id = ? AND voie_catalogue_id = ? AND rang >= ? AND is_from_voie = 1',
+      whereArgs: [sheetId, voieCatalogueId, fromRang],
+    );
+  }
+
+  /// Deletes all auto-managed combat capacities for a character (used on profil change).
+  Future<void> deleteAllVoieCombatCapacities(int sheetId) async {
+    final db = await database;
+    await db.delete(
+      'combat_capacities',
+      where: 'character_sheet_id = ? AND is_from_voie = 1',
+      whereArgs: [sheetId],
+    );
+  }
+
   // ── Item Effects CRUD ────────────────────────────────────────────────────────
 
   Future<List<ItemEffect>> getItemEffects(String itemType, int itemId) async {
@@ -715,5 +806,87 @@ class DatabaseService {
         await db.query('character_sheets', where: 'id = ?', whereArgs: [sheetId]);
     if (rows.isEmpty) return null;
     return CharacterSheet.fromMap(rows.first);
+  }
+
+  // ── Character Voie Rangs ─────────────────────────────────────────────────────
+
+  Future<void> _createCharacterVoieRangsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS character_voie_rangs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        character_sheet_id INTEGER NOT NULL,
+        voie_id TEXT NOT NULL,
+        rang_actuel INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (character_sheet_id) REFERENCES character_sheets(id) ON DELETE CASCADE
+      )
+    ''');
+  }
+
+  /// Returns a map of voie_id → rang_actuel for the given character.
+  Future<Map<String, int>> getVoieRangs(int sheetId) async {
+    final db = await database;
+    final rows = await db.query(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    return {
+      for (final r in rows) r['voie_id'] as String: r['rang_actuel'] as int,
+    };
+  }
+
+  /// Inserts or updates the rang_actuel for a specific voie.
+  Future<void> setVoieRang(int sheetId, String voieId, int rang) async {
+    final db = await database;
+    final existing = await db.query(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ? AND voie_id = ?',
+      whereArgs: [sheetId, voieId],
+    );
+    if (existing.isEmpty) {
+      await db.insert('character_voie_rangs', {
+        'character_sheet_id': sheetId,
+        'voie_id': voieId,
+        'rang_actuel': rang,
+      });
+    } else {
+      await db.update(
+        'character_voie_rangs',
+        {'rang_actuel': rang},
+        where: 'character_sheet_id = ? AND voie_id = ?',
+        whereArgs: [sheetId, voieId],
+      );
+    }
+  }
+
+  /// Resets voie rangs for a character and initialises the 5 voies of the new profil
+  /// (all at rang 0). Existing rangs are deleted.
+  Future<void> initVoiesForProfil(int sheetId, String profil) async {
+    final db = await database;
+    await db.delete(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    final voies = getVoiesPourProfil(profil);
+    for (final voie in voies) {
+      await db.insert('character_voie_rangs', {
+        'character_sheet_id': sheetId,
+        'voie_id': voie.id,
+        'rang_actuel': 0,
+      });
+    }
+  }
+
+  /// Returns true if this character has any voie rang > 0.
+  Future<bool> hasAnyRangUnlocked(int sheetId) async {
+    final db = await database;
+    final rows = await db.query(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ? AND rang_actuel > 0',
+      whereArgs: [sheetId],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
   }
 }
