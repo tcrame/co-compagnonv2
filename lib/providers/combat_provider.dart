@@ -15,6 +15,7 @@ class CombatProvider extends ChangeNotifier {
   List<Participant> _turnOrder = [];
   bool _combatStarted = false;
   int _turnCount = 0;
+  int? _activeIndex; // index in _turnOrder of the current active participant
   // participantId → list of active status effects
   final Map<int, List<StatusEffect>> _statusEffects = {};
 
@@ -23,6 +24,11 @@ class CombatProvider extends ChangeNotifier {
   bool get combatStarted => _combatStarted;
   int? get sessionId => _sessionId;
   int get turnCount => _turnCount;
+  int? get activeIndex => _activeIndex;
+  Participant? get activeParticipant =>
+      (_activeIndex != null && _activeIndex! < _turnOrder.length)
+          ? _turnOrder[_activeIndex!]
+          : null;
 
   List<StatusEffect> statusEffectsFor(int participantId) =>
       _statusEffects[participantId] ?? [];
@@ -38,6 +44,7 @@ class CombatProvider extends ChangeNotifier {
     }
     _combatStarted = false;
     _turnOrder = [];
+    _activeIndex = null;
     notifyListeners();
   }
 
@@ -70,6 +77,10 @@ class CombatProvider extends ChangeNotifier {
     _statusEffects.remove(id);
     if (_combatStarted) {
       _turnOrder.removeWhere((p) => p.id == id);
+      // Reset active index if it's now out of bounds
+      if (_activeIndex != null && _activeIndex! >= _turnOrder.length) {
+        _activeIndex = _turnOrder.isEmpty ? null : 0;
+      }
     }
     notifyListeners();
   }
@@ -121,6 +132,34 @@ class CombatProvider extends ChangeNotifier {
     });
 
     _combatStarted = true;
+    _activeIndex = null;
+    notifyListeners();
+  }
+
+  /// Start tracking the active turn — sets the first participant as active.
+  void startActiveTurn() {
+    if (_turnOrder.isEmpty) return;
+    _activeIndex = 0;
+    notifyListeners();
+  }
+
+  /// Move to the next participant. Wraps around to index 0.
+  void nextActiveTurn() {
+    if (_turnOrder.isEmpty) return;
+    _activeIndex = ((_activeIndex ?? -1) + 1) % _turnOrder.length;
+    notifyListeners();
+  }
+
+  /// Move to the previous participant. Wraps around.
+  void prevActiveTurn() {
+    if (_turnOrder.isEmpty) return;
+    _activeIndex = ((_activeIndex ?? 0) - 1 + _turnOrder.length) % _turnOrder.length;
+    notifyListeners();
+  }
+
+  /// Stop tracking the active turn.
+  void stopActiveTurn() {
+    _activeIndex = null;
     notifyListeners();
   }
 

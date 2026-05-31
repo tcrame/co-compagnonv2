@@ -12,9 +12,38 @@ import '../../providers/combat_provider.dart';
 import '../../widgets/participant_avatar.dart';
 import '../session/session_screen.dart';
 
-class CombatScreen extends StatelessWidget {
+class CombatScreen extends StatefulWidget {
   final String sessionName;
   const CombatScreen({super.key, required this.sessionName});
+  @override
+  State<CombatScreen> createState() => _CombatScreenState();
+}
+
+class _CombatScreenState extends State<CombatScreen> {
+  final _scrollController = ScrollController();
+  final Map<int, GlobalKey> _cardKeys = {};
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  GlobalKey _keyFor(int index) =>
+      _cardKeys.putIfAbsent(index, () => GlobalKey());
+
+  void _scrollToActive(int index) {
+    final key = _cardKeys[index];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+        alignment: 0.3,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +53,7 @@ class CombatScreen extends StatelessWidget {
           builder: (_, provider, __) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(sessionName,
+              Text(widget.sessionName,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               if (provider.combatStarted)
                 Text(
@@ -58,10 +87,35 @@ class CombatScreen extends StatelessWidget {
         builder: (context, provider, _) {
           final sid = provider.sessionId;
           if (sid == null) return const SizedBox.shrink();
+          // Hide FAB when turn tracker is active to avoid overlap
+          if (provider.activeIndex != null) return const SizedBox.shrink();
           return FloatingActionButton.extended(
             onPressed: () => _showAddParticipantSheet(context, sid),
             icon: const Icon(Icons.person_add),
             label: const Text('Ajouter'),
+          );
+        },
+      ),
+      bottomNavigationBar: Consumer<CombatProvider>(
+        builder: (context, provider, _) {
+          if (!provider.combatStarted) return const SizedBox.shrink();
+          return _TurnControlBar(
+            provider: provider,
+            onStart: () {
+              provider.startActiveTurn();
+              _scrollToActive(0);
+            },
+            onNext: () {
+              provider.nextActiveTurn();
+              WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _scrollToActive(provider.activeIndex!));
+            },
+            onPrev: () {
+              provider.prevActiveTurn();
+              WidgetsBinding.instance.addPostFrameCallback(
+                  (_) => _scrollToActive(provider.activeIndex!));
+            },
+            onStop: () => provider.stopActiveTurn(),
           );
         },
       ),
@@ -74,11 +128,13 @@ class CombatScreen extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+            controller: _scrollController,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             itemCount: order.length,
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final participant = order[index];
+              final isActive = provider.activeIndex == index;
               return Dismissible(
                 key: ValueKey(participant.id),
                 direction: DismissDirection.endToStart,
@@ -94,8 +150,10 @@ class CombatScreen extends StatelessWidget {
                 onDismissed: (_) =>
                     provider.removeParticipant(participant.id!),
                 child: ParticipantCard(
+                  key: _keyFor(index),
                   participant: participant,
                   rank: index + 1,
+                  isActive: isActive,
                 ),
               );
             },
@@ -129,14 +187,121 @@ class CombatScreen extends StatelessWidget {
   }
 }
 
+// ── Turn control bar ──────────────────────────────────────────────────────────
+
+class _TurnControlBar extends StatelessWidget {
+  final CombatProvider provider;
+  final VoidCallback onStart;
+  final VoidCallback onNext;
+  final VoidCallback onPrev;
+  final VoidCallback onStop;
+
+  const _TurnControlBar({
+    required this.provider,
+    required this.onStart,
+    required this.onNext,
+    required this.onPrev,
+    required this.onStop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final active = provider.activeParticipant;
+    final activeIdx = provider.activeIndex;
+    final total = provider.turnOrder.length;
+
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
+        ),
+        child: active == null
+            // ── Not started: show launch button ──
+            ? SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onStart,
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Lancer le tour de combat'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.allyPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              )
+            // ── Active: show navigation ──
+            : Row(
+                children: [
+                  // Stop button
+                  IconButton(
+                    onPressed: onStop,
+                    icon: const Icon(Icons.stop_rounded),
+                    color: Colors.grey.shade500,
+                    tooltip: 'Arrêter le suivi',
+                  ),
+                  // Prev
+                  IconButton(
+                    onPressed: onPrev,
+                    icon: const Icon(Icons.chevron_left_rounded, size: 28),
+                    color: AppColors.onSurface,
+                    tooltip: 'Participant précédent',
+                  ),
+                  // Active participant info
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          active.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: active.isAlly
+                                ? AppColors.allyPrimary
+                                : AppColors.enemyPrimary,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${(activeIdx! + 1)} / $total',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.onSurfaceMuted,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Next
+                  IconButton(
+                    onPressed: onNext,
+                    icon: const Icon(Icons.chevron_right_rounded, size: 28),
+                    color: AppColors.onSurface,
+                    tooltip: 'Participant suivant',
+                  ),
+                  const SizedBox(width: 36), // balance stop button
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 class ParticipantCard extends StatelessWidget {
   final Participant participant;
   final int rank;
+  final bool isActive;
 
   const ParticipantCard({
     super.key,
     required this.participant,
     required this.rank,
+    this.isActive = false,
   });
 
   @override
@@ -148,13 +313,35 @@ class ParticipantCard extends StatelessWidget {
 
     return Opacity(
       opacity: isDead ? 0.5 : 1.0,
-      child: Card(
-        color: color.withValues(alpha: 0.18),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: isActive
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.55),
+                    blurRadius: 14,
+                    spreadRadius: 2,
+                  ),
+                ],
+              )
+            : null,
+        child: Card(
+          color: isActive
+              ? color.withValues(alpha: 0.30)
+              : color.withValues(alpha: 0.18),
+          shape: isActive
+              ? RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: color, width: 2),
+                )
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Header row
               Row(
                 children: [
@@ -248,19 +435,17 @@ class ParticipantCard extends StatelessWidget {
                   // Initiative + DEF badges
                   Row(
                     children: [
-                      Column(
+                      Stack(
+                        alignment: Alignment.center,
                         children: [
+                          Icon(Icons.shield, color: Colors.grey.shade500, size: 40),
                           Text(
                             '${p.def}',
-                            style: TextStyle(
-                              color: Colors.blueGrey.shade300,
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 22,
+                              fontSize: 13,
                             ),
-                          ),
-                          Text(
-                            'def',
-                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -364,6 +549,7 @@ class ParticipantCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

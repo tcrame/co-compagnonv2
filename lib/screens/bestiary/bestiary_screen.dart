@@ -142,9 +142,19 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
             ),
             title: Text(t.name,
                 style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Text(
-              'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  •  DEF: ${t.def}',
-              style: Theme.of(context).textTheme.bodySmall,
+            subtitle: Row(
+              children: [
+                Text(
+                  'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  • ',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Icon(Icons.shield, color: Colors.grey.shade500, size: 13),
+                const SizedBox(width: 2),
+                Text(
+                  '${t.def}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
             ),
             trailing: IconButton(
               icon: Icon(Icons.edit_outlined,
