@@ -13,6 +13,7 @@ import '../../providers/combat_provider.dart';
 import '../../widgets/dice_roller_sheet.dart';
 import '../../widgets/image_picker_field.dart';
 import '../../widgets/participant_avatar.dart';
+import '../bestiary/bestiary_screen.dart' show CreatureDetailSheet;
 import '../combat/combat_screen.dart';
 
 class SessionScreen extends StatefulWidget {
@@ -237,6 +238,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
   bool _isAlly = true;
   int _quantity = 1;
   String? _imageUrl;
+  int? _selectedTemplateId;
 
   @override
   void dispose() {
@@ -512,6 +514,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         currentHp: maxHp,
         def: int.tryParse(_defCtrl.text) ?? 10,
         imageUrl: _imageUrl,
+        templateId: _selectedTemplateId,
       ));
     }
     Navigator.pop(context);
@@ -550,6 +553,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         _defCtrl.text = '${selected.def}';
         _isAlly = selected.isAlly;
         _imageUrl = selected.imageUrl;
+        _selectedTemplateId = selected.id;
       });
     }
   }
@@ -662,8 +666,32 @@ class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
                           title: Text(t.name,
                               style: Theme.of(context).textTheme.titleMedium),
                           subtitle: Text(
-                            'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  •  DEF: ${t.def}  •  ${t.isAlly ? 'Aventurier' : 'Ennemi'}',
+                            [
+                              'Init: ${t.baseInitiative}',
+                              'PV: ${t.maxHp}',
+                              'DEF: ${t.def}',
+                              if (t.nc != null) 'NC ${t.nc}',
+                              t.isAlly ? 'Aventurier' : 'Ennemi',
+                            ].join('  •  '),
                             style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(Icons.info_outline,
+                                color: Colors.grey.shade500, size: 20),
+                            tooltip: 'Détails',
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: AppColors.surface,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20)),
+                                ),
+                                builder: (_) =>
+                                    CreatureDetailSheet(template: t),
+                              );
+                            },
                           ),
                           onTap: () => Navigator.pop(ctx, t),
                         ),

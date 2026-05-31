@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 17,
+        version: 18,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 17,
+      version: 18,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -180,6 +180,34 @@ class DatabaseService {
                 "ALTER TABLE character_sheets ADD COLUMN voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0");
           } catch (_) {}
         }
+        if (oldVersion < 18) {
+          // Extended creature fields for character_templates
+          for (final col in [
+            "nc INTEGER",
+            "creature_type TEXT NOT NULL DEFAULT 'vivant'",
+            "taille TEXT NOT NULL DEFAULT 'moyenne'",
+            "archetype TEXT NOT NULL DEFAULT 'standard'",
+            "for_val INTEGER NOT NULL DEFAULT 0",
+            "agi_val INTEGER NOT NULL DEFAULT 0",
+            "con_val INTEGER NOT NULL DEFAULT 0",
+            "int_val INTEGER NOT NULL DEFAULT 0",
+            "per_val INTEGER NOT NULL DEFAULT 0",
+            "cha_val INTEGER NOT NULL DEFAULT 0",
+            "vol_val INTEGER NOT NULL DEFAULT 0",
+            "attacks_json TEXT NOT NULL DEFAULT '[]'",
+            "capacities_json TEXT NOT NULL DEFAULT '[]'",
+          ]) {
+            try {
+              await db.execute(
+                  "ALTER TABLE character_templates ADD COLUMN $col");
+            } catch (_) {}
+          }
+          // Link participant → template
+          try {
+            await db.execute(
+                "ALTER TABLE participants ADD COLUMN template_id INTEGER");
+          } catch (_) {}
+        }
   }
 
   Future<void> _createTables(Database db) async {
@@ -202,6 +230,7 @@ class DatabaseService {
         current_hp INTEGER NOT NULL,
         def INTEGER NOT NULL DEFAULT 10,
         image_url TEXT,
+        template_id INTEGER,
         FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
       )
     ''');
@@ -213,7 +242,20 @@ class DatabaseService {
         base_initiative INTEGER NOT NULL,
         max_hp INTEGER NOT NULL,
         def INTEGER NOT NULL DEFAULT 10,
-        image_url TEXT
+        image_url TEXT,
+        nc INTEGER,
+        creature_type TEXT NOT NULL DEFAULT 'vivant',
+        taille TEXT NOT NULL DEFAULT 'moyenne',
+        archetype TEXT NOT NULL DEFAULT 'standard',
+        for_val INTEGER NOT NULL DEFAULT 0,
+        agi_val INTEGER NOT NULL DEFAULT 0,
+        con_val INTEGER NOT NULL DEFAULT 0,
+        int_val INTEGER NOT NULL DEFAULT 0,
+        per_val INTEGER NOT NULL DEFAULT 0,
+        cha_val INTEGER NOT NULL DEFAULT 0,
+        vol_val INTEGER NOT NULL DEFAULT 0,
+        attacks_json TEXT NOT NULL DEFAULT '[]',
+        capacities_json TEXT NOT NULL DEFAULT '[]'
       )
     ''');
     await db.execute('''

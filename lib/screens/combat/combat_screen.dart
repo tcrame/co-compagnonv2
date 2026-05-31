@@ -8,8 +8,10 @@ import '../../widgets/dice_roller_sheet.dart';
 import '../../constants/status_effects_data.dart';
 import '../../models/participant.dart';
 import '../../models/status_effect.dart';
+import '../../providers/bestiary_provider.dart';
 import '../../providers/combat_provider.dart';
 import '../../widgets/participant_avatar.dart';
+import '../bestiary/bestiary_screen.dart' show CreatureDetailSheet;
 import '../session/session_screen.dart';
 
 class CombatScreen extends StatefulWidget {
@@ -420,6 +422,17 @@ class ParticipantCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (p.templateId != null)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _showTemplateDetail(context, p.templateId!),
+                                  child: Icon(Icons.info_outline,
+                                      size: 16,
+                                      color: color.withValues(alpha: 0.7)),
+                                ),
+                              ),
                           ],
                         ),
                         Text(
@@ -582,6 +595,23 @@ class ParticipantCard extends StatelessWidget {
         value: context.read<CombatProvider>(),
         child: _StatusPickerSheet(participantId: participantId),
       ),
+    );
+  }
+
+  void _showTemplateDetail(BuildContext context, int templateId) {
+    final bestiaryProvider = context.read<BestiaryProvider>();
+    final template = bestiaryProvider.templates
+        .where((t) => t.id == templateId)
+        .firstOrNull;
+    if (template == null) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => CreatureDetailSheet(template: template),
     );
   }
 }
