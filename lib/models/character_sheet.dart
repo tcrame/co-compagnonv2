@@ -117,6 +117,10 @@ class CharacterSheet {
   /// from their original peuple voie (heritage bonus).
   final bool voieMageRang2Pris;
 
+  /// Set of stat keys (lowercase: 'for', 'agi', etc.) that are "supérieures".
+  /// A superior stat grants a bonus d20 roll (keep best of 2) on any test.
+  final Set<String> superiorStats;
+
   CharacterSheet({
     this.id,
     required this.name,
@@ -168,6 +172,7 @@ class CharacterSheet {
     this.voiePeupleId = '',
     this.voiePeupleOrigineId = '',
     this.voieMageRang2Pris = false,
+    this.superiorStats = const {},
   }) : createdAt = createdAt ?? DateTime.now();
 
   // ── Valeurs calculées ──────────────────────────────────────────────────────
@@ -283,6 +288,7 @@ class CharacterSheet {
     'voie_peuple_id': voiePeupleId,
     'voie_peuple_origine_id': voiePeupleOrigineId,
     'voie_mage_rang2_pris': voieMageRang2Pris ? 1 : 0,
+    'superior_stats_json': jsonEncode(superiorStats.toList()),
   };
 
   factory CharacterSheet.fromMap(Map<String, dynamic> m) => CharacterSheet(
@@ -344,6 +350,15 @@ class CharacterSheet {
     voiePeupleId: m['voie_peuple_id'] as String? ?? '',
     voiePeupleOrigineId: m['voie_peuple_origine_id'] as String? ?? '',
     voieMageRang2Pris: (m['voie_mage_rang2_pris'] as int? ?? 0) == 1,
+    superiorStats: () {
+      try {
+        final raw = m['superior_stats_json'] as String?;
+        if (raw != null && raw.isNotEmpty) {
+          return Set<String>.from((jsonDecode(raw) as List).cast<String>());
+        }
+      } catch (_) {}
+      return <String>{};
+    }(),
   );
 
   CharacterSheet copyWith({
@@ -376,6 +391,7 @@ class CharacterSheet {
     String? voiePeupleId,
     String? voiePeupleOrigineId,
     bool? voieMageRang2Pris,
+    Set<String>? superiorStats,
   }) => CharacterSheet(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -435,5 +451,6 @@ class CharacterSheet {
     voiePeupleId: voiePeupleId ?? this.voiePeupleId,
     voiePeupleOrigineId: voiePeupleOrigineId ?? this.voiePeupleOrigineId,
     voieMageRang2Pris: voieMageRang2Pris ?? this.voieMageRang2Pris,
+    superiorStats: superiorStats ?? this.superiorStats,
   );
 }

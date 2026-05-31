@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 20,
+        version: 21,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 20,
+      version: 21,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -220,6 +220,12 @@ class DatabaseService {
                 "ALTER TABLE participants ADD COLUMN character_sheet_id INTEGER");
           } catch (_) {}
         }
+        if (oldVersion < 21) {
+          try {
+            await db.execute(
+                "ALTER TABLE character_sheets ADD COLUMN superior_stats_json TEXT NOT NULL DEFAULT '[]'");
+          } catch (_) {}
+        }
   }
 
   Future<void> _createTables(Database db) async {
@@ -367,7 +373,8 @@ class DatabaseService {
         monnaie_pp INTEGER NOT NULL DEFAULT 0,
         voie_peuple_id TEXT NOT NULL DEFAULT '',
         voie_peuple_origine_id TEXT NOT NULL DEFAULT '',
-        voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0
+        voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0,
+        superior_stats_json TEXT NOT NULL DEFAULT '[]'
       )
     ''');
   }

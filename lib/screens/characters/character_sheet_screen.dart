@@ -2300,16 +2300,18 @@ class _CaracTabState extends State<_CaracTab> {
         _tableContainer(
           child: Column(
             children: [
-              _colHeaders(['Base', 'Peuple', 'Bonus', 'Total'], trailingWidth: 36),
+              _colHeaders(['Base', 'Peuple', 'Bonus', 'Total'], trailingWidth: 72),
               ...List.generate(caracs.length, (i) {
                 final abbr  = caracs[i].$1;
                 final label = caracs[i].$2;
+                final key = abbr.toLowerCase();
+                final isSuperior = _s.superiorStats.contains(key);
                 return Column(
                   children: [
                     if (i > 0) _divider(),
                     Row(
                       children: [
-                        _labelCell(abbr),
+                        _labelCell(abbr, fg: isSuperior ? Colors.amber : null),
                         _intCell(bases[i],   (_) {}, readOnly: true),
                         _intCell(peuples[i], (_) {}, readOnly: true),
                         _intCell(bonuses[i], (v) {
@@ -2321,14 +2323,42 @@ class _CaracTabState extends State<_CaracTab> {
                                 : totals[i] < 0
                                     ? const Color(0xFFB71C1C)
                                     : null),
+                        // Superior toggle
+                        SizedBox(
+                          width: 36,
+                          child: IconButton(
+                            icon: Text(
+                              '⭐',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isSuperior ? Colors.amber : Colors.grey.shade700,
+                              ),
+                            ),
+                            tooltip: isSuperior
+                                ? 'Retirer la supériorité de $abbr'
+                                : 'Rendre $abbr supérieure (dé bonus)',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            onPressed: () {
+                              final newSet = Set<String>.from(_s.superiorStats);
+                              if (isSuperior) {
+                                newSet.remove(key);
+                              } else {
+                                newSet.add(key);
+                              }
+                              _update(_s.copyWith(superiorStats: newSet));
+                            },
+                          ),
+                        ),
+                        // Dice roll
                         SizedBox(
                           width: 36,
                           child: IconButton(
                             icon: const Icon(Icons.casino_outlined, size: 16),
-                            tooltip: 'Test $abbr',
+                            tooltip: 'Test $abbr${isSuperior ? ' (Supérieure)' : ''}',
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                            onPressed: widget.onDiceRoll == null ? null : () => _rollCaracTest(abbr, label, totals[i]),
+                            onPressed: widget.onDiceRoll == null ? null : () => _rollCaracTest(abbr, label, totals[i], isSuperior: isSuperior),
                           ),
                         ),
                       ],
@@ -2342,6 +2372,7 @@ class _CaracTabState extends State<_CaracTab> {
       ],
     );
   }
+
 
   void _showPresetDialog() async {
     final result = await showDialog<CharacterSheet>(
@@ -2364,21 +2395,38 @@ class _CaracTabState extends State<_CaracTab> {
     }
   }
 
-  void _rollCaracTest(String abbr, String label, int bonus) {
-    final die = Random().nextInt(20) + 1;
+  void _rollCaracTest(String abbr, String label, int bonus, {bool isSuperior = false}) {
+    final die1 = Random().nextInt(20) + 1;
     // Pour AGI : appliquer le malus d'encombrement
     final enc = abbr == 'AGI' ? _s.encTotal : 0;
     final effectiveBonus = bonus - enc;
-    final total = die + effectiveBonus;
-    final sign  = effectiveBonus >= 0 ? '+$effectiveBonus' : '$effectiveBonus';
+
+    int die;
     String detail;
-    if (effectiveBonus == 0) {
-      detail = 'd20 = $die';
+
+    if (isSuperior) {
+      final die2 = Random().nextInt(20) + 1;
+      die = die1 > die2 ? die1 : die2;
+      final total = die + effectiveBonus;
+      final sign = effectiveBonus >= 0 ? '+$effectiveBonus' : '$effectiveBonus';
+      detail = '⭐ Supérieure : d20($die1, $die2) → $die';
+      if (effectiveBonus != 0) detail += ' $sign = $total';
+      if (enc > 0) detail += ' (ENC -$enc)';
     } else {
-      detail = 'd20($die) $sign = $total';
+      die = die1;
+      final total = die + effectiveBonus;
+      final sign = effectiveBonus >= 0 ? '+$effectiveBonus' : '$effectiveBonus';
+      if (effectiveBonus == 0) {
+        detail = 'd20 = $die';
+      } else {
+        detail = 'd20($die) $sign = $total';
+      }
+      if (enc > 0) detail += ' (ENC -$enc)';
     }
-    if (enc > 0) detail += ' (ENC -$enc)';
+
+    final total = die + effectiveBonus;
     String lbl = 'Test $abbr';
+    if (isSuperior) lbl += ' ⭐';
     if (die == 20) lbl += ' 🎯 Critique !';
     if (die == 1)  lbl += ' 💀 Échec critique !';
     widget.onDiceRoll?.call(DiceLogEntry(

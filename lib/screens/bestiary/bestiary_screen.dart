@@ -390,19 +390,19 @@ class CreatureDetailSheet extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: stats.map((s) {
-        final isLegendary = t.legendaryStats.contains(s.$2);
+        final isSuperior = t.superiorStats.contains(s.$2);
         final mod = ((s.$3 - 10) / 2).floor();
         final modStr = mod >= 0 ? '+$mod' : '$mod';
         return Container(
           width: 76,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isLegendary
+            color: isSuperior
                 ? Colors.amber.withValues(alpha: 0.08)
                 : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isLegendary
+              color: isSuperior
                   ? Colors.amber.withValues(alpha: 0.5)
                   : Colors.transparent,
             ),
@@ -415,12 +415,12 @@ class CreatureDetailSheet extends StatelessWidget {
                 children: [
                   Text(s.$1,
                       style: TextStyle(
-                          color: isLegendary
+                          color: isSuperior
                               ? Colors.amber
                               : Colors.grey.shade400,
                           fontSize: 11,
                           fontWeight: FontWeight.w600)),
-                  if (isLegendary)
+                  if (isSuperior)
                     const Padding(
                       padding: EdgeInsets.only(left: 2),
                       child: Text('⭐', style: TextStyle(fontSize: 9)),
@@ -567,7 +567,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
   late CreatureTaille _taille;
   late CreatureArchetype _archetype;
   String? _imageUrl;
-  late Set<String> _legendaryStats;
+  late Set<String> _superiorStats;
   late List<TemplateAttack> _attacks;
   late List<TemplateCapacity> _capacities;
 
@@ -598,7 +598,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
     _taille = t?.taille ?? CreatureTaille.moyenne;
     _archetype = t?.archetype ?? CreatureArchetype.standard;
     _imageUrl = t?.imageUrl;
-    _legendaryStats = Set.from(t?.legendaryStats ?? {});
+    _superiorStats = Set.from(t?.superiorStats ?? {});
     _attacks = List.from(t?.attacks ?? []);
     _capacities = List.from(t?.capacities ?? []);
   }
@@ -853,7 +853,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Valeur de base  •  ⭐ = Légendaire (dé bonus, garde le meilleur)',
+            'Valeur de base  •  ⭐ = Supérieure (dé bonus, garde le meilleur)',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -868,7 +868,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
 
   Widget _statRow(BuildContext context, String label, String key,
       TextEditingController ctrl) {
-    final isLegendary = _legendaryStats.contains(key);
+    final isSuperior = _superiorStats.contains(key);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -879,7 +879,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
             child: Text(
               label,
               style: TextStyle(
-                color: isLegendary ? Colors.amber : Colors.grey.shade400,
+                color: isSuperior ? Colors.amber : Colors.grey.shade400,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
@@ -899,13 +899,13 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 filled: true,
-                fillColor: isLegendary
+                fillColor: isSuperior
                     ? Colors.amber.withValues(alpha: 0.08)
                     : AppColors.surfaceVariant,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: isLegendary
+                    color: isSuperior
                         ? Colors.amber.withValues(alpha: 0.6)
                         : Colors.transparent,
                   ),
@@ -913,7 +913,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(
-                    color: isLegendary
+                    color: isSuperior
                         ? Colors.amber.withValues(alpha: 0.6)
                         : Colors.grey.shade700,
                   ),
@@ -926,10 +926,10 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
           GestureDetector(
             onTap: () {
               setState(() {
-                if (isLegendary) {
-                  _legendaryStats.remove(key);
+                if (isSuperior) {
+                  _superiorStats.remove(key);
                 } else {
-                  _legendaryStats.add(key);
+                  _superiorStats.add(key);
                 }
               });
             },
@@ -938,12 +938,12 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: isLegendary
+                color: isSuperior
                     ? Colors.amber.withValues(alpha: 0.15)
                     : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isLegendary
+                  color: isSuperior
                       ? Colors.amber.withValues(alpha: 0.7)
                       : Colors.grey.shade700,
                 ),
@@ -955,17 +955,17 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
                     '⭐',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isLegendary ? Colors.amber : Colors.grey.shade600,
+                      color: isSuperior ? Colors.amber : Colors.grey.shade600,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Légendaire',
+                    'Supérieure',
                     style: TextStyle(
                       color:
-                          isLegendary ? Colors.amber : Colors.grey.shade500,
+                          isSuperior ? Colors.amber : Colors.grey.shade500,
                       fontSize: 12,
-                      fontWeight: isLegendary
+                      fontWeight: isSuperior
                           ? FontWeight.bold
                           : FontWeight.normal,
                     ),
@@ -1331,7 +1331,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
       perVal: int.tryParse(_perCtrl.text) ?? 10,
       chaVal: int.tryParse(_chaCtrl.text) ?? 10,
       volVal: int.tryParse(_volCtrl.text) ?? 10,
-      legendaryStats: Set.from(_legendaryStats),
+      superiorStats: Set.from(_superiorStats),
       attacks: List.from(_attacks),
       capacities: List.from(_capacities),
     );

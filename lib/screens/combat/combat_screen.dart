@@ -723,19 +723,19 @@ class _TemplateDetailPanel extends StatelessWidget {
       spacing: 6,
       runSpacing: 6,
       children: stats.map((s) {
-        final isLegendary = t.legendaryStats.contains(s.$2);
+        final isSuperior = t.superiorStats.contains(s.$2);
         final mod = ((s.$3 - 10) / 2).floor();
         final modStr = mod >= 0 ? '+$mod' : '$mod';
         return Container(
           width: 66,
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: isLegendary
+            color: isSuperior
                 ? Colors.amber.withValues(alpha: 0.1)
                 : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isLegendary
+              color: isSuperior
                   ? Colors.amber.withValues(alpha: 0.5)
                   : Colors.transparent,
             ),
@@ -748,12 +748,12 @@ class _TemplateDetailPanel extends StatelessWidget {
                 children: [
                   Text(s.$1,
                       style: TextStyle(
-                          color: isLegendary
+                          color: isSuperior
                               ? Colors.amber
                               : Colors.grey.shade400,
                           fontSize: 10,
                           fontWeight: FontWeight.w600)),
-                  if (isLegendary)
+                  if (isSuperior)
                     const Text('⭐', style: TextStyle(fontSize: 8)),
                 ],
               ),
@@ -935,31 +935,49 @@ class _SheetDetailPanelState extends State<_SheetDetailPanel> {
           spacing: 6,
           runSpacing: 6,
           children: [
-            ('FOR', s.forTotal),
-            ('AGI', s.agiTotal),
-            ('CON', s.conTotal),
-            ('INT', s.intTotal),
-            ('PER', s.perTotal),
-            ('CHA', s.chaTotal),
-            ('VOL', s.volTotal),
+            ('FOR', 'for', s.forTotal),
+            ('AGI', 'agi', s.agiTotal),
+            ('CON', 'con', s.conTotal),
+            ('INT', 'int', s.intTotal),
+            ('PER', 'per', s.perTotal),
+            ('CHA', 'cha', s.chaTotal),
+            ('VOL', 'vol', s.volTotal),
           ].map((e) {
-            final mod = ((e.$2 - 10) / 2).floor();
+            final isSuperior = s.superiorStats.contains(e.$2);
+            final mod = ((e.$3 - 10) / 2).floor();
             final modStr = mod >= 0 ? '+$mod' : '$mod';
             return Container(
               width: 66,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: isSuperior
+                    ? Colors.amber.withValues(alpha: 0.1)
+                    : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSuperior
+                      ? Colors.amber.withValues(alpha: 0.5)
+                      : Colors.transparent,
+                ),
               ),
               child: Column(
                 children: [
-                  Text(e.$1,
-                      style: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600)),
-                  Text('${e.$2}',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(e.$1,
+                          style: TextStyle(
+                              color: isSuperior
+                                  ? Colors.amber
+                                  : Colors.grey.shade400,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600)),
+                      if (isSuperior)
+                        const Text('⭐', style: TextStyle(fontSize: 8)),
+                    ],
+                  ),
+                  Text('${e.$3}',
                       style: const TextStyle(
                           fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(modStr,
