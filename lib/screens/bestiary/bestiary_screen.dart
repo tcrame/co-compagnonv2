@@ -147,9 +147,12 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  • ',
-                      style: Theme.of(context).textTheme.bodySmall,
+                    Flexible(
+                      child: Text(
+                        'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  • ',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Icon(Icons.shield, color: Colors.grey.shade500, size: 13),
                     const SizedBox(width: 2),
@@ -157,12 +160,11 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
                       '${t.def}',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                    if (t.nc != null) ...[
+                    if (t.nc != null)
                       Text(
                         '  •  NC ${t.nc}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                    ],
                   ],
                 ),
                 Text(
@@ -170,6 +172,7 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.grey.shade500,
                       ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
