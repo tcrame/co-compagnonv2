@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 18,
+        version: 19,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 18,
+      version: 19,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -208,6 +208,12 @@ class DatabaseService {
                 "ALTER TABLE participants ADD COLUMN template_id INTEGER");
           } catch (_) {}
         }
+        if (oldVersion < 19) {
+          try {
+            await db.execute(
+                "ALTER TABLE character_templates ADD COLUMN legendary_stats_json TEXT NOT NULL DEFAULT '[]'");
+          } catch (_) {}
+        }
   }
 
   Future<void> _createTables(Database db) async {
@@ -255,7 +261,8 @@ class DatabaseService {
         cha_val INTEGER NOT NULL DEFAULT 0,
         vol_val INTEGER NOT NULL DEFAULT 0,
         attacks_json TEXT NOT NULL DEFAULT '[]',
-        capacities_json TEXT NOT NULL DEFAULT '[]'
+        capacities_json TEXT NOT NULL DEFAULT '[]',
+        legendary_stats_json TEXT NOT NULL DEFAULT '[]'
       )
     ''');
     await db.execute('''

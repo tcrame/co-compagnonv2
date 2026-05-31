@@ -159,6 +159,10 @@ class CharacterTemplate {
   final int chaVal;
   final int volVal;
 
+  /// Set of stat keys that are "légendaires" (e.g. {'for', 'agi'}).
+  /// A legendary stat grants a bonus d20 roll (keep best of 2).
+  final Set<String> legendaryStats;
+
   // Attacks & capacities (serialised as JSON in DB)
   final List<TemplateAttack> attacks;
   final List<TemplateCapacity> capacities;
@@ -182,6 +186,7 @@ class CharacterTemplate {
     this.perVal = 0,
     this.chaVal = 0,
     this.volVal = 0,
+    this.legendaryStats = const {},
     this.attacks = const [],
     this.capacities = const [],
   });
@@ -208,11 +213,13 @@ class CharacterTemplate {
         'attacks_json': jsonEncode(attacks.map((a) => a.toJson()).toList()),
         'capacities_json':
             jsonEncode(capacities.map((c) => c.toJson()).toList()),
+        'legendary_stats_json': jsonEncode(legendaryStats.toList()),
       };
 
   factory CharacterTemplate.fromMap(Map<String, dynamic> map) {
     List<TemplateAttack> attacks = [];
     List<TemplateCapacity> capacities = [];
+    Set<String> legendaryStats = {};
     try {
       final atkRaw = map['attacks_json'] as String?;
       if (atkRaw != null && atkRaw.isNotEmpty) {
@@ -227,6 +234,13 @@ class CharacterTemplate {
         capacities = (jsonDecode(capRaw) as List)
             .map((e) => TemplateCapacity.fromJson(e as Map<String, dynamic>))
             .toList();
+      }
+    } catch (_) {}
+    try {
+      final legRaw = map['legendary_stats_json'] as String?;
+      if (legRaw != null && legRaw.isNotEmpty) {
+        legendaryStats =
+            Set<String>.from((jsonDecode(legRaw) as List).cast<String>());
       }
     } catch (_) {}
 
@@ -249,6 +263,7 @@ class CharacterTemplate {
       perVal: (map['per_val'] as int?) ?? 0,
       chaVal: (map['cha_val'] as int?) ?? 0,
       volVal: (map['vol_val'] as int?) ?? 0,
+      legendaryStats: legendaryStats,
       attacks: attacks,
       capacities: capacities,
     );
@@ -276,6 +291,7 @@ class CharacterTemplate {
     int? volVal,
     List<TemplateAttack>? attacks,
     List<TemplateCapacity>? capacities,
+    Set<String>? legendaryStats,
   }) =>
       CharacterTemplate(
         id: id ?? this.id,
@@ -296,6 +312,7 @@ class CharacterTemplate {
         perVal: perVal ?? this.perVal,
         chaVal: chaVal ?? this.chaVal,
         volVal: volVal ?? this.volVal,
+        legendaryStats: legendaryStats ?? this.legendaryStats,
         attacks: attacks ?? this.attacks,
         capacities: capacities ?? this.capacities,
       );

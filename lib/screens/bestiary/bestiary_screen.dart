@@ -375,35 +375,56 @@ class CreatureDetailSheet extends StatelessWidget {
 
   Widget _statsGrid(BuildContext context, CharacterTemplate t) {
     final stats = [
-      ('FOR', t.forVal),
-      ('AGI', t.agiVal),
-      ('CON', t.conVal),
-      ('INT', t.intVal),
-      ('PER', t.perVal),
-      ('CHA', t.chaVal),
-      ('VOL', t.volVal),
+      ('FOR', 'for', t.forVal),
+      ('AGI', 'agi', t.agiVal),
+      ('CON', 'con', t.conVal),
+      ('INT', 'int', t.intVal),
+      ('PER', 'per', t.perVal),
+      ('CHA', 'cha', t.chaVal),
+      ('VOL', 'vol', t.volVal),
     ];
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: stats.map((s) {
-        final mod = ((s.$2 - 10) / 2).floor();
+        final isLegendary = t.legendaryStats.contains(s.$2);
+        final mod = ((s.$3 - 10) / 2).floor();
         final modStr = mod >= 0 ? '+$mod' : '$mod';
         return Container(
           width: 76,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
+            color: isLegendary
+                ? Colors.amber.withValues(alpha: 0.08)
+                : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isLegendary
+                  ? Colors.amber.withValues(alpha: 0.5)
+                  : Colors.transparent,
+            ),
           ),
           child: Column(
             children: [
-              Text(s.$1,
-                  style: TextStyle(
-                      color: Colors.grey.shade400,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600)),
-              Text('${s.$2}',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(s.$1,
+                      style: TextStyle(
+                          color: isLegendary
+                              ? Colors.amber
+                              : Colors.grey.shade400,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600)),
+                  if (isLegendary)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 2),
+                      child: Text('⭐', style: TextStyle(fontSize: 9)),
+                    ),
+                ],
+              ),
+              Text('${s.$3}',
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               Text(modStr,
@@ -543,6 +564,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
   late CreatureTaille _taille;
   late CreatureArchetype _archetype;
   String? _imageUrl;
+  late Set<String> _legendaryStats;
   late List<TemplateAttack> _attacks;
   late List<TemplateCapacity> _capacities;
 
@@ -573,6 +595,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
     _taille = t?.taille ?? CreatureTaille.moyenne;
     _archetype = t?.archetype ?? CreatureArchetype.standard;
     _imageUrl = t?.imageUrl;
+    _legendaryStats = Set.from(t?.legendaryStats ?? {});
     _attacks = List.from(t?.attacks ?? []);
     _capacities = List.from(t?.capacities ?? []);
   }
@@ -812,69 +835,140 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
   // ── Tab 2: Stats ────────────────────────────────────────────────────────────
   Widget _buildStatsTab(BuildContext context, ScrollController ctrl) {
     final stats = [
-      ('FOR', _forCtrl),
-      ('AGI', _agiCtrl),
-      ('CON', _conCtrl),
-      ('INT', _intCtrl),
-      ('PER', _perCtrl),
-      ('CHA', _chaCtrl),
-      ('VOL', _volCtrl),
+      ('FOR', 'for', _forCtrl),
+      ('AGI', 'agi', _agiCtrl),
+      ('CON', 'con', _conCtrl),
+      ('INT', 'int', _intCtrl),
+      ('PER', 'per', _perCtrl),
+      ('CHA', 'cha', _chaCtrl),
+      ('VOL', 'vol', _volCtrl),
     ];
     return SingleChildScrollView(
       controller: ctrl,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Valeurs de base des caractéristiques',
+            'Valeur de base  •  ⭐ = Légendaire (dé bonus, garde le meilleur)',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
                 ?.copyWith(color: Colors.grey.shade400),
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.2,
-            children: stats.map((s) => _statField(context, s.$1, s.$2)).toList(),
-          ),
+          ...stats.map((s) => _statRow(context, s.$1, s.$2, s.$3)),
         ],
       ),
     );
   }
 
-  Widget _statField(
-      BuildContext context, String label, TextEditingController ctrl) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _statRow(BuildContext context, String label, String key,
+      TextEditingController ctrl) {
+    final isLegendary = _legendaryStats.contains(key);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
         children: [
-          Text(label,
+          // Label
+          SizedBox(
+            width: 44,
+            child: Text(
+              label,
               style: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          TextFormField(
-            controller: ctrl,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold),
-            decoration: const InputDecoration(
-              isDense: true,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
+                color: isLegendary ? Colors.amber : Colors.grey.shade400,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          // Value field
+          SizedBox(
+            width: 72,
+            child: TextFormField(
+              controller: ctrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                filled: true,
+                fillColor: isLegendary
+                    ? Colors.amber.withValues(alpha: 0.08)
+                    : AppColors.surfaceVariant,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: isLegendary
+                        ? Colors.amber.withValues(alpha: 0.6)
+                        : Colors.transparent,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: isLegendary
+                        ? Colors.amber.withValues(alpha: 0.6)
+                        : Colors.grey.shade700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Legendary toggle
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                if (isLegendary) {
+                  _legendaryStats.remove(key);
+                } else {
+                  _legendaryStats.add(key);
+                }
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: isLegendary
+                    ? Colors.amber.withValues(alpha: 0.15)
+                    : AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isLegendary
+                      ? Colors.amber.withValues(alpha: 0.7)
+                      : Colors.grey.shade700,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '⭐',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isLegendary ? Colors.amber : Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Légendaire',
+                    style: TextStyle(
+                      color:
+                          isLegendary ? Colors.amber : Colors.grey.shade500,
+                      fontSize: 12,
+                      fontWeight: isLegendary
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -1234,6 +1328,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
       perVal: int.tryParse(_perCtrl.text) ?? 10,
       chaVal: int.tryParse(_chaCtrl.text) ?? 10,
       volVal: int.tryParse(_volCtrl.text) ?? 10,
+      legendaryStats: Set.from(_legendaryStats),
       attacks: List.from(_attacks),
       capacities: List.from(_capacities),
     );
