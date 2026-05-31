@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 5 | 110 | 15 | +1 | 9m, nage 9m |
+| 5 | 50 | 18 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +5 | +4 | -4 | -2 | +0 |
+| +0 | +10 | +10 | +0 | -2 | -4 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure ×5 (une par tête) | +7 | 1d10+5 perforant | Contact |
-
+| Morsure | +8 | 1d8+4 | Contact |
 ## Capacités spéciales
 
 - **Attaques Multiples** : L'hydre peut effectuer un total de 5 attaques, mais pas plus de 4 attaques sur la même cible chaque round. Utilisez la règle des attaques groupées pour gagner du temps (par exemple, +5 pour l'attaque de deux têtes à la fois).

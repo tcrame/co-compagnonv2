@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 2 | 21 | 17 | +2 | 9m |
+| 2 | 22 | 16 | 13 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +0 | +1 | +1 | +2 | +0 |
+| +2 | +1 | +1 | +0 | +1 | +0 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Cimeterre ×2 | +4 | 1d6+2 | Contact |
-
+| Arme | +5 | 1d6+1 | Contact |
 ## Capacités spéciales
 
 - **Attaque En Meute** : Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d'un bonus de +2 en attaque (bonus qui peut s'ajouter à une éventuelle attaque groupée).

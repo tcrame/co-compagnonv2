@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 10 | 178 | 18 | +1 | 12m, vol 24m, nage 12m |
+| 10 | 140 | 24 | 16 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +6 | +5 | +3 | +3 | +4 |
+| +3 | +8 | +8 | +3 | +2 | +2 | +5 |
 
 **Sens :** Perception aveugle 9m, vision dans le noir 36m  
 **Résistances :** —  
@@ -22,11 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +10 | 2d10+6 | Contact |
-| Griffes ×2 | +10 | 2d6+6 | Contact |
-| Queue | +10 | 2d8+6 | Contact (3m allonge) |
-| Souffle acide (rechargement 5-6) | — | 12d8 acide (DD 19 AGI moitié) | Ligne 18m |
-
+| Morsure et griffes | +14 | 1d12+8 | Contact |
+| Attaque magique | +15 |  | Contact |
 ## Capacités spéciales
 
 - **Coup De Queue (G)** : Chaque fois qu'un adversaire attaque le dragon dans le dos, il subit une attaque de queue gratuite équivalant à une attaque avec des DM divisés par deux.

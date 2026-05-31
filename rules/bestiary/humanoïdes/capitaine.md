@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 65 | 17 | +1 | 9m |
+| 4 | 50 | 18 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +3 | +2 | +1 | +2 | +2 | +1 |
+| +1 | +2 | +3 | +0 | +2 | +1 | +2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Épée longue ×2 | +5 | 1d8+3 | Contact |
-| Arbalète légère | +3 | 1d8+1 | 24/96m |
-
+| Épée longue | +8 | 1d8+3 | Contact |
 ## Capacités spéciales
 
 - **Capitaine** : Le capitaine donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.

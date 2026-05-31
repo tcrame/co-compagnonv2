@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 2 | 27 | 13 | +1 | 9m |
+| 2 | 30 | 15 | 11 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | -1 | +1 | +2 | +2 | +0 |
+| +2 | -1 | -1 | +1 | +1 | +0 | +1 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Bâton | +3 | 1d6 | Contact |
-
+| Dague | +4 | 1d4 | Contact |
+| Attaque magique (portée 20 m) | +6 |  | Contact |
 ## Capacités spéciales
 
 *Aucune capacité spéciale.*

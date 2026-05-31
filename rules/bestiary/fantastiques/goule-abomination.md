@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 52 | 14 | +2 | 9m |
+| 4 | 35 | 17 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +3 | +2 | -1 | -2 | +0 |
+| +1 | +4 | +4 | +2 | -4 | +1 | +4 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +5 | 2d8+3 perforant | Contact |
-| Griffes ×2 | +5 | 2d4+3 tranchant | Contact |
-
+| Morsure et griffes | +9 | 1d6+4 | Contact |
 ## Capacités spéciales
 
 - **Paralysie** : Une créature blessée par la morsure d'une goule puissante doit réussir un test de CON difficulté 15 ou être paralysée pendant 1d6 rounds. PAGE 286  PARTIE III

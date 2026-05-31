@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1/2 | 15 | 13 | +1 | 9m |
+| 1/2 | 12 | 13 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +3 | +2 | -1 | -3 | +0 |
+| +0 | +2 | +2 | +0 | -2 | -2 | -1 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Hache à deux mains | +5 | 1d12+3 tranchant | Contact |
-| Javelot | +5 | 1d6+3 perforant | Contact / 9/36m |
-
+| Hache ou masse | +3 | 1d8+2 | Contact |
 ## Capacités spéciales
 
 - **Sensible À La Lumière** : Créatures souterraines, les orcs détestent la lumière du jour. La lumière du soleil leur inflige un dé malus en attaque.

@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 9 | 162 | 18 | -1 | 9m |
+| 9 | ? | ? | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -1 | -1 | +7 | +5 | +1 | +2 | +2 |
+| -1 | +12 | +12 | +2 | +0 | +0 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Épée grande ×2 | +11 | 6d6+7 tranchant | Contact |
-| Rocher | +11 | 4d10+7 contondant | 18/72m |
-
+| Marteau de guerre | +14 | 4d8+16 | Contact |
+| Lancer de rocher | +14 | 2d8+12 | 20m |
 ## Capacités spéciales
 
 - **Fauchage** : Sur 15 à 20 au test d'attaque, si l'attaque est réussie, la victime doit réussir au choix un test de FOR ou d'AGI difficulté 20 ou être renversée.

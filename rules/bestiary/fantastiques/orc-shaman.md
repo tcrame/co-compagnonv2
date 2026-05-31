@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 37 | 12 | +0 | 9m |
+| 3 | 40 | 17 | 13 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +2 | +1 | +1 | +2 | +1 |
+| +0 | +3 | +1 | +3 | -1 | +0 | +3 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Bâton de guerre | +4 | 1d8+2 contondant | Contact |
-
+| Dague | +6 | 1d4+1 | Contact |
+| Attaque magique | +6 |  | Contact |
 ## Capacités spéciales
 
 - **Vampirisation (L)** : La créature doit réussir un test opposé d'attaque magique contre une cible vivante à une distance maximale de 30 m. En cas de réussite, la cible subit 2d8 DM et la créature régénère autant de PV que de DM infligés. De plus, chaque fois qu'une créature meurt à moins de 20 m d'elle, la créature siphonne son énergie et gagne un nombre de PV égal au double du NC de la créature.

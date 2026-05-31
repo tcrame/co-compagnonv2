@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 59 | 12 | +1 | 9m, vol 24m |
+| 4 | 50 | 18 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +4 | +3 | -4 | -2 | +0 |
+| +3 | +6 | +6 | +2 | +0 | -3 | +1 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Bec | +6 | 1d8+4 perforant | Contact |
-| Griffes | +6 | 2d6+4 tranchant | Contact |
-
+| Morsures et griffes +8 · DM 2d6 | +8 | 2d6+8 | Contact |
 ## Capacités spéciales
 
 - **Vol Rapide** : La créature obtient une action de mouvement supplémentaire par round lorsqu'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d4 aux DM si elle est en vol et attaque une créature au sol.

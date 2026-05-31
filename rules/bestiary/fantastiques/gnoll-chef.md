@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 71 | 17 | +1 | 9m |
+| 4 | 50 | 17 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +4 | +2 | -2 | +0 | +0 |
+| +0 | +4 | +4 | +0 | -1 | -1 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Épée grande ×2 | +6 | 2d6+4 tranchant | Contact |
-| Arc long | +3 | 1d8+1 | 45/180m |
-
+| Hache | +8 | 1d8+4 | Contact |
 ## Capacités spéciales
 
 - **Capitaine** : Le chef donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.

@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 11 | 172 | 16 | +1 | 9m, nage 9m |
+| 11 | 150 | 23 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +6 | +5 | -4 | -2 | +0 |
+| +0 | +8 | +8 | +0 | -2 | -4 | +2 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure ×10 | +10 | 1d10+6 + 1d6 froid | Contact |
-
+| Morsure | +13 |  | Contact |
 ## Capacités spéciales
 
 - **Guérison Accélérée** : L'hydre guérit de 5 PV par tour au début de son tour, sauf si les DM subis sont de feu.

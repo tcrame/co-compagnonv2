@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 52 | 15 | +3 | 9m |
+| 4 | 35 | 17 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +0 | +3 | +2 | +1 | +1 | +1 |
+| +2 | +3 | +3 | +0 | +1 | +0 | +2 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** Nécrotique, non-magiques  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Poing | +5 | 1d8+3 contondant + 2d6 nécrotique | Contact |
-| Morsure | +5 | 1d6+3 perforant + 2d6 nécrotique | Contact |
-
+| Morsure et griffes | +6 | 1d6+3 | Contact |
 ## Capacités spéciales
 
 - **Forme Gazeuse (A)** : Une fois par jour, le vampirien prend la consistance d'un gaz pendant 1 min. Il se déplace au ras du sol (s'il chute, il le fait au ralenti) à une vitesse de 5 m par action de mouvement (M). Il peut s'introduire par les plus petits interstices (comme sous une porte), mais ne peut utiliser aucune capacité ni subir de DM. PATTES D'ARAIGNÉE : Le vampirien peut se déplacer de 10 m par action de mouvement sur les murs et les plafonds.

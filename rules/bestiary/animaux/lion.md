@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 26 | 12 | +3 | 15m |
+| 3 | 30 | 17 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +0 | +3 | +1 | -4 | -2 | +0 |
+| +4 | +5 | +5 | +2 | -2 | -3 | +0 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +5 | 1d8+3 | Contact |
-| Griffes | +5 | 2d6+3 | Contact |
-
+| Morsure et griffes | +6 | 2d6+5 | Contact |
 ## Capacités spéciales
 
 - **Embuscade** : Au premier round de combat, si l'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 aux DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.

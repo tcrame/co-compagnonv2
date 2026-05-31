@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 42 | 11 | +0 | 12m |
+| 3 | 20 | 16 | 11 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +3 | +3 | -4 | -4 | +0 |
+| +0 | +3 | +3 | +1 | -2 | -4 | +2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Gore (défenses) | +5 | 2d6+3 | Contact |
-
+| Défenses | +6 | 2d4+3 | Contact |
 ## Capacités spéciales
 
 - **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus de subir les DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 13 ou être renversée. Dans ce cas, la créature éventre sa victime et les DM sont doublés.

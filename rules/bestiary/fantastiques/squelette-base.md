@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1 | 13 | 13 | +2 | 9m |
+| 1 | 9 | 13 | 9 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +0 | +0 | -4 | -3 | +0 |
+| +1 | +1 | +1 | -1 | -4 | -4 | +6 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Cimeterre | +4 | 1d6+2 tranchant | Contact |
-| Arc court | +4 | 1d6+2 perforant | 24/96m |
-
+| Épée (ou autre) | +4 | 1d6+1 | Contact |
 ## Capacités spéciales
 
 - **Sans Esprit** : Aucune âme n'habite la carcasse morte, le squelette est immunisé à tous les sorts qui affectent l'esprit.

@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 13 | 204 | 16 | +4 | 9m |
+| 13 | 160 | 25 | 17 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +4 | +0 | +5 | +5 | +4 | +4 | +4 |
+| +4 | +5 | +5 | +4 | +4 | +4 | +6 |
 
 **Sens :** Vision dans le noir 36m  
 **Résistances :** Nécrotique, non-magiques  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Poing ×2 | +9 | 1d8+5 contondant + 4d6 nécrotique | Contact |
-| Morsure | +9 | 1d6+5 perforant + 4d6 nécrotique | Contact |
-
+| Griffes et morsure | +14 | 1d8+8 | Contact |
+| Ou épée longue | +14 |  | Contact |
 ## Capacités spéciales
 
 - **Estropier** : Le vampire inflige des blessures qui se nécrosent et laissent de terribles cicatrices. Ses attaques infligent des DM que vous devez comptabiliser à part, car les effets des sorts et des capacités de guérison sont divisés par deux. De plus, il triple les DM en cas de coup critique au lieu de les doubler.

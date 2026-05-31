@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 2/3 | 22 | 13 | +2 | 9m, vol 12m |
+| 2 | 15 | 15 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +1 | +2 | +2 | +1 | +0 |
+| +3 | -2 | -2 | +2 | +0 | +1 | -1 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** Feu, froid, foudre  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Griffes | +4 | 2d4+2 | Contact |
-| Morsure | +4 | 1d6+2 | Contact |
-
+| Griffes et morsure | +4 | 1d4 | Contact |
+| Queue fourchue | +4 | 1 | Contact |
 ## Capacités spéciales
 
 - **Venin** : 2 La victime doit réussir un test de CON diffi- RÈGLES culté 10 ou être affaiblie pendant 1d6 min.

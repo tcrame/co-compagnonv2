@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 7 | 114 | 14 | +0 | 9m, vol 18m |
+| 7 | 100 | 21 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +4 | +4 | +0 | +0 | +0 |
+| +1 | +6 | +6 | +2 | -4 | -2 | +2 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,11 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure (tête lion) | +6 | 2d6+4 | Contact |
-| Cornes (tête bouc) | +6 | 2d6+4 | Contact |
-| Griffes | +6 | 2d6+4 | Contact |
-| Souffle de feu (rechargement 5-6) | — | 7d8 feu (DD 13 AGI moitié) | Cône 15m |
-
+| Morsure de serpent | +14 | 1d4+3 | Contact |
 ## Capacités spéciales
 
 - **Poison** : La victime subit 1d6 DM de poison et elle doit faire un test de CON difficulté 16. En cas d'échec, elle subit 1d6 DM supplémentaires par round pendant 5 rounds.

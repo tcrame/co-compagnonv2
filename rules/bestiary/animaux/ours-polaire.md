@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 6 | 42 | 12 | +0 | 12m, nage 9m |
+| 6 | 80 | 20 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +5 | +3 | -4 | -1 | +0 |
+| +0 | +8 | +8 | +2 | -2 | -4 | +1 |
 
 **Sens :** —  
 **Résistances :** Froid  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +7 | 1d8+5 | Contact |
-| Griffes ×2 | +7 | 2d6+5 | Contact |
-
+| Morsure et griffes | +12 | 2d8+10 | Contact |
 ## Capacités spéciales
 
 - **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.

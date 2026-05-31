@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 26 | 14 | +3 | 9m, escalade 9m |
+| 3 | 30 | 17 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +0 | +2 | +1 | -4 | -3 | +0 |
+| +4 | +3 | +3 | +2 | -4 | -4 | +0 |
 
 **Sens :** Vision dans le noir 9m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +5 | 1d8+3 + 2d8 poison | Contact |
-| Toile (rechargement 5-6) | +5 | — | 9/18m |
-
+| Attaque | +6 | 2d6+4 | Contact |
 ## Capacités spéciales
 
 - **Poison Mortel** : Le poison inflige 2d6 DM supplémentaires à la victime à chaque attaque. Si la victime réussit un test de CON de la difficulté indiquée, elle subit seulement la moitié des DM.

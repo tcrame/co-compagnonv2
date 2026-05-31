@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1 | 16 | 16 | +0 | 9m |
+| 1 | 15 | 16 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +1 | +0 | +1 | +0 | +0 | +0 |
+| +0 | +1 | +2 | +0 | +0 | -1 | +0 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Hallebarde | +3 | 1d10+1 | Contact (allonge) |
-| Arbalète légère | +2 | 1d8 | 24/96m |
-
+| Épée longue | +4 | 1d8+2 | Contact |
+| Arbalète | +4 | 2d4 | 30 m |
 ## Capacités spéciales
 
 *Aucune capacité spéciale.*

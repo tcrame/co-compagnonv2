@@ -7,6 +7,7 @@ import '../../models/character_template.dart';
 import '../../providers/bestiary_provider.dart';
 import '../../widgets/image_picker_field.dart';
 import '../../widgets/participant_avatar.dart';
+import 'creature_wizard_sheet.dart';
 
 class BestiaryScreen extends StatefulWidget {
   const BestiaryScreen({super.key});
@@ -32,7 +33,7 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showTemplateSheet(context, null),
+        onPressed: () => _showAddMenu(context),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau'),
       ),
@@ -238,6 +239,101 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => CreatureDetailSheet(template: t),
+    );
+  }
+
+  void _showAddMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text('Ajouter une créature',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.enemyPrimary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.auto_fix_high,
+                      color: AppColors.enemyPrimary),
+                ),
+                title: const Text('Créature sur le pouce',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(
+                  'Assistant guidé : questions → stats auto-calculées',
+                  style:
+                      TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showWizard(context);
+                },
+              ),
+              const Divider(height: 20),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child:
+                      Icon(Icons.edit_note, color: Colors.grey.shade400),
+                ),
+                title: const Text('Saisie manuelle'),
+                subtitle: Text(
+                  'Remplir toutes les stats à la main',
+                  style:
+                      TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showTemplateSheet(context, null);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showWizard(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => const CreatureWizardSheet(),
     );
   }
 }

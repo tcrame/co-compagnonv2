@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 8 | 144 | 16 | +4 | 9m |
+| 8 | 70 | 20 | 17 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +4 | +0 | +4 | +4 | +3 | +3 | +3 |
+| +4 | +5 | +5 | +4 | +4 | +4 | +4 |
 
 **Sens :** Vision dans le noir 36m  
 **Résistances :** Nécrotique, non-magiques  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Poing | +6 | 1d8+4 contondant + 3d6 nécrotique | Contact |
-| Morsure (cible agrippée seulement) | +6 | 1d6+4 perforant + 3d6 nécrotique | Contact |
-
+| Griffes et morsure | +11 | 1d8+5 | Contact |
+| Épée longue | +11 | 1d8+7 | Contact |
 ## Capacités spéciales
 
 - **Immortel** : Lorsqu'il tombe à 0 PV, il passe automatiquement en forme gazeuse et se dirige vers son cercueil où il reprend forme de chair. Il se réveille avec tous ses PV au prochain crépuscule. Pour le tuer, il est alors nécessaire de lui planter un pieu dans le cœur pendant qu'il dort pour l'empêcher de se réveiller et de repasser en forme gazeuse, puis de brûler son corps et son cercueil.

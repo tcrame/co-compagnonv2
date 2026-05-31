@@ -245,7 +245,7 @@ class CharacterTemplate {
     } catch (_) {}
 
     return CharacterTemplate(
-      id: map['id'] as int,
+      id: map['id'] as int?,
       name: map['name'] as String,
       isAlly: (map['is_ally'] as int) == 1,
       baseInitiative: map['base_initiative'] as int,

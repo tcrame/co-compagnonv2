@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 6 | 93 | 18 | +1 | 9m |
+| 6 | 60 | 20 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +5 | +4 | +1 | +1 | +2 |
+| +0 | +5 | +5 | +0 | +1 | +0 | +2 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Hache à deux mains ×3 | +8 | 1d12+5 tranchant | Contact |
-| Javelot | +8 | 1d6+5 perforant | Contact / 9/36m |
-
+| Épée deux mains | +10 | 2d6+5 | Contact |
 ## Capacités spéciales
 
 - **Imparable** : Si la créature obtient 15-20 sur le d20 d'un test d'attaque, elle inflige +2d6 DM et l'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique. BRISE-GENOU : Si un adversaire au contact tente de s'éloigner de la créature (généralement pour fuir), celle-ci obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.

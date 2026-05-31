@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 34 | 11 | +0 | 12m, escalade 9m |
+| 4 | 50 | 18 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +4 | +3 | -4 | -1 | +0 |
+| +1 | +6 | +6 | +2 | -2 | -4 | +1 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +6 | 1d8+4 | Contact |
-| Griffes ×2 | +6 | 2d6+4 | Contact |
-
+| Morsure et griffes | +10 | 2d6+6 | Contact |
 ## Capacités spéciales
 
 - **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.

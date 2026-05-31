@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_theme.dart';
+import '../backup/backup_screen.dart';
 import '../bestiary/bestiary_screen.dart';
 import '../characters/character_list_screen.dart';
 import '../home/home_screen.dart';
@@ -64,6 +65,16 @@ class LandingScreen extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 8),
+              IconButton(
+                icon: Icon(Icons.backup_outlined,
+                    color: AppColors.onSurfaceMuted, size: 20),
+                tooltip: 'Sauvegarde & Restauration',
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BackupScreen()),
+                ),
+              ),
+              const SizedBox(height: 4),
             ],
           ),
         ),

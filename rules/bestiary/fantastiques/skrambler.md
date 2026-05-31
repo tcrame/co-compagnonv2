@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 45 | 14 | +3 | 12m, escalade 12m |
+| 3 | 30 | 17 | 14 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +0 | +2 | +2 | -3 | -2 | +0 |
+| +1 | +6 | +6 | +2 | -4 | -4 | +2 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Griffe ×3 | +5 | 1d6+3 tranchant | Contact |
-| Morsure | +5 | 1d8+3 perforant | Contact |
-
+| Pattes | +8 | 2d6+6 | Contact |
 ## Capacités spéciales
 
 - **Creuser (L)** : Au prix d'une action limitée, le skrambler est capable de creuser sur une profondeur de 10 m par round. Le tunnel s'effondre PAGE 296  PARTIE III derrière lui. Il peut utiliser sa capacité Embuscade pour surgir du sol et attaquer.

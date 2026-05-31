@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 38 | 14 | +4 | 9m |
+| 4 | 40 | 17 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +3 | +2 | +0 | +1 | +0 | +3 | +1 |
+| +3 | +3 | +2 | +0 | +1 | +1 | +2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Épée courte | +5 | 1d6+3 | Contact |
-| Arc court | +5 | 1d6+3 | 18/72m |
-
+| Épée courte | +7 | 1d6+3 | Contact |
 ## Capacités spéciales
 
 - **Attaque Mortelle (A)** : Une attaque qui doit être exécutée de dos ou par surprise. L'assassin obtient un dé bonus en attaque et ajoute +4d6 aux DM de sa première attaque (il fait ensuite sa seconde attaque dans des conditions normales).

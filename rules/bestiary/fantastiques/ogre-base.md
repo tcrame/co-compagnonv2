@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 59 | 11 | -1 | 12m |
+| 3 | 40 | 17 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -1 | -1 | +4 | +3 | -3 | -3 | +0 |
+| +1 | +6 | +6 | +0 | -2 | -2 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Massue grande | +6 | 2d8+4 contondant | Contact |
-| Javelot | +6 | 2d6+4 perforant | Contact / 9/36m |
-
+| Hachoir | +7 | 2d6+6 | Contact |
 ## Capacités spéciales
 
 - **Tape Dur** : Si la créature obtient 15 à 20 au dé du test d'attaque, l'attaque est automatiquement réussie. De surcroît, la victime doit réussir un test de CON difficulté 16 ou être étourdie pendant 1 round.

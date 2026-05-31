@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1 | 22 | 15 | +1 | 9m |
+| 1 | 15 | 14 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +0 | +2 | +1 | -3 | +0 | +0 |
+| +0 | +3 | +3 | +0 | -2 | -2 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,10 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +4 | 1d4+2 | Contact |
-| Lance | +4 | 1d6+2 / 1d8+2 | Contact / 6/18m |
-| Arc long | +3 | 1d8+1 | 45/180m |
-
+| Hache | +4 | 1d8+3 | Contact |
 ## Capacités spéciales
 
 - **Rires Insupportables** : À chaque round, un PJ qui combat des gnolls au contact doit réussir un test de VOL difficulté (5 + nombre de gnolls) à son contact ou subir un dé malus en attaque. MEUTE DE GNOLLS | +1 Niveau Une meute de gnolls comprend au moins 3 gnolls par PJ.

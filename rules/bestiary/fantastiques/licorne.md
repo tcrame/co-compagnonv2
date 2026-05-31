@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 67 | 12 | +2 | 15m |
+| 3 | 35 | 18 | 17 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | +0 | +4 | +2 | +3 | +3 | +3 |
+| +4 | +5 | +5 | +4 | +4 | +0 | +4 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Sabot ×2 | +6 | 2d4+4 contondant | Contact |
-| Corne | +6 | 1d8+4 perforant | Contact |
-
+| Corne et sabots | +8 | 2d6+5 | Contact |
 ## Capacités spéciales
 
 - **Célérité** : Si la licorne ne transporte aucune charge supérieure à 50 kg, elle peut parcourir jusqu'à 15 m par action de mouvement.

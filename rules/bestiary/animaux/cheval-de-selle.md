@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1 | 13 | 10 | +0 | 18m |
+| 1 | 14 | 11 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +3 | +0 | -4 | -1 | +0 |
+| +0 | +4 | +4 | +0 | -1 | -4 | -2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Sabots | +5 | 2d4+3 | Contact |
-
+| Ruade | +2 | 1d4+4 | Contact |
 ## Capacités spéciales
 
 - **Monture** : La créature double sa FOR pour porter une charge. 3 OPPOSITION 0 INTRO

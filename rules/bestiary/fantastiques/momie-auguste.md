@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 10 | 97 | 17 | -1 | 6m |
+| 10 | 160 | 24 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -1 | -1 | +4 | +3 | +3 | +4 | +1 |
+| +3 | +6 | +6 | +2 | -2 | +3 | +6 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** Contondant/perforant/tranchant (non magiques)  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Coup maudit ×2 | +8 | 2d6+4 contondant + malédiction | Contact |
-
+| Coup | +16 | 2d6+8 | Contact |
 ## Capacités spéciales
 
 - **Résistance Aux Dm** : La momie réduit de 5 tous les DM subis, sauf par le feu.

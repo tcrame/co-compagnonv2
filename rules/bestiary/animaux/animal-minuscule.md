@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 0 | 1 | 10 | +0 | 6m (variable) |
+| 0 | 1 | 13 | 16 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | -5 | +0 | -4 | -3 | +0 |
+| +3 | -4 | -4 | +2 | -2 | -4 | -2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +0 | 1 | Contact |
-
+| Morsure | +1 | 0 | Contact |
 ## Capacités spéciales
 
 - **Minuscule** : La créature obtient un bonus de +10 aux tests d'escalade et de discrétion.

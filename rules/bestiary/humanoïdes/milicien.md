@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1/2 | 11 | 13 | +1 | 9m |
+| 1/2 | 9 | 14 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +1 | +1 | +0 | +0 | +0 | +0 |
+| +0 | +1 | +1 | +0 | +0 | -1 | -1 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Javelot | +3 | 1d6+1 | Contact / 6/18m |
-| Masse d'armes | +3 | 1d6+1 | Contact |
-
+| Pique | +2 | 1d10+1 | Contact |
 ## Capacités spéciales
 
 *Aucune capacité spéciale.*

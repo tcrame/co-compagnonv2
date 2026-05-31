@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1/2 | 11 | 12 | +1 | 9m |
+| 1/2 | 9 | 12 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | +1 | +0 | +0 | +0 | +0 | +0 |
+| +1 | +1 | +1 | +0 | +0 | +0 | -1 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Cimeterre | +3 | 1d6+1 | Contact |
-| Arbalète légère | +3 | 1d8+1 | 24/96m |
-
+| Épée longue | +2 | 1d8+1 | Contact |
+| Arc | +2 | 1d6 | 30 m |
 ## Capacités spéciales
 
 - **Embuscade** : Au premier round de combat, si l'environnement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise.

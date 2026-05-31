@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 52 | 15 | -1 | 6m |
+| 3 | 30 | 17 | 12 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -1 | +0 | +3 | +2 | -4 | -3 | +0 |
+| +0 | +3 | +3 | +2 | -1 | -4 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +5 | 2d6+3 + pétrification | Contact |
-
+| Morsure | +6 | 2d6+4 | Contact |
 ## Capacités spéciales
 
 - **Regard Pétrifiant** : Celui qui regarde le basilic et croise son regard est pétrifié. Un personnage qui n'est pas conscient du danger doit réussir un test de CON difficulté 15 à chaque round de combat (à son tour) ou être immédiatement transformé en pierre. La transformation est permanente, mais un sort de Délivrance (prêtre) lancé moins de 1 jour par niveau du prêtre après la pétrification peut ramener la victime à la vie.

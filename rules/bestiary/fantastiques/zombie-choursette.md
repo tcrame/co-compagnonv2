@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 4 | 52 | 10 | -2 | 9m |
+| 4 | 85 | 13 | 8 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -2 | -2 | +4 | +2 | -4 | -4 | -5 |
+| +1 | +6 | +6 | -2 | -2 | -4 | +6 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Coup ×2 | +6 | 1d8+4 contondant | Contact |
-
+| Bec et griffes | +12 | 2d8+10 | Contact |
 ## Capacités spéciales
 
 - **Résistance Aux Dm** : Divisez par deux tous les DM infligés au zombie par des armes, sauf s'il s'agit d'armes tranchantes.

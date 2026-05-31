@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 7 | 93 | 9 | -1 | 9m |
+| 7 | 90 | 20 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| -1 | -1 | +4 | +2 | -4 | -2 | -5 |
+| +1 | +6 | +6 | +0 | -4 | -4 | +6 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Coup ×2 | +6 | 2d8+4 contondant | Contact |
-
+| Poings | +11 | 1d10+6 | Contact |
 ## Capacités spéciales
 
 - **Une Petite Dernière** : Si un adversaire au contact tente de s'éloigner de la créature (généralement pour fuir), elle obtient une attaque de contact gratuite contre lui.

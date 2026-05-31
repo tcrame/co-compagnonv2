@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1/2 | 13 | 13 | +4 | 3m, vol 18m |
+| 1/2 | 3 | 13 | 16 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +4 | +0 | -3 | +2 | -5 | -3 | +0 |
+| +3 | +2 | -3 | +4 | +0 | -4 | +0 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Serres | +4 | 2d6+2 | Contact |
-
+| Serres | +3 | 1d4 | Contact |
 ## Capacités spéciales
 
 - **Vol Rapide** : La créature obtient une action de mouvement supplémentaire par round lorsqu'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d4 aux DM si elle est en vol et attaque une créature au sol.

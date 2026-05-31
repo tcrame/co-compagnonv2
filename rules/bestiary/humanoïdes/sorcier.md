@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 5 | 40 | 12 | +2 | 9m |
+| 5 | 45 | 18 | 10 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +2 | -1 | +1 | +3 | +1 | +3 | +1 |
+| +1 | +1 | -1 | +0 | +1 | +3 | +3 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,9 +22,8 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Dague | +4 | 1d4+2 | Contact / 6/18m |
-| Tour de magie | +5 | selon sort | variable |
-
+| Dague | +6 | 1d4+2+2d6 | Contact |
+| Attaque magique | +10 |  | Contact |
 ## Capacités spéciales
 
 - **Animer Un Cadavre (L)** : Ce pouvoir permet d'animer le cadavre d'une créature morte (portée 10 m) pendant le combat. La créature conserve son profil, mais elle subit une pénalité de -2 en attaque, en DEF et en Initiative. Lorsque le cadavre est à nouveau vaincu, il ne peut pas être réanimé. Le cadavre de la créature animée ne peut être d'un NC supérieur à 2.

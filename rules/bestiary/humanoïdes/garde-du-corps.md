@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 52 | 17 | +0 | 9m |
+| 3 | 45 | 20 | 13 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +3 | +2 | +0 | +0 | +0 | +0 |
+| +1 | +3 | +3 | +0 | +0 | +0 | +2 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Masse de guerre | +5 | 1d8+3 | Contact |
-
+| Épée longue | +6 | 1d8+3 | Contact |
 ## Capacités spéciales
 
 - **Garde Du Corps** : La créature peut désigner gratuitement une cible à son contact chaque round (ce peut être une créature, mais aussi un objet). Elle réduit tous les DM que la cible 3 OPPOSITION 0 INTRO subit de 5 points. Elle ne peut pas se dési- 1 gner elle-même. PERSO

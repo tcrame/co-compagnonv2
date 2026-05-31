@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 0 | 3 | 11 | +1 | 9m |
+| 0 | 3 | 13 | 15 | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +1 | -3 | +1 | +0 | -4 | +0 | +0 |
+| +2 | -2 | -2 | +2 | -2 | -4 | +0 |
 
 **Sens :** —  
 **Résistances :** —  
@@ -22,8 +22,7 @@
 
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
-| Morsure | +2 | 1d4 | Contact |
-
+| Morsure | +3 | 1d6 | Contact |
 ## Capacités spéciales
 
 *Aucune capacité spéciale.*

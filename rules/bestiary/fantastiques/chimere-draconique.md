@@ -4,13 +4,13 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 7 | 114 | 14 | +0 | 9m, vol 18m |
+| 7 | ? | ? | ? | ------ |
 
 ## Caractéristiques
 
 | AGI | CON | FOR | PER | CHA | INT | VOL |
 |-----|-----|-----|-----|-----|-----|-----|
-| +0 | +0 | +4 | +4 | +0 | +0 | +0 |
+| +0 | +0 | +0 | +0 | +0 | +0 | +0 |
 
 **Sens :** Vision dans le noir 18m  
 **Résistances :** —  
