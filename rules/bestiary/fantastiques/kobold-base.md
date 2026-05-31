@@ -27,5 +27,4 @@
 
 ## Capacités spéciales
 
-- **Tactique en meute** : Avantage aux attaques si un allié non incapacité est adjacent à la cible.
-- **Sensibilité au soleil** : Désavantage aux attaques et jets de PER à la lumière directe du soleil.
+*Aucune capacité spéciale.*

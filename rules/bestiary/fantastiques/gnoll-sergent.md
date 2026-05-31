@@ -26,5 +26,4 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques au fléau.
-- **Rampage** : Idem gnoll de base.
+- **Sergent** : Une fois par round, le sergent peut donner une action supplémentaire à n'importe quel allié sous ses ordres à portée de vue (attaque ou mouvement). Une fois par combat, une attaque qui aurait dû amener le sergent à 0 PV est ignorée.

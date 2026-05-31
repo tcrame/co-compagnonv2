@@ -27,6 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 pinces + 1 dard.
-- **Constriction de pince** : Si les 2 pinces touchent → agrippée DD 14 FOR et entravée.
-- **Venin paralysant** : DD 14 CON ou paralysé 1 minute.
+- **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature doit réussir un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine sa victime et les DM sont doublés.
+- **Enragé** : Lorsqu'elle reçoit un coup critique, la créature devient enragée.

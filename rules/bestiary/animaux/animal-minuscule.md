@@ -23,3 +23,8 @@
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
 | Morsure | +0 | 1 | Contact |
+
+## Capacités spéciales
+
+- **Minuscule** : La créature obtient un bonus de +10 aux tests d'escalade et de discrétion.
+- **Attaques Ridicules** : La créature n'inflige pas de DM sauf sur une réussite critique (1 DM).

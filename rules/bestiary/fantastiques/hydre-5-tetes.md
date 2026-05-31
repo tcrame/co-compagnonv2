@@ -26,6 +26,5 @@
 
 ## Capacités spéciales
 
-- **Têtes multiples** : Autant d'attaques de morsure que de têtes actives.
-- **Réactivité** : Une attaque d'opportunité par tête restante.
-- **Régénération des têtes** : Tête coupée (≥20 dégâts tranchants) → 2 repoussent. Le feu empêche la régénération.
+- **Attaques Multiples** : L'hydre peut effectuer un total de 5 attaques, mais pas plus de 4 attaques sur la même cible chaque round. Utilisez la règle des attaques groupées pour gagner du temps (par exemple, +5 pour l'attaque de deux têtes à la fois).
+- **Guérison Accélérée** : L'hydre régénère 5 PV par round sauf contre les DM de feu.

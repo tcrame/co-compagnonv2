@@ -26,5 +26,4 @@
 
 ## Capacités spéciales
 
-- **Chasse en meute** : Avantage si un allié non incapacité est adjacent à la cible.
-- **Odorat fin** : Avantage aux tests de PER (odorat).
+- **Maladie** : Chaque créature mordue par un rat doit faire un test de CON difficulté 10 à la fin du combat. En cas d'échec, elle contracte une maladie dont les symptômes se manifestent après 2d6 h. La victime est affaiblie et perd 1d4 PV toutes les 24 h, qui ne peuvent pas être soignés par le repos.

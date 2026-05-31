@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **Cohésion de rang** : +1 à la DEF si adjacent à un autre milicien.
+*Aucune capacité spéciale.*

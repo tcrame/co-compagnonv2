@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **Vigilance** : Ne peut pas être surpris.
+*Aucune capacité spéciale.*

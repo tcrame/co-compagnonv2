@@ -26,5 +26,4 @@
 
 ## Capacités spéciales
 
-- **Sorts (PER, DD 12)** : Tours de magie — Résistance, Épargne des mourants. Niv. 1 (4 empl.) — Soins légers, Bénédiction, Commandement. Niv. 2 (3 empl.) — Esprits gardiens, Immobiliser une personne.
-- **Tactique en meute** : Avantage si allié adjacent.
+*Aucune capacité spéciale.*

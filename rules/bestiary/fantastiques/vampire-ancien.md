@@ -27,9 +27,5 @@
 
 ## Capacités spéciales
 
-- **Toutes les capacités du vampire standard, améliorées.**
-- **Sorts (CHA, DD 18)** : Appel de foudre, Ténèbres, Charme-monstre, Transmutation de l'eau.
-- **Régénération** : 30 PV/tour.
-- **Résistance légendaire (3/jour)**.
-- **Actions légendaires (3)** : Déplacer, Attaquer, Morsure (2 pts), Sort (3 pts).
-- **Repaire légendaire** : Actions de repaire — brume de l'obscurité, mains cadavériques, appel des ombres.
+- **Estropier** : Le vampire inflige des blessures qui se nécrosent et laissent de terribles cicatrices. Ses attaques infligent des DM que vous devez comptabiliser à part, car les effets des sorts et des capacités de guérison sont divisés par deux. De plus, il triple les DM en cas de coup critique au lieu de les doubler.
+- **Regard Envoûtant (M)** : Le regard du vampire sape la volonté de ses opposants. Il peut utiliser une action de mouvement pour tenter d'envoûter son adversaire. La cible doit réussir un test de VOL PARTIE III  PAGE 299 difficulté 20 ou être affaiblie pour 1d6 rounds ; les créatures de niveau 3 ou inférieur passent sous le contrôle du vampire.

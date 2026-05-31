@@ -26,6 +26,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques au cimeterre.
-- **Fuite agile** : Désengagement ou Cacher en action bonus.
-- **Commandement gobelin** : En bonus, un gobelin allié peut attaquer immédiatement.
+- **Attaque En Meute** : Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d'un bonus de +2 en attaque (bonus qui peut s'ajouter à une éventuelle attaque groupée).
+- **Sergent** : Une fois par round, le sergent peut donner une action supplémentaire à n'importe quel allié sous ses ordres à portée de vue (attaque ou mouvement). Une fois par combat, une attaque qui aurait dû amener le sergent à 0 PV est ignorée. PAGE 284  PARTIE III

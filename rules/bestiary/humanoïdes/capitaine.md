@@ -27,6 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques par action.
-- **Commandement de guerre** : Un allié dans 9m peut attaquer en réaction (bonus).
-- **Parade** : +3 à la DEF contre une attaque (réaction, 3/jour).
+- **Capitaine** : Le capitaine donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.
+- **Riposte** : La créature peut effectuer une attaque en action gratuite contre chaque adversaire qui l'attaque à l'exception de celui qu'elle a elle-même choisi d'attaquer à son tour.

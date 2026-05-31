@@ -27,5 +27,6 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques à l'épée ou 2 lancers de rocher.
-- **Renvoi de roche** : Réaction — renvoie un rocher lancé (+11, 4d10+7).
+- **Fauchage** : Sur 15 à 20 au test d'attaque, si l'attaque est réussie, la victime doit réussir au choix un test de FOR ou d'AGI difficulté 20 ou être renversée.
+- **Balayage** : La créature utilise sa grande taille pour affecter deux créatures à son contact d'un seul coup de patte/arme. Faites un seul test et comparez-le à la DEF des deux cibles. Si les deux cibles sont touchées, la cible secondaire (désignée par le MJ) subit la moitié des DM.
+- **Immunisé Au Feu** : Le géant du feu est immunisé aux DM de feu.

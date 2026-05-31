@@ -27,5 +27,4 @@
 
 ## Capacités spéciales
 
-- **Tactique en meute** : Avantage si allié adjacent à la cible.
-- **Commandement** : Désigne un kobold allié pour attaquer en bonus.
+- **Imparable** : Si la créature obtient 15-20 au d20 d'un test d'attaque, elle inflige 2d4 DM supplémentaires et l'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique.

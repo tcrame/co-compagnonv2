@@ -27,5 +27,6 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Morsure + 2 griffes.
-- **Paralysie améliorée** : DD 12 CON ou paralysé ; les elfes ont l'avantage (mais ne sont plus immunisés).
+- **Paralysie** : Une créature blessée par la morsure d'une goule puissante doit réussir un test de CON difficulté 15 ou être paralysée pendant 1d6 rounds. PAGE 286  PARTIE III
+- **Miasmes** : La goule puissante émet une odeur de cadavre en décomposition absolument infâme et des miasmes toxiques dans un rayon de 2 m. À chaque round, à la fin du tour de la goule, ses adversaires au contact doivent réussir un test de CON difficulté 10 ou être affaiblis et perdre 1d4 PV.
+- **Fièvre Des Goules** : Comme pour la goule, avec un test de CON difficulté 18.

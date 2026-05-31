@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **En nombre** : Avantage aux jets d'attaque si un allié adjacent à la cible.
+- **Embuscade** : 1 Au premier round de combat, si l'environ- PERSO nement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou 2 être surprise. RÈGLES

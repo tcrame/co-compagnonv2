@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 1 morsure + 2 griffes par action.
+*Aucune capacité spéciale.*

@@ -26,7 +26,5 @@
 
 ## Capacités spéciales
 
-- **Têtes multiples** : 10 têtes, une attaque par tête par action.
-- **Réactivité** : Une attaque d'opportunité par tête.
-- **Régénération des têtes** : Idem hydre, feu supprime seulement la régénération.
-- **Souffle glacé** : Au lieu d'attaquer, souffle sur une cible — DD 16 CON, 6d8 froid (moitié en succès).
+- **Guérison Accélérée** : L'hydre guérit de 5 PV par tour au début de son tour, sauf si les DM subis sont de feu.
+- **Attaques Multiples** : L'hydre peut effectuer un total de 10 attaques, mais pas plus de 4 attaques sur la même cible chaque round. Utilisez la règle des attaques groupées pour gagner du temps (par exemple, +5 pour l'attaque de 2 têtes à la fois).

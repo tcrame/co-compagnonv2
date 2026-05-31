@@ -26,4 +26,5 @@
 
 ## Capacités spéciales
 
-- **Charge** : Déplacement ≥ 6m + touche → +3d10+5 dégâts, DD 15 FOR ou renversé.
+- **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus de subir les DM normaux, une victime de taille inférieure ou égale à la créature doit faire un test de FOR difficulté 18 ou être renversée. Dans ce cas, la créature piétine sa victime et les DM sont doublés.
+- **Enragé** : Lorsqu'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV. 3 OPPOSITION 0 INTRO Sanglier 1 Les sangliers mâles pèsent généralement PERSO autour de 150 kg, mais on peut rencontrer des 2 spécimens de 200 à 300 kg. RÈGLES

@@ -27,6 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Morsure + 2 griffes.
-- **Régénération** : Regagne 10 PV au début de chaque tour. Désactivée par feu ou acide jusqu'au prochain tour. Réduit à 0 PV par feu/acide → ne régénère pas.
-- **Odorat** : Avantage aux tests de PER (odorat).
+- **Fauchage** : Sur 17 à 20 sur le d20 d'un test d'attaque, si l'attaque est réussie, la victime doit réussir au choix un test de FOR ou d'AGI PAGE 298  PARTIE III difficulté 16 ou être renversée. La créature retranche 3 à tous les DM subis (RD 3).
+- **Vitalité Surnaturelle** : Un troll récupère 5 PV par tour, sauf si les DM subis sont de feu ou d'acide. Même à 0 PV, il continue à régénérer les tissus morts à moins qu'on ne brûle son corps ou si un PJ utilise une action limitée pour achever la créature (par exemple, en séparant la tête du corps).

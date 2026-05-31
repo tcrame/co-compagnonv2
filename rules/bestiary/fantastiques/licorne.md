@@ -27,8 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 sabots + 1 corne.
-- **Charge** : Déplacement ≥ 6m + corne → +2d8+4 dégâts, DD 14 FOR ou renversé.
-- **Magie innée (CHA, DD 14)** : À volonté — Détecter le mal, Lumière, Passe-sans-trace. 1/jour chacun — Calme des émotions, Dissipation de la magie, Lumière du jour, Soins de groupe.
-- **Aura de guérison** : Créatures dans 18m → +1 PV par dé de soin dépensé.
-- **Résistance à la magie** : Avantage aux JS contre les sorts.
+- **Célérité** : Si la licorne ne transporte aucune charge supérieure à 50 kg, elle peut parcourir jusqu'à 15 m par action de mouvement.
+- **Résistance Aux Dm** : Une licorne réduit de 5 les DM de toutes les armes qui ne sont pas en fer froid (un alliage spécial forgé à froid et particulièrement rare). En revanche, elle double les DM reçus par de telles armes.

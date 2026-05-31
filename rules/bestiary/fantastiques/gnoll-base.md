@@ -28,4 +28,5 @@
 
 ## Capacités spéciales
 
-- **Rampage** : Quand le gnoll réduit une créature à 0 PV, il peut se déplacer jusqu'à la moitié de sa vitesse et attaquer une créature adjacente (action bonus).
+- **Rires Insupportables** : À chaque round, un PJ qui combat des gnolls au contact doit réussir un test de VOL difficulté (5 + nombre de gnolls) à son contact ou subir un dé malus en attaque. MEUTE DE GNOLLS | +1 Niveau Une meute de gnolls comprend au moins 3 gnolls par PJ.
+- **Interchangeables** : Tant que les gnolls sont plus nombreux que la cible, ils se relaient pour esquiver ses attaques et ils obtiennent un bonus de +3 en DEF. Si plusieurs gnolls sont au contact du PJ, le MJ a toute latitude pour infliger les DM d'une attaque sur le gnoll de son choix, le personnage ne sait jamais lequel il blesse. L'HALLALI : Les gnolls profitent d'une erreur de leur victime pour lui porter des attaques fatales. Chaque fois que la victime de la meute rate une attaque ou obtient sur un test d'attaque un résultat au d20 allant de 1 à 5 (inclus), elle déclenche la curée. Chaque gnoll à son contact bénéficie immédiatement et gratuitement d'une attaque contre la victime.

@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **Assaut agressif** : Peut se déplacer vers une créature hostile en action bonus.
+- **Sensible À La Lumière** : Créatures souterraines, les orcs détestent la lumière du jour. La lumière du soleil leur inflige un dé malus en attaque.

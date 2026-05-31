@@ -27,6 +27,6 @@
 
 ## Capacités spéciales
 
-- **Fouissement furtif** : Plonge sous terre sans provoquer d'attaque d'opportunité.
-- **Englobement** : Cible M ou inférieure agrippée DD 15, puis avalée (3d6 acide/tour, aveuglée et entravée).
-- **Sens des vibrations** : Perçoit les créatures marchant sur le sol dans un rayon de 18m.
+- **Embuscade** : Au premier round de combat, si le geoselachis peut se dissimuler sous terre, la cible doit faire un test de PER difficulté 15 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d6 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.
+- **Encorner** : Lorsque la créature réussit une attaque avec un résultat de 17-20 au d20, elle encorne sa proie et lui inflige immédiatement une attaque gratuite supplémentaire. PARTIE III  PAGE 281
+- **Déplacement Sous Terre** : Le geoselachis est capable de parcourir 5 m par action de mouvement en creusant dans un sol meuble (le tunnel s'effondre derrière lui).

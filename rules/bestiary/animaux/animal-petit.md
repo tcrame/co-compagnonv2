@@ -23,3 +23,7 @@
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
 | Morsure | +2 | 1d4 | Contact |
+
+## Capacités spéciales
+
+*Aucune capacité spéciale.*

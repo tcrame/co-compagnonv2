@@ -27,5 +27,5 @@
 
 ## Capacités spéciales
 
-- **Charge** : Déplacement ≥ 6m + touche → DD 12 FOR ou renversé.
-- **Saut félin** : Griffes en bonus si cible renversée.
+- **Embuscade** : Au premier round de combat, si l'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.
+- **Dévorer** : Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie entre ses crocs ou ses griffes et lui inflige immédiatement une attaque gratuite supplémentaire. PAGE 272  PARTIE III

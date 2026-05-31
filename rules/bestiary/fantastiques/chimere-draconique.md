@@ -29,5 +29,4 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Morsure + cornes + griffes, ou souffle.
-- **Type de souffle** : Varie selon la tête (froid, acide, foudre, poison ou feu).
+- **Souffle (L)** : Le souffle est une attaque de zone affectant toutes les créatures dans un cône de 10 m de long sur 10 m de large. L'attaque inflige automatiquement (pas de test d'attaque) 6d6+9 DM. Les DM sont divisés par deux si la victime réussit un test de DEX difficulté 15. La créature doit attendre 2d4 rounds avant d'utiliser à nouveau son souffle après chaque utilisation.

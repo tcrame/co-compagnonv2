@@ -27,6 +27,6 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 coups.
-- **Forme d'eau** : Peut entrer dans l'espace ennemi, se faufiler dans des espaces ≥ 1cm.
+- **Attaque Multiple** : 2 coups.
+- **Forme D'eau** : Peut entrer dans l'espace ennemi, se faufiler dans des espaces ≥ 1cm.
 - **Congélation** : Attaque au corps à corps contre l'élémentaire → 1d6 dégâts de froid à l'attaquant.

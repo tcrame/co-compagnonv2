@@ -27,4 +27,6 @@
 
 ## Capacités spéciales
 
-- **Paralysie** : Griffes réussies → DD 10 CON ou paralysé 1 minute (retenter à chaque fin de tour). Les elfes sont immunisés.
+- **Paralysie** : Une créature blessée par la morsure d'une goule doit réussir un test de CON difficulté 10 ou être paralysée pendant 1d6 rounds. PARTIE III  PAGE 285
+- **Devenir Une Goule** : Une créature tuée par une goule en devient une à son tour au prochain crépuscule.
+- **Fièvre Des Goules** : À la fin du combat, si le personnage a été blessé au moins une fois par la morsure d'une goule, il doit réussir un test de CON difficulté 15 ou contracter la maladie. Chaque jour, il subit 1d4° DM retranchés directement à sa valeur de PV maximale (il ne peut plus dépasser cette nouvelle valeur) et doit faire un nouveau test de CON difficulté 15 pour vaincre la maladie. Lorsqu'il arrive à 0 PV, il meurt et se transforme en goule. S'il guérit, les PV perdus peuvent être récupérés normalement. Un sort de Délivrance (rang 3 de la voie de la spiritualité) peut mettre fin à la fièvre des goules.

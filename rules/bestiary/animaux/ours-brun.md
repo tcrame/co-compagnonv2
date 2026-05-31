@@ -27,5 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 1 morsure + 2 griffes par action.
-- **Étreinte** : Si les 2 griffes touchent la même cible → agrippée DD 14 AGI/FOR.
+- **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.
+- **Enragé** : Lorsqu'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV.

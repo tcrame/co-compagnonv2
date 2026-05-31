@@ -26,4 +26,4 @@
 
 ## Capacités spéciales
 
-- **Monture** : Peut être utilisé comme monture (créature taille M).
+- **Monture** : La créature double sa FOR pour porter une charge. 3 OPPOSITION 0 INTRO

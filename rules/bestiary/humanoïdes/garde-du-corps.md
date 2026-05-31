@@ -26,5 +26,5 @@
 
 ## Capacités spéciales
 
-- **Protection** : Impose désavantage à toute attaque visant une créature adjacente (réaction).
-- **Résistance à la douleur** : Avantage aux JS contre peur et charme.
+- **Garde Du Corps** : La créature peut désigner gratuitement une cible à son contact chaque round (ce peut être une créature, mais aussi un objet). Elle réduit tous les DM que la cible 3 OPPOSITION 0 INTRO subit de 5 points. Elle ne peut pas se dési- 1 gner elle-même. PERSO
+- **Inamovible** : 2 La créature est immunisée aux états préjudi- RÈGLES ciables suivants : Surpris, Immobilisé, Renversé et elle ne peut être désarmée. De plus, elle ne subit aucun DM de la capacité Attaque sournoise du voleur ou d'autres capacités similaires.

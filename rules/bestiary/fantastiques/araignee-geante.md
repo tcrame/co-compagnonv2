@@ -27,7 +27,8 @@
 
 ## Capacités spéciales
 
-- **Venin** : 2d8 dégâts de poison, DD 11 CON pour moitié.
-- **Toile** : Cible entravée (DD 12 FOR par action pour se libérer).
-- **Déplacement en toile** : Se déplace sans malus dans ses propres toiles.
-- **Perception de la toile** : Connaît la position de toute créature au contact de sa toile.
+- **Poison Mortel** : Le poison inflige 2d6 DM supplémentaires à la victime à chaque attaque. Si la victime réussit un test de CON de la difficulté indiquée, elle subit seulement la moitié des DM.
+- **Vermine** : Une araignée géante peut encore agir un round complet lorsqu'elle atteint 0 PV. Une araignée se déplace de 15 m par action de mouvement.
+- **Variantes** : Choisissez un type de poison et soit Toile (L), soit Araignée chasseuse.
+- **Araignée Chasseuse** : Au premier round de combat, si l'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 3 OPPOSITION 0 INTRO ou être surprise. Si elle attaque avec succès 1 une cible surprise, la créature inflige +1d4 DM PERSO et toute créature dont la FOR est inférieure à 2 la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion. RÈGLES
+- **Toile (L)** : Sur un test d'attaque réussi (portée 3 m), l'araignée emprisonne sa cible dans une toile gluante et solide. Elle est immobilisée ; se libérer nécessite l'usage d'une action limitée et il faut réussir un test de FOR difficulté 12.

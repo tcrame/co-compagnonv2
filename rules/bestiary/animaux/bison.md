@@ -26,4 +26,4 @@
 
 ## Capacités spéciales
 
-- **Charge** : Déplacement ≥ 6m + touche → +2d8+4 dégâts, DD 13 FOR ou renversé.
+- **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 14 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés. PAGE 268  PARTIE III

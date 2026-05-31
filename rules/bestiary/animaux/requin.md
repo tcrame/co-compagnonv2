@@ -26,5 +26,4 @@
 
 ## Capacités spéciales
 
-- **Odorat du sang** : Avantage aux jets de PER pour détecter une créature blessée à moins de 90m.
-- **Respiration aquatique uniquement** : Suffoque hors de l'eau après 1 heure.
+- **Dévorer** : Lorsque le requin réussit une attaque avec un résultat de 15-20 au d20, il saisit sa proie entre ses crocs et lui inflige immédiatement une attaque gratuite supplémentaire. Si la FOR de la cible est inférieure ou égale au prédateur, elle est de plus immobilisée. Pour se libérer, la victime doit réussir un test de FOR difficulté 15 lors de son tour et cela lui demande une action de mouvement.

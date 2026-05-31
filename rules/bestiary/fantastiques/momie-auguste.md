@@ -26,9 +26,6 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 coups maudits.
-- **Regard de la terreur** : DD 16 VOL.
-- **Malédiction de la momie** : DD 14 CON ou malédiction (max PV -10d6/jour).
-- **Sorts (PER, DD 16)** : Commandement, Contagion, Punition de sort, Sanctuaire, Malédiction.
-- **Résistance légendaire (3/jour)**.
-- **Actions légendaires (3/tour)** : Coup (1 pt), Regard de terreur (2 pts), Tourbillon de sable (3 pts — DD 15 CON ou aveuglé et entravé).
+- **Résistance Aux Dm** : La momie réduit de 5 tous les DM subis, sauf par le feu.
+- **Putréfaction** : Toute créature blessée par une momie doit réussir un test de CON difficulté 15 ou contracter une horrible maladie qui occasionne le pourrissement rapide de ses chairs. Une sorte de lèpre fulgurante. La victime subit 1d10 DM par round pendant 5 rounds. Tant qu'elle est sous l'effet de la putréfaction, il n'est pas nécessaire de réaliser un nouveau test de CON lorsque la victime est la cible d'une attaque de la momie.
+- **Injonction Mortelle (L)** : Une cible située à une distance maximale de 30 m doit réussir un test de CON difficulté 15 ou tomber à 0 PV (et mourir immédiatement s'il s'agit d'un PNJ). En cas de succès, la cible subit tout de même 2d8+10 DM. Ce pouvoir ne peut prendre une même créature pour cible qu'une seule fois par combat. VOIE DE LA MAGIE UNIVERSELLE RANG 5 : La momie auguste peut lancer tous les sorts de cette voie à volonté. 3 OPPOSITION 0 INTRO

@@ -27,4 +27,4 @@
 
 ## Capacités spéciales
 
-- **Fuite agile** : Peut se Désengager ou se Cacher en action bonus.
+- **Attaque En Meute** : Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d'un bonus de +2 en attaque (bonus qui peut s'ajouter à une éventuelle attaque groupée). PARTIE III  PAGE 283

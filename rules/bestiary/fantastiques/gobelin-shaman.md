@@ -27,5 +27,4 @@
 
 ## Capacités spéciales
 
-- **Sorts (PER, DD 12)** : Tours de magie — Trait de feu, Lumière. Niv. 1 (3 empl.) — Soins légers, Injonction. Niv. 2 (2 empl.) — Immobiliser une personne.
-- **Fuite agile** : Désengagement ou Cacher en action bonus.
+- **Attaque En Meute** : Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d'un bonus de +2 en attaque (bonus qui peut s'ajouter à une éventuelle attaque groupée).

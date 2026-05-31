@@ -26,5 +26,4 @@
 
 ## Capacités spéciales
 
-- **Charge** : Déplacement ≥ 6m + touche → +2d10+5 dégâts, DD 15 FOR ou renversé.
-- **Piétiner** : Attaque contre cible renversée : 4d8+5 dégâts.
+- **Charge (L)** : La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 14 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés. PAGE 268  PARTIE III

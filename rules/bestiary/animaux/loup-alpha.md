@@ -26,6 +26,4 @@
 
 ## Capacités spéciales
 
-- **Chasse en meute** : Avantage si allié adjacent à la cible.
-- **Renversement** : DD 12 FOR ou renversé.
-- **Hurlement** : En bonus, les loups alliés dans 18m gagnent l'avantage à leurs prochains jets d'attaque.
+- **Chef De Meute** : Le chef de meute donne un bonus de +2 en initiative, en attaque et aux DM, à tous les loups de sa meute à portée de vue. De plus, s'il attaque en même temps qu'un autre loup, il réalise une attaque avec un dé bonus et +2d4 DM.

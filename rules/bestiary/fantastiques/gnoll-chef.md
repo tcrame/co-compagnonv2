@@ -27,6 +27,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques à l'épée.
-- **Rampage** : Idem gnoll de base.
-- **Commandement** : Les gnolls alliés dans 9m ont l'avantage aux jets d'attaque tant que le chef est vivant.
+- **Capitaine** : Le chef donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.
+- **Commandant** : Tant qu'au moins 4 créatures sous ses ordres sont à moins de 20 m du commandant, il ne subit que la moitié des DM qui lui sont infligés. 3 OPPOSITION 0 INTRO

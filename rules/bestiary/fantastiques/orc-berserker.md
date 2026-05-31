@@ -26,6 +26,5 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques à la hache.
-- **Frénésie berserk** : Première fois réduit à 0 PV, continue à se battre 1 tour.
-- **Assaut agressif** : Se déplace vers ennemi en bonus.
+- **Imparable** : Si la créature obtient 15-20 sur le d20 d'un test d'attaque, elle inflige +2d4 DM et l'attaque est automatiquement réussie (quelle que soit la 3 OPPOSITION 0 INTRO DEF de son adversaire). Les dés bonus ne sont 1 pas multipliés en cas de critique. PERSO
+- **Teigneuse** : 2 Si la créature rate une attaque, sa pro- RÈGLES chaine attaque bénéficie d'un dé bonus et de +2d4 DM.

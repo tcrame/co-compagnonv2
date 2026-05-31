@@ -23,3 +23,7 @@
 | Attaque | Bonus | Dégâts | Portée |
 |---------|-------|--------|--------|
 | Morsure | +0 | 1 | Contact |
+
+## Capacités spéciales
+
+- **Très Petit** : La créature obtient un bonus de +5 aux tests d'escalade et de discrétion.

@@ -27,5 +27,6 @@
 
 ## Capacités spéciales
 
-- **Attaque multiple** : 2 attaques au cimeterre par action.
-- **Commandement** : En bonus, ordonne à un allié de se déplacer ou attaquer.
+- **Embuscade** : Au premier round de combat, si l'environnement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise.
+- **Attaque En Traître (L)** : Si la créature attaque en même temps qu'un allié ou par surprise, elle obtient +1d4 DM.
+- **Chef** : Le chef bandit donne un bonus de +1 en Init., en attaque et aux DM à tous les bandits à portée de vue.

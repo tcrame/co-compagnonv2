@@ -27,5 +27,4 @@
 
 ## Capacités spéciales
 
-- **Assaut agressif** : Se déplace vers un ennemi en bonus.
-- **Résistance** : Avantage aux JS contre charme et peur.
+*Aucune capacité spéciale.*

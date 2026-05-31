@@ -26,5 +26,5 @@
 
 ## Capacités spéciales
 
-- **Regard de la terreur** : Action — DD 11 VOL, si raté → effrayé 1 min. Si raté de 5+ → paralysé de terreur.
-- **Malédiction de la momie** : DD 12 CON ou malédiction — max PV réduit de 10 chaque jour. Seul *Enlever une malédiction* peut la supprimer.
+- **Résistance Aux Dm** : La momie réduit de 5 tous les DM subis, sauf par le feu.
+- **Putréfaction** : Toute créature blessée par une momie doit réussir un test de CON difficulté 15 ou contracter une horrible maladie qui occasionne le pourrissement rapide de ses chairs, une sorte de lèpre fulgurante. La victime subit 1d6 DM par round pendant 5 rounds. Tant qu'elle est sous l'effet de la putréfaction, il n'est pas nécessaire de réaliser un nouveau test de CON lorsque la victime est la cible d'une attaque de la momie. L'utilisation de la capacité de prêtre Délivrance permet de soigner cette maladie.
