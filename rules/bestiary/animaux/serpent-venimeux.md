@@ -1,20 +1,29 @@
 # Serpent venimeux
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 1 |
-| **PV** | 2 |
-| **Défense** | 13 |
-| **Init** | +3 |
-| **For** | 2 | **Dex** | 16 | **Con** | 11 | **Int** | 1 | **Sag** | 10 | **Cha** | 3 |
-| **Vitesse** | 9m, nage 9m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 1 | 2 | 13 | +3 | 9m, nage 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +3 | -4 | +0 | +0 | -5 | +0 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Morsure | +5 | 1d4+3 perforant + 3d6 poison | Contact |
+|---------|-------|--------|--------|
+| Morsure | +5 | 1d4+3 + 3d6 poison | Contact |
 
 ## Capacités spéciales
 
-- **Venin** : La morsure inflige 3d6 dégâts de poison (jet de Constitution DD 10 pour moitié).
+- **Venin** : 3d6 dégâts de poison (DD 10 CON pour moitié).

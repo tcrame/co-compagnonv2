@@ -1,21 +1,30 @@
 # Garde du corps
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 3 |
-| **PV** | 52 |
-| **Défense** | 17 (armure lourde) |
-| **Init** | +0 |
-| **For** | 16 | **Dex** | 10 | **Con** | 14 | **Int** | 10 | **Sag** | 10 | **Cha** | 10 |
-| **Vitesse** | 9m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 3 | 52 | 17 | +0 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +0 | +3 | +2 | +0 | +0 | +0 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Masse d'armes de guerre | +5 | 1d8+3 | Contact |
+|---------|-------|--------|--------|
+| Masse de guerre | +5 | 1d8+3 | Contact |
 
 ## Capacités spéciales
 
-- **Protection** : Peut imposer un désavantage à toute attaque visant une créature adjacente (réaction).
-- **Résistance à la douleur** : Avantage aux jets de sauvegarde contre la peur et les effets de charme.
+- **Protection** : Impose désavantage à toute attaque visant une créature adjacente (réaction).
+- **Résistance à la douleur** : Avantage aux JS contre peur et charme.

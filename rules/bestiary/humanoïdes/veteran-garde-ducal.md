@@ -1,21 +1,30 @@
-# Vétéran / Garde de palais ducal
+# Vétéran / Garde ducal
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 2 |
-| **PV** | 52 |
-| **Défense** | 17 (cotte de mailles + bouclier) |
-| **Init** | +0 |
-| **For** | 15 | **Dex** | 10 | **Con** | 14 | **Int** | 10 | **Sag** | 11 | **Cha** | 10 |
-| **Vitesse** | 9m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 2 | 52 | 17 | +0 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +0 | +2 | +0 | +2 | +0 | +0 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Épée longue | +4 | 1d8+2 / 1d10+2 (2 mains) | Contact |
+|---------|-------|--------|--------|
+| Épée longue | +4 | 1d8+2 / 1d10+2 | Contact |
 | Arbalète légère | +2 | 1d8 | 24/96m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Effectue 2 attaques par action.
+- **Attaque multiple** : 2 attaques par action.

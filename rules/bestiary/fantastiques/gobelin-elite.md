@@ -1,19 +1,27 @@
 # Gobelin élite
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 1/2 |
-| **PV** | 10 |
-| **Défense** | 15 (armure légère + bouclier) |
-| **Init** | +3 |
-| **For** | 8 | **Dex** | 16 | **Con** | 10 | **Int** | 10 | **Sag** | 8 | **Cha** | 8 |
-| **Vitesse** | 9m |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 1/2 | 10 | 15 | +3 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +3 | +0 | -1 | +0 | +0 | +0 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** Gobelin  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Cimeterre | +5 | 1d6+3 | Contact |
 | Arc court | +5 | 1d6+3 | 24/96m |
 

@@ -6,10 +6,15 @@ import '../../app_theme.dart';
 import '../../constants/image_bank.dart';
 import '../../widgets/dice_roller_sheet.dart';
 import '../../constants/status_effects_data.dart';
+import '../../models/character_sheet.dart';
+import '../../models/character_template.dart';
+import '../../models/combat_capacity.dart';
 import '../../models/participant.dart';
 import '../../models/status_effect.dart';
 import '../../providers/bestiary_provider.dart';
+import '../../providers/character_sheet_provider.dart';
 import '../../providers/combat_provider.dart';
+import '../../services/database_service.dart';
 import '../../widgets/participant_avatar.dart';
 import '../bestiary/bestiary_screen.dart' show CreatureDetailSheet;
 import '../session/session_screen.dart';
@@ -294,7 +299,7 @@ class _TurnControlBar extends StatelessWidget {
   }
 }
 
-class ParticipantCard extends StatelessWidget {
+class ParticipantCard extends StatefulWidget {
   final Participant participant;
   final int rank;
   final bool isActive;
@@ -307,8 +312,15 @@ class ParticipantCard extends StatelessWidget {
   });
 
   @override
+  State<ParticipantCard> createState() => _ParticipantCardState();
+}
+
+class _ParticipantCardState extends State<ParticipantCard> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final p = participant;
+    final p = widget.participant;
     final color = p.isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
     final hpColor = AppColors.hpColor(p.hpPercent);
     final isDead = !p.isAlive;
@@ -317,7 +329,7 @@ class ParticipantCard extends StatelessWidget {
       opacity: isDead ? 0.5 : 1.0,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        decoration: isActive
+        decoration: widget.isActive
             ? BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
@@ -330,10 +342,10 @@ class ParticipantCard extends StatelessWidget {
               )
             : null,
         child: Card(
-          color: isActive
+          color: widget.isActive
               ? color.withValues(alpha: 0.30)
               : color.withValues(alpha: 0.18),
-          shape: isActive
+          shape: widget.isActive
               ? RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(color: color, width: 2),
@@ -357,7 +369,7 @@ class ParticipantCard extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        '$rank',
+                        '${widget.rank}',
                         style: TextStyle(
                           color: color,
                           fontWeight: FontWeight.bold,
@@ -422,17 +434,6 @@ class ParticipantCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (p.templateId != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4),
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      _showTemplateDetail(context, p.templateId!),
-                                  child: Icon(Icons.info_outline,
-                                      size: 16,
-                                      color: color.withValues(alpha: 0.7)),
-                                ),
-                              ),
                           ],
                         ),
                         Text(
@@ -462,7 +463,7 @@ class ParticipantCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 8),
                       Column(
                         children: [
                           Text(
@@ -479,6 +480,21 @@ class ParticipantCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(width: 4),
+                      // Expand toggle
+                      if (p.templateId != null || p.characterSheetId != null)
+                        GestureDetector(
+                          onTap: () => setState(() => _expanded = !_expanded),
+                          child: AnimatedRotation(
+                            turns: _expanded ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              Icons.expand_more,
+                              color: color.withValues(alpha: 0.8),
+                              size: 22,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -559,6 +575,14 @@ class ParticipantCard extends StatelessWidget {
                   );
                 },
               ),
+
+              // Expanded detail panel
+              if (_expanded && (p.templateId != null || p.characterSheetId != null)) ...[
+                const SizedBox(height: 10),
+                const Divider(height: 1),
+                const SizedBox(height: 10),
+                _DetailPanel(participant: p, color: color),
+              ],
             ],
           ),
         ),
@@ -597,23 +621,484 @@ class ParticipantCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  void _showTemplateDetail(BuildContext context, int templateId) {
-    final bestiaryProvider = context.read<BestiaryProvider>();
-    final template = bestiaryProvider.templates
-        .where((t) => t.id == templateId)
-        .firstOrNull;
-    if (template == null) return;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => CreatureDetailSheet(template: template),
+// ── Detail panel shown when card is expanded ─────────────────────────────────
+
+class _DetailPanel extends StatelessWidget {
+  final Participant participant;
+  final Color color;
+
+  const _DetailPanel({required this.participant, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = participant;
+
+    if (p.templateId != null) {
+      final template = context
+          .read<BestiaryProvider>()
+          .templates
+          .where((t) => t.id == p.templateId)
+          .firstOrNull;
+      if (template == null) {
+        return Text('Données bestiaire introuvables',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12));
+      }
+      return _TemplateDetailPanel(template: template, color: color);
+    }
+
+    if (p.characterSheetId != null) {
+      final sheet = context
+          .read<CharacterSheetProvider>()
+          .sheets
+          .where((s) => s.id == p.characterSheetId)
+          .firstOrNull;
+      if (sheet == null) {
+        return Text('Fiche personnage introuvable',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12));
+      }
+      return _SheetDetailPanel(sheet: sheet, color: color);
+    }
+
+    return const SizedBox.shrink();
+  }
+}
+
+class _TemplateDetailPanel extends StatelessWidget {
+  final CharacterTemplate template;
+  final Color color;
+
+  const _TemplateDetailPanel({required this.template, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = template;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Type / taille / archétype
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: [
+            _infoBadge(t.creatureType.label, color),
+            _infoBadge(t.taille.label, color),
+            _infoBadge(t.archetype.label, color),
+            if (t.nc != null) _infoBadge('NC ${t.nc}', Colors.amber),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Stats grid
+        _statsGrid(context, t),
+        // Attacks
+        if (t.attacks.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          _sectionTitle(context, 'Attaques'),
+          const SizedBox(height: 6),
+          ...t.attacks.map((a) => _attackRow(context, a)),
+        ],
+        // Capacities
+        if (t.capacities.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          _sectionTitle(context, 'Capacités'),
+          const SizedBox(height: 6),
+          ...t.capacities.map((c) => _capacityRow(context, c)),
+        ],
+      ],
     );
   }
+
+  Widget _statsGrid(BuildContext context, CharacterTemplate t) {
+    final stats = [
+      ('FOR', 'for', t.forVal),
+      ('AGI', 'agi', t.agiVal),
+      ('CON', 'con', t.conVal),
+      ('INT', 'int', t.intVal),
+      ('PER', 'per', t.perVal),
+      ('CHA', 'cha', t.chaVal),
+      ('VOL', 'vol', t.volVal),
+    ];
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: stats.map((s) {
+        final isLegendary = t.legendaryStats.contains(s.$2);
+        final mod = ((s.$3 - 10) / 2).floor();
+        final modStr = mod >= 0 ? '+$mod' : '$mod';
+        return Container(
+          width: 66,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isLegendary
+                ? Colors.amber.withValues(alpha: 0.1)
+                : AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isLegendary
+                  ? Colors.amber.withValues(alpha: 0.5)
+                  : Colors.transparent,
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(s.$1,
+                      style: TextStyle(
+                          color: isLegendary
+                              ? Colors.amber
+                              : Colors.grey.shade400,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600)),
+                  if (isLegendary)
+                    const Text('⭐', style: TextStyle(fontSize: 8)),
+                ],
+              ),
+              Text('${s.$3}',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(modStr,
+                  style:
+                      TextStyle(color: Colors.grey.shade500, fontSize: 10)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _attackRow(BuildContext context, TemplateAttack a) {
+    final bonusStr = a.bonusAtk >= 0 ? '+${a.bonusAtk}' : '${a.bonusAtk}';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                a.name,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+            ),
+            if (a.nbAttacks > 1)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Text(
+                  '×${a.nbAttacks}',
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+              ),
+            Text(
+              bonusStr,
+              style: TextStyle(
+                  color: a.bonusAtk >= 0 ? Colors.greenAccent : Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13),
+            ),
+            if (a.dm.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text('DM ${a.dm}',
+                  style: TextStyle(color: Colors.orange.shade300, fontSize: 12)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _capacityRow(BuildContext context, TemplateCapacity c) {
+    const typeColors = {
+      'A': Colors.blue,
+      'M': Colors.purple,
+      'L': Colors.teal,
+      '*': Colors.orange,
+    };
+    final typeColor = typeColors[c.actionType] ?? Colors.grey;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 18,
+              height: 18,
+              margin: const EdgeInsets.only(right: 8, top: 1),
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Center(
+                child: Text(c.actionType.isEmpty ? '•' : c.actionType,
+                    style: TextStyle(
+                        color: typeColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
+                  if (c.description.isNotEmpty)
+                    Text(c.description,
+                        style: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 11)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetDetailPanel extends StatefulWidget {
+  final CharacterSheet sheet;
+  final Color color;
+
+  const _SheetDetailPanel({required this.sheet, required this.color});
+
+  @override
+  State<_SheetDetailPanel> createState() => _SheetDetailPanelState();
+}
+
+class _SheetDetailPanelState extends State<_SheetDetailPanel> {
+  List<CombatCapacity>? _capacities;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCapacities();
+  }
+
+  Future<void> _loadCapacities() async {
+    final caps = await DatabaseService().getCombatCapacities(widget.sheet.id!);
+    if (mounted) setState(() => _capacities = caps);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.sheet;
+    final color = widget.color;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Info badges
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: [
+            _infoBadge('Niv. ${s.level}', color),
+            if (s.profile.isNotEmpty) _infoBadge(s.profile, color),
+            if (s.race.isNotEmpty) _infoBadge(s.race, Colors.grey.shade600),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Attack bonuses
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          children: [
+            _statBadge(context, 'Contact',
+                s.attContactTotal >= 0 ? '+${s.attContactTotal}' : '${s.attContactTotal}',
+                Colors.orange),
+            _statBadge(context, 'Distance',
+                s.attDistanceTotal >= 0 ? '+${s.attDistanceTotal}' : '${s.attDistanceTotal}',
+                Colors.lightBlue),
+            _statBadge(context, 'Magique',
+                s.attMagiqueTotal >= 0 ? '+${s.attMagiqueTotal}' : '${s.attMagiqueTotal}',
+                Colors.purple),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Stats grid
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            ('FOR', s.forTotal),
+            ('AGI', s.agiTotal),
+            ('CON', s.conTotal),
+            ('INT', s.intTotal),
+            ('PER', s.perTotal),
+            ('CHA', s.chaTotal),
+            ('VOL', s.volTotal),
+          ].map((e) {
+            final mod = ((e.$2 - 10) / 2).floor();
+            final modStr = mod >= 0 ? '+$mod' : '$mod';
+            return Container(
+              width: 66,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  Text(e.$1,
+                      style: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600)),
+                  Text('${e.$2}',
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(modStr,
+                      style: TextStyle(
+                          color: Colors.grey.shade500, fontSize: 10)),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+        // Capacities
+        if (_capacities == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Center(
+                child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: color))),
+          )
+        else if (_capacities!.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          _sectionTitle(context, 'Capacités de combat'),
+          const SizedBox(height: 6),
+          ..._capacities!.map((c) => _combatCapacityRow(context, c)),
+        ],
+      ],
+    );
+  }
+
+  Widget _combatCapacityRow(BuildContext context, CombatCapacity c) {
+    final typeColor = c.isMagique ? Colors.purple : Colors.blue;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 18,
+              height: 18,
+              margin: const EdgeInsets.only(right: 8, top: 1),
+              decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Center(
+                child: Icon(
+                  c.isMagique ? Icons.auto_fix_high : Icons.shield_outlined,
+                  size: 11,
+                  color: typeColor,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(c.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 13)),
+                      ),
+                      if (c.dm.isNotEmpty)
+                        Text('DM ${c.dm}',
+                            style: TextStyle(
+                                color: Colors.orange.shade300, fontSize: 11)),
+                    ],
+                  ),
+                  if (c.voie.isNotEmpty)
+                    Text(c.voie,
+                        style: TextStyle(
+                            color: Colors.grey.shade500, fontSize: 10)),
+                  if (c.description.isNotEmpty)
+                    Text(c.description,
+                        style: TextStyle(
+                            color: Colors.grey.shade400, fontSize: 11)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Widget _infoBadge(String label, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
+    ),
+    child: Text(label,
+        style: TextStyle(
+            color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+  );
+}
+
+Widget _statBadge(
+    BuildContext context, String label, String value, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label,
+            style:
+                TextStyle(color: Colors.grey.shade400, fontSize: 10)),
+        const SizedBox(width: 4),
+        Text(value,
+            style: TextStyle(
+                color: color, fontSize: 13, fontWeight: FontWeight.bold)),
+      ],
+    ),
+  );
+}
+
+Widget _sectionTitle(BuildContext context, String title) {
+  return Text(title,
+      style: TextStyle(
+          color: Colors.grey.shade400,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5));
 }
 
 class _HpControls extends StatefulWidget {

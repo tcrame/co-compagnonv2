@@ -1,27 +1,34 @@
 # Dragon des forêts
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 10 |
-| **PV** | 178 |
-| **Défense** | 18 (armure naturelle) |
-| **Init** | +1 |
-| **For** | 23 | **Dex** | 12 | **Con** | 21 | **Int** | 16 | **Sag** | 13 | **Cha** | 17 |
-| **Vitesse** | 12m, vol 24m, nage 12m |
-| **Immunités** | Acide |
-| **Sens** | Perception aveugle 9m, vision dans le noir 36m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 10 | 178 | 18 | +1 | 12m, vol 24m, nage 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +1 | +0 | +6 | +5 | +3 | +3 | +4 |
+
+**Sens :** Perception aveugle 9m, vision dans le noir 36m  
+**Résistances :** —  
+**Immunités :** Acide  
+**Vulnérabilités :** —  
+**Langues :** Dragonne, Commun  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Morsure | +10 | 2d10+6 perforant | Contact |
-| Griffes (x2) | +10 | 2d6+6 tranchant | Contact |
-| Queue | +10 | 2d8+6 contondant | Contact (3m) |
-| Souffle acide (rechargement 5-6) | — | 12d8 acide (DD 19 Dex moitié) | Ligne 18m |
+|---------|-------|--------|--------|
+| Morsure | +10 | 2d10+6 | Contact |
+| Griffes ×2 | +10 | 2d6+6 | Contact |
+| Queue | +10 | 2d8+6 | Contact (3m allonge) |
+| Souffle acide (rechargement 5-6) | — | 12d8 acide (DD 19 AGI moitié) | Ligne 18m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Effectue 1 morsure + 2 griffes, ou utilise son souffle.
-- **Présence terrifiante** : Quand il rugit, les créatures dans 36m font un jet de Sagesse DD 16 ou sont effrayées pendant 1 minute.
-- **Résistance légendaire (3/jour)** : Peut choisir de réussir un jet de sauvegarde raté.
+- **Attaque multiple** : 1 morsure + 2 griffes, ou souffle.
+- **Présence terrifiante** : Rugissement — créatures dans 36m : DD 16 VOL ou effrayées 1 minute.
+- **Résistance légendaire (3/jour)** : Peut choisir de réussir un JS raté.

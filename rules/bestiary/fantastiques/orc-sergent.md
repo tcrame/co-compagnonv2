@@ -1,20 +1,28 @@
 # Sergent orc
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 3 |
-| **PV** | 52 |
-| **Défense** | 16 (armure lourde) |
-| **Init** | +1 |
-| **For** | 18 | **Dex** | 12 | **Con** | 16 | **Int** | 8 | **Sag** | 11 | **Cha** | 10 |
-| **Vitesse** | 9m |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 3 | 52 | 16 | +1 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +1 | +0 | +4 | +3 | -1 | -2 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** Orc  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Hache à deux mains (x2) | +6 | 1d12+4 tranchant | Contact |
+|---------|-------|--------|--------|
+| Hache à deux mains ×2 | +6 | 1d12+4 tranchant | Contact |
 | Javelot | +6 | 1d6+4 perforant | Contact / 9/36m |
 
 ## Capacités spéciales

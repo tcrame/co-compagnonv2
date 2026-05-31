@@ -36,7 +36,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 19,
+        version: 20,
           onCreate: (db, version) async {
             await _createTables(db);
           },
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 19,
+      version: 20,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -214,6 +214,12 @@ class DatabaseService {
                 "ALTER TABLE character_templates ADD COLUMN legendary_stats_json TEXT NOT NULL DEFAULT '[]'");
           } catch (_) {}
         }
+        if (oldVersion < 20) {
+          try {
+            await db.execute(
+                "ALTER TABLE participants ADD COLUMN character_sheet_id INTEGER");
+          } catch (_) {}
+        }
   }
 
   Future<void> _createTables(Database db) async {
@@ -237,6 +243,7 @@ class DatabaseService {
         def INTEGER NOT NULL DEFAULT 10,
         image_url TEXT,
         template_id INTEGER,
+        character_sheet_id INTEGER,
         FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
       )
     ''');

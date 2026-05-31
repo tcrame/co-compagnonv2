@@ -1,22 +1,29 @@
 # Zombie humain
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 1 |
-| **PV** | 22 |
-| **Défense** | 8 |
-| **Init** | -2 |
-| **For** | 13 | **Dex** | 6 | **Con** | 16 | **Int** | 3 | **Sag** | 6 | **Cha** | 5 |
-| **Vitesse** | 6m |
-| **Immunités** | Poison, poison, épuisement |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 1 | 22 | 8 | -2 | 6m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| -2 | +0 | +1 | +1 | -4 | -4 | -5 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** Poison, épuisement  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Coup de poing | +3 | 1d6+1 contondant | Contact |
 
 ## Capacités spéciales
 
-- **Tenace** : Quand des dégâts réduiraient le zombie à 0 PV, jet de Con DD 5 + dégâts. En cas de succès, il reste à 1 PV.
+- **Tenace** : Quand des dégâts le ramèneraient à 0 PV, jet de CON DD 5 + dégâts subis. Réussite → reste à 1 PV.

@@ -1,24 +1,32 @@
 # Chimère
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 7 |
-| **PV** | 114 |
-| **Défense** | 14 (armure naturelle) |
-| **Init** | +0 |
-| **For** | 19 | **Dex** | 11 | **Con** | 19 | **Int** | 3 | **Sag** | 14 | **Cha** | 10 |
-| **Vitesse** | 9m, vol 18m |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 7 | 114 | 14 | +0 | 9m, vol 18m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +0 | +0 | +4 | +4 | +0 | +0 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Morsure (tête lion) | +6 | 2d6+4 | Contact |
 | Cornes (tête bouc) | +6 | 2d6+4 | Contact |
 | Griffes | +6 | 2d6+4 | Contact |
-| Souffle de feu (rechargement 5-6) | — | 7d8 feu (DD 13 Dex moitié) | Cône 15m |
+| Souffle de feu (rechargement 5-6) | — | 7d8 feu (DD 13 AGI moitié) | Cône 15m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Effectue une attaque de morsure, une attaque de cornes et une attaque de griffes, ou utilise son souffle de feu.
+- **Attaque multiple** : Morsure + cornes + griffes, ou souffle de feu.

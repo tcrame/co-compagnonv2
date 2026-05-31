@@ -1,22 +1,31 @@
 # Mâle alpha (loup)
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 2 |
-| **PV** | 26 |
-| **Défense** | 13 (armure naturelle) |
-| **Init** | +2 |
-| **For** | 14 | **Dex** | 15 | **Con** | 13 | **Int** | 3 | **Sag** | 12 | **Cha** | 6 |
-| **Vitesse** | 12m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 2 | 26 | 13 | +2 | 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +2 | +0 | +2 | +1 | -4 | +0 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Morsure | +4 | 2d6+2 | Contact |
 
 ## Capacités spéciales
 
-- **Chasse en meute** : Avantage aux attaques si un allié non incapacité est adjacent à la cible.
-- **Renversement** : Jet de Force DD 12 ou renversé.
-- **Hurlement** : En bonus, tous les loups alliés dans 18m gagnent l'avantage à leurs prochains jets d'attaque.
+- **Chasse en meute** : Avantage si allié adjacent à la cible.
+- **Renversement** : DD 12 FOR ou renversé.
+- **Hurlement** : En bonus, les loups alliés dans 18m gagnent l'avantage à leurs prochains jets d'attaque.

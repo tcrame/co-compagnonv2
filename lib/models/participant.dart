@@ -9,6 +9,7 @@ class Participant {
   final int def;
   final String? imageUrl;
   final int? templateId;
+  final int? characterSheetId;
 
   // Computed during combat — not persisted
   final int? rolledInitiative;
@@ -24,6 +25,7 @@ class Participant {
     this.def = 10,
     this.imageUrl,
     this.templateId,
+    this.characterSheetId,
     this.rolledInitiative,
   });
 
@@ -38,6 +40,7 @@ class Participant {
         'def': def,
         'image_url': imageUrl,
         'template_id': templateId,
+        'character_sheet_id': characterSheetId,
       };
 
   factory Participant.fromMap(Map<String, dynamic> map) => Participant(
@@ -51,6 +54,7 @@ class Participant {
         def: (map['def'] as int?) ?? 10,
         imageUrl: map['image_url'] as String?,
         templateId: map['template_id'] as int?,
+        characterSheetId: map['character_sheet_id'] as int?,
       );
 
   Participant copyWith({
@@ -64,6 +68,7 @@ class Participant {
     int? def,
     String? imageUrl,
     int? templateId,
+    int? characterSheetId,
     int? rolledInitiative,
     bool clearImageUrl = false,
   }) =>
@@ -78,6 +83,7 @@ class Participant {
         def: def ?? this.def,
         imageUrl: clearImageUrl ? null : (imageUrl ?? this.imageUrl),
         templateId: templateId ?? this.templateId,
+        characterSheetId: characterSheetId ?? this.characterSheetId,
         rolledInitiative: rolledInitiative ?? this.rolledInitiative,
       );
 

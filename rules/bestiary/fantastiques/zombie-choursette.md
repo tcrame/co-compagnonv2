@@ -1,23 +1,28 @@
 # Zombie choursette
 
-*(Zombie issu d'un choursette — grande créature monstrueuse)*
+## Statistiques
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 4 |
-| **PV** | 52 |
-| **Défense** | 10 |
-| **Init** | -2 |
-| **For** | 19 | **Dex** | 6 | **Con** | 17 | **Int** | 3 | **Sag** | 6 | **Cha** | 5 |
-| **Vitesse** | 9m |
-| **Immunités** | Poison, épuisement |
-| **Sens** | Vision dans le noir 18m |
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 4 | 52 | 10 | -2 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| -2 | -2 | +4 | +2 | -4 | -4 | -5 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** Poison, épuisement  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Coup (x2) | +6 | 1d8+4 contondant | Contact |
+|---------|-------|--------|--------|
+| Coup ×2 | +6 | 1d8+4 contondant | Contact |
 
 ## Capacités spéciales
 

@@ -1,26 +1,32 @@
 # Skrambler
 
-*(Créature monstrueuse à plusieurs membres, rapide et agile)*
+## Statistiques
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 3 |
-| **PV** | 45 |
-| **Défense** | 14 (armure naturelle) |
-| **Init** | +3 |
-| **For** | 15 | **Dex** | 17 | **Con** | 14 | **Int** | 5 | **Sag** | 11 | **Cha** | 7 |
-| **Vitesse** | 12m, escalade 12m |
-| **Sens** | Vision dans le noir 18m |
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 3 | 45 | 14 | +3 | 12m, escalade 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +3 | +0 | +2 | +2 | -3 | -2 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Griffe (x3) | +5 | 1d6+3 tranchant | Contact |
+|---------|-------|--------|--------|
+| Griffe ×3 | +5 | 1d6+3 tranchant | Contact |
 | Morsure | +5 | 1d8+3 perforant | Contact |
 
 ## Capacités spéciales
 
 - **Attaque multiple** : 3 griffes + 1 morsure.
-- **Course frénétique** : En bonus, peut se déplacer jusqu'à sa vitesse complète.
+- **Course frénétique** : Peut se déplacer jusqu'à sa vitesse complète en action bonus.
 - **Escalade rapide** : Pas de malus pour escalader.

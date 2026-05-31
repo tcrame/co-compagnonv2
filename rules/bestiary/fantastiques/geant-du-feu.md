@@ -1,24 +1,31 @@
 # Géant du feu
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 9 |
-| **PV** | 162 |
-| **Défense** | 18 (armure fabriquée) |
-| **Init** | -1 |
-| **For** | 25 | **Dex** | 9 | **Con** | 23 | **Int** | 10 | **Sag** | 14 | **Cha** | 13 |
-| **Vitesse** | 9m |
-| **Immunités** | Feu |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 9 | 162 | 18 | -1 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| -1 | -1 | +7 | +5 | +1 | +2 | +2 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** Feu  
+**Vulnérabilités :** —  
+**Langues :** Géant, Commun  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Épée grande (x2) | +11 | 6d6+7 tranchant | Contact |
+|---------|-------|--------|--------|
+| Épée grande ×2 | +11 | 6d6+7 tranchant | Contact |
 | Rocher | +11 | 4d10+7 contondant | 18/72m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Effectue 2 attaques à l'épée grande ou 2 lancers de rocher.
-- **Renvoi de roche** : Quand une roche lancée le touche, peut la renvoyer (réaction, +11, 4d10+7).
+- **Attaque multiple** : 2 attaques à l'épée ou 2 lancers de rocher.
+- **Renvoi de roche** : Réaction — renvoie un rocher lancé (+11, 4d10+7).

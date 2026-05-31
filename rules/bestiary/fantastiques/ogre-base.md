@@ -1,18 +1,26 @@
 # Ogre de base
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 3 |
-| **PV** | 59 |
-| **Défense** | 11 (armure naturelle) |
-| **Init** | -1 |
-| **For** | 19 | **Dex** | 8 | **Con** | 16 | **Int** | 5 | **Sag** | 7 | **Cha** | 7 |
-| **Vitesse** | 12m |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 3 | 59 | 11 | -1 | 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| -1 | -1 | +4 | +3 | -3 | -3 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** Ogre  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Massue grande | +6 | 2d8+4 contondant | Contact |
 | Javelot | +6 | 2d6+4 perforant | Contact / 9/36m |

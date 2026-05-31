@@ -1,26 +1,32 @@
 # Ourhible
 
-*(Créature des profondeurs, araignée-crabe géante des milieux souterrains)*
+## Statistiques
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 5 |
-| **PV** | 90 |
-| **Défense** | 16 (armure naturelle) |
-| **Init** | +1 |
-| **For** | 18 | **Dex** | 12 | **Con** | 18 | **Int** | 5 | **Sag** | 10 | **Cha** | 5 |
-| **Vitesse** | 9m, escalade 9m |
-| **Sens** | Vision dans le noir 18m, perception aveugle 3m |
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 5 | 90 | 16 | +1 | 9m, escalade 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +1 | +0 | +4 | +3 | -3 | -2 | +0 |
+
+**Sens :** Vision dans le noir 18m, perception aveugle 3m  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Pince (x2) | +7 | 2d6+4 contondant | Contact |
-| Dard venimeux | +7 | 1d6+4 perforant + 2d8 poison | Contact |
+|---------|-------|--------|--------|
+| Pince ×2 | +7 | 2d6+4 contondant | Contact |
+| Dard venimeux | +7 | 1d6+4 + 2d8 poison | Contact |
 
 ## Capacités spéciales
 
 - **Attaque multiple** : 2 pinces + 1 dard.
-- **Constriction de pince** : Si les 2 pinces touchent, cible agrippée DD 14 Force et entravée.
-- **Venin paralysant** : DD 14 Con ou paralysé pendant 1 minute.
+- **Constriction de pince** : Si les 2 pinces touchent → agrippée DD 14 FOR et entravée.
+- **Venin paralysant** : DD 14 CON ou paralysé 1 minute.

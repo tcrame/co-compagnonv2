@@ -1,22 +1,31 @@
 # Chef bandit
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 2 |
-| **PV** | 33 |
-| **Défense** | 15 (armure intermédiaire) |
-| **Init** | +2 |
-| **For** | 15 | **Dex** | 14 | **Con** | 14 | **Int** | 14 | **Sag** | 11 | **Cha** | 14 |
-| **Vitesse** | 9m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 2 | 33 | 15 | +2 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +2 | +2 | +2 | +1 | +2 | +2 | +1 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Cimeterre (x2) | +4 | 1d6+2 | Contact |
+|---------|-------|--------|--------|
+| Cimeterre ×2 | +4 | 1d6+2 | Contact |
 | Arbalète légère | +4 | 1d8+2 | 24/96m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Peut effectuer 2 attaques au cimeterre par action.
-- **Commandement** : En bonus, peut ordonner à un allié de se déplacer ou attaquer.
+- **Attaque multiple** : 2 attaques au cimeterre par action.
+- **Commandement** : En bonus, ordonne à un allié de se déplacer ou attaquer.

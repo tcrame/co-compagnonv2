@@ -1,20 +1,29 @@
 # Cheval de selle
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 1 |
-| **PV** | 13 |
-| **Défense** | 10 |
-| **Init** | +0 |
-| **For** | 16 | **Dex** | 10 | **Con** | 12 | **Int** | 2 | **Sag** | 11 | **Cha** | 7 |
-| **Vitesse** | 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 1 | 13 | 10 | +0 | 18m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +0 | +0 | +3 | +0 | -4 | -1 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Sabots | +5 | 2d4+3 | Contact |
 
 ## Capacités spéciales
 
-- **Monture** : Peut être utilisé comme monture par une créature de taille M.
+- **Monture** : Peut être utilisé comme monture (créature taille M).

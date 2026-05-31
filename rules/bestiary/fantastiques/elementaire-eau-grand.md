@@ -1,26 +1,32 @@
 # Élémentaire d'eau (grand)
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 5 |
-| **PV** | 114 |
-| **Défense** | 14 (armure naturelle) |
-| **Init** | +2 |
-| **For** | 18 | **Dex** | 14 | **Con** | 18 | **Int** | 5 | **Sag** | 10 | **Cha** | 8 |
-| **Vitesse** | 9m, nage 27m |
-| **Résistances** | Acide |
-| **Immunités** | Poison, empoisonné, épuisement, à terre, paralysé, pétrifié |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 5 | 114 | 14 | +2 | 9m, nage 27m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +2 | +0 | +4 | +3 | -3 | -2 | -3 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** Acide  
+**Immunités :** Poison, épuisement, à terre, paralysie, pétrification  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Coup (x2) | +6 | 2d8+4 contondant | Contact |
+|---------|-------|--------|--------|
+| Coup ×2 | +6 | 2d8+4 contondant | Contact |
 | Tourbillon (rechargement 4-6) | — | 2d8+4 contondant | Cône 9m |
 
 ## Capacités spéciales
 
-- **Attaque multiple** : Effectue 2 attaques de coup.
-- **Forme d'eau** : Peut entrer dans l'espace de créatures hostiles. Peut se faufiler dans des espaces de 1cm de large.
-- **Congélation** : Si une créature touche l'élémentaire avec une arme de corps à corps, elle subit 1d6 dégâts de froid.
+- **Attaque multiple** : 2 coups.
+- **Forme d'eau** : Peut entrer dans l'espace ennemi, se faufiler dans des espaces ≥ 1cm.
+- **Congélation** : Attaque au corps à corps contre l'élémentaire → 1d6 dégâts de froid à l'attaquant.

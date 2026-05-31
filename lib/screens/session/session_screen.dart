@@ -239,6 +239,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
   int _quantity = 1;
   String? _imageUrl;
   int? _selectedTemplateId;
+  int? _selectedCharacterSheetId;
 
   @override
   void dispose() {
@@ -515,6 +516,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         def: int.tryParse(_defCtrl.text) ?? 10,
         imageUrl: _imageUrl,
         templateId: _selectedTemplateId,
+        characterSheetId: _selectedCharacterSheetId,
       ));
     }
     Navigator.pop(context);
@@ -554,6 +556,7 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         _isAlly = selected.isAlly;
         _imageUrl = selected.imageUrl;
         _selectedTemplateId = selected.id;
+        _selectedCharacterSheetId = null;
       });
     }
   }
@@ -590,6 +593,8 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
         _hpCtrl.text = '${selected.pvMax}';
         _defCtrl.text = '${selected.defTotal}';
         _isAlly = true;
+        _selectedCharacterSheetId = selected.id;
+        _selectedTemplateId = null;
       });
     }
   }

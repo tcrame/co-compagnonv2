@@ -1,23 +1,30 @@
 # Goule
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 2 |
-| **PV** | 22 |
-| **Défense** | 12 |
-| **Init** | +2 |
-| **For** | 13 | **Dex** | 15 | **Con** | 10 | **Int** | 7 | **Sag** | 10 | **Cha** | 6 |
-| **Vitesse** | 9m |
-| **Immunités** | Charme, épuisement, poison |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 2 | 22 | 12 | +2 | 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +2 | +0 | +1 | +1 | -1 | -2 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** Charme, épuisement, poison  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Morsure | +4 | 2d6+2 perforant | Contact |
 | Griffes | +4 | 2d4+2 tranchant | Contact |
 
 ## Capacités spéciales
 
-- **Paralysie** : Si la cible est touchée par les griffes, elle doit réussir un jet de Constitution DD 10 ou être paralysée pendant 1 minute (peut retenter le jet à chaque fin de tour). Les elfes sont immunisés.
+- **Paralysie** : Griffes réussies → DD 10 CON ou paralysé 1 minute (retenter à chaque fin de tour). Les elfes sont immunisés.

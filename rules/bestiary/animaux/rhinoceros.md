@@ -1,20 +1,29 @@
 # Rhinocéros
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 4 |
-| **PV** | 45 |
-| **Défense** | 11 (armure naturelle) |
-| **Init** | -1 |
-| **For** | 21 | **Dex** | 8 | **Con** | 15 | **Int** | 2 | **Sag** | 12 | **Cha** | 6 |
-| **Vitesse** | 15m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 4 | 45 | 11 | -1 | 15m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| -1 | -1 | +5 | +3 | -4 | -2 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Gore (corne) | +7 | 2d10+5 | Contact |
 
 ## Capacités spéciales
 
-- **Charge** : Se déplace ≥ 6m + touche → +3d10+5 dégâts, jet Force DD 15 ou renversé.
+- **Charge** : Déplacement ≥ 6m + touche → +3d10+5 dégâts, DD 15 FOR ou renversé.

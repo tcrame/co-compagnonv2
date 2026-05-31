@@ -1,21 +1,30 @@
 # Sanglier
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 3 |
-| **PV** | 42 |
-| **Défense** | 11 (armure naturelle) |
-| **Init** | +0 |
-| **For** | 17 | **Dex** | 10 | **Con** | 16 | **Int** | 2 | **Sag** | 7 | **Cha** | 5 |
-| **Vitesse** | 12m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 3 | 42 | 11 | +0 | 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +0 | +0 | +3 | +3 | -4 | -4 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Gore (défenses) | +5 | 2d6+3 | Contact |
 
 ## Capacités spéciales
 
-- **Charge** : Se déplace ≥ 6m + touche → +2d6+3 dégâts, jet Force DD 13 ou renversé.
-- **Robustesse** : Quand le sanglier subit des dégâts qui le ramèneraient à 0 PV, il peut faire un jet de Constitution DD 10 + dégâts subis. En cas de succès, il reste à 1 PV.
+- **Charge** : Déplacement ≥ 6m + touche → +2d6+3 dégâts, DD 13 FOR ou renversé.
+- **Robustesse** : Quand les dégâts le ramèneraient à 0 PV, jet de CON DD 10 + dégâts. Réussite → reste à 1 PV.

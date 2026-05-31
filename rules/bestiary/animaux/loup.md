@@ -1,21 +1,30 @@
 # Loup
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 1 |
-| **PV** | 11 |
-| **Défense** | 13 (armure naturelle) |
-| **Init** | +2 |
-| **For** | 12 | **Dex** | 15 | **Con** | 12 | **Int** | 3 | **Sag** | 12 | **Cha** | 6 |
-| **Vitesse** | 12m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 1 | 11 | 13 | +2 | 12m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +2 | +0 | +1 | +1 | -4 | +0 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Morsure | +4 | 2d4+2 | Contact |
 
 ## Capacités spéciales
 
-- **Chasse en meute** : Avantage aux attaques si un allié non incapacité est adjacent à la cible.
-- **Renversement** : Si la morsure touche, jet de Force DD 11 ou la cible est renversée.
+- **Chasse en meute** : Avantage si allié adjacent à la cible.
+- **Renversement** : Morsure réussie → DD 11 FOR ou renversé.

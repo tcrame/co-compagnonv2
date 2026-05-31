@@ -1,25 +1,32 @@
 # Cryohydre à dix têtes
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 11 |
-| **PV** | 172 |
-| **Défense** | 16 (armure naturelle) |
-| **Init** | +1 |
-| **For** | 22 | **Dex** | 12 | **Con** | 22 | **Int** | 2 | **Sag** | 10 | **Cha** | 7 |
-| **Vitesse** | 9m, nage 9m |
-| **Immunités** | Froid |
-| **Sens** | Vision dans le noir 18m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 11 | 172 | 16 | +1 | 9m, nage 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +1 | +0 | +6 | +5 | -4 | -2 | +0 |
+
+**Sens :** Vision dans le noir 18m  
+**Résistances :** —  
+**Immunités :** Froid  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
-| Morsure (x10) | +10 | 1d10+6 perforant + 1d6 froid | Contact |
+|---------|-------|--------|--------|
+| Morsure ×10 | +10 | 1d10+6 + 1d6 froid | Contact |
 
 ## Capacités spéciales
 
-- **Têtes multiples** : 10 têtes, une attaque par tête possible par action.
+- **Têtes multiples** : 10 têtes, une attaque par tête par action.
 - **Réactivité** : Une attaque d'opportunité par tête.
-- **Régénération des têtes** : Idem hydre, mais le feu supprime seulement la régénération (la tête repousse quand même).
-- **Souffle glacé** : Au lieu d'attaquer, peut souffler du froid sur une cible : DD 16 Con, 6d8 froid (moitié en cas de succès).
+- **Régénération des têtes** : Idem hydre, feu supprime seulement la régénération.
+- **Souffle glacé** : Au lieu d'attaquer, souffle sur une cible — DD 16 CON, 6d8 froid (moitié en succès).

@@ -1,22 +1,31 @@
 # Panthère
 
-| Caractéristique | Valeur |
-|---|---|
-| **NC** | 2 |
-| **PV** | 13 |
-| **Défense** | 12 |
-| **Init** | +4 |
-| **For** | 14 | **Dex** | 15 | **Con** | 10 | **Int** | 3 | **Sag** | 14 | **Cha** | 7 |
-| **Vitesse** | 15m, escalade 9m |
+## Statistiques
+
+| NC | PV | Défense | Init | Vitesse |
+|----|----|---------|------|---------|
+| 2 | 13 | 12 | +4 | 15m, escalade 9m |
+
+## Caractéristiques
+
+| AGI | CON | FOR | PER | CHA | INT | VOL |
+|-----|-----|-----|-----|-----|-----|-----|
+| +4 | +0 | +2 | +2 | -4 | -1 | +0 |
+
+**Sens :** —  
+**Résistances :** —  
+**Immunités :** —  
+**Vulnérabilités :** —  
+**Langues :** —  
 
 ## Attaques
 
 | Attaque | Bonus | Dégâts | Portée |
-|---|---|---|---|
+|---------|-------|--------|--------|
 | Morsure | +4 | 1d6+2 | Contact |
 | Griffes | +4 | 1d4+2 | Contact |
 
 ## Capacités spéciales
 
-- **Charge** : Si la panthère se déplace d'au moins 6m et touche, jet Force DD 12 ou la cible est renversée.
-- **Saut félin** : Attaque de griffes en bonus si la cible est renversée.
+- **Charge** : Déplacement ≥ 6m + touche → DD 12 FOR ou renversé.
+- **Saut félin** : Griffes en bonus si cible renversée.
