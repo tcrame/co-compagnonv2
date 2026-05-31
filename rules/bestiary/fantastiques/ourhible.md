@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 5 | 70 | 18 | 12 | ------ |
+| 5 | 70 | 18 | 12 | 9m, escalade 9m |
 
 ## Caractéristiques
 

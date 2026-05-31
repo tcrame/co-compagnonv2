@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 0 | 1 | 13 | 16 | ------ |
+| 0 | 1 | 13 | 16 | 6m (variable) |
 
 ## Caractéristiques
 

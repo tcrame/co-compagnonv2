@@ -170,7 +170,7 @@ const _volQuals = [
 
 // ── Wizard ────────────────────────────────────────────────────────────────────
 
-enum _WizardStep { name, approach, gabarit, nc, otherStats, review }
+enum _WizardStep { name, gabarit, nc, otherStats, review }
 
 class CreatureWizardSheet extends StatefulWidget {
   const CreatureWizardSheet({super.key});
@@ -186,9 +186,6 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   // Step: name
   final _nameCtrl = TextEditingController();
   bool _isAlly = false;
-
-  // Step: approach
-  bool? _useNcApproach;
 
   // Step: gabarit
   CreatureType _creatureType = CreatureType.vivant;
@@ -212,32 +209,37 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
 
   // ── Navigation ───────────────────────────────────────────────────────────────
 
-  List<_WizardStep> get _steps => _useNcApproach == true
-      ? [_WizardStep.name, _WizardStep.approach, _WizardStep.nc, _WizardStep.otherStats, _WizardStep.review]
-      : [_WizardStep.name, _WizardStep.approach, _WizardStep.gabarit, _WizardStep.otherStats, _WizardStep.review];
+  static const _allSteps = [
+    _WizardStep.name,
+    _WizardStep.gabarit,
+    _WizardStep.nc,
+    _WizardStep.otherStats,
+    _WizardStep.review,
+  ];
 
-  int get _stepIndex => _steps.indexOf(_step);
-  int get _totalSteps => 5;
+  int get _stepIndex => _allSteps.indexOf(_step);
+  int get _totalSteps => _allSteps.length;
+
+  /// NC minimum imposed by the current taille + archétype.
+  int get _ncMin {
+    final entry = _archetypeTable[_taille]?[_archetype];
+    if (entry == null) return 0;
+    return entry.ncMiniIsHalf ? 0 : entry.ncMini;
+  }
 
   void _next() {
     final idx = _stepIndex;
-    if (idx < _steps.length - 1) setState(() => _step = _steps[idx + 1]);
+    if (idx < _allSteps.length - 1) setState(() => _step = _allSteps[idx + 1]);
   }
 
   void _back() {
     final idx = _stepIndex;
-    if (idx > 0) setState(() => _step = _steps[idx - 1]);
+    if (idx > 0) setState(() => _step = _allSteps[idx - 1]);
   }
 
   bool get _canNext {
-    switch (_step) {
-      case _WizardStep.name:
-        return _nameCtrl.text.trim().isNotEmpty;
-      case _WizardStep.approach:
-        return _useNcApproach != null;
-      default:
-        return true;
-    }
+    if (_step == _WizardStep.name) return _nameCtrl.text.trim().isNotEmpty;
+    return true;
   }
 
   // ── Stat computation ─────────────────────────────────────────────────────────
@@ -249,52 +251,30 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     final volMod = _volQuals[_volIdx].mod;
     final init = 10 + perMod;
 
-    if (_useNcApproach == true) {
-      final entry = _ncTable.firstWhere((e) => e.nc == _nc, orElse: () => _ncTable.last);
-      return CharacterTemplate(
-        name: _nameCtrl.text.trim(),
-        isAlly: _isAlly,
-        baseInitiative: init,
-        maxHp: entry.pv,
-        def: entry.def,
-        nc: _nc,
-        creatureType: _creatureType,
-        taille: _taille,
-        archetype: _archetype,
-        forVal: 10,
-        agiVal: 10,
-        conVal: 10,
-        intVal: _modToScore(intMod),
-        perVal: _modToScore(perMod),
-        chaVal: _modToScore(chaMod),
-        volVal: _modToScore(volMod),
-        superiorStats: const {},
-        attacks: [TemplateAttack(name: 'Attaque', bonusAtk: entry.att, dm: entry.dm)],
-      );
-    } else {
-      final entry = _archetypeTable[_taille]![_archetype]!;
-      final superior = entry.forSuperior ? const {'for'} : const <String>{};
-      return CharacterTemplate(
-        name: _nameCtrl.text.trim(),
-        isAlly: _isAlly,
-        baseInitiative: init,
-        maxHp: entry.pv,
-        def: entry.def,
-        nc: entry.ncMiniIsHalf ? null : (entry.ncMini == 0 ? null : entry.ncMini),
-        creatureType: _creatureType,
-        taille: _taille,
-        archetype: _archetype,
-        forVal: _modToScore(entry.forMod),
-        agiVal: _modToScore(entry.agiMod),
-        conVal: _modToScore(entry.conMod),
-        intVal: _modToScore(intMod),
-        perVal: _modToScore(perMod),
-        chaVal: _modToScore(chaMod),
-        volVal: _modToScore(volMod),
-        superiorStats: superior,
-        attacks: [TemplateAttack(name: 'Attaque', bonusAtk: entry.att, dm: entry.dm)],
-      );
-    }
+    final archEntry = _archetypeTable[_taille]![_archetype]!;
+    final ncEntry = _ncTable.firstWhere((e) => e.nc == _nc, orElse: () => _ncTable.last);
+    final superior = archEntry.forSuperior ? const {'for'} : const <String>{};
+
+    return CharacterTemplate(
+      name: _nameCtrl.text.trim(),
+      isAlly: _isAlly,
+      baseInitiative: init,
+      maxHp: ncEntry.pv,
+      def: ncEntry.def,
+      nc: _nc,
+      creatureType: _creatureType,
+      taille: _taille,
+      archetype: _archetype,
+      forVal: _modToScore(archEntry.forMod),
+      agiVal: _modToScore(archEntry.agiMod),
+      conVal: _modToScore(archEntry.conMod),
+      intVal: _modToScore(intMod),
+      perVal: _modToScore(perMod),
+      chaVal: _modToScore(chaMod),
+      volVal: _modToScore(volMod),
+      superiorStats: superior,
+      attacks: [TemplateAttack(name: 'Attaque', bonusAtk: ncEntry.att, dm: ncEntry.dm)],
+    );
   }
 
   Future<void> _confirm() async {
@@ -409,8 +389,6 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     switch (_step) {
       case _WizardStep.name:
         return _buildNameStep(context);
-      case _WizardStep.approach:
-        return _buildApproachStep(context);
       case _WizardStep.gabarit:
         return _buildGabaritStep(context);
       case _WizardStep.nc:
@@ -460,109 +438,6 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     );
   }
 
-  // ── Step: Approach ───────────────────────────────────────────────────────────
-
-  Widget _buildApproachStep(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _stepTitle(context, 'Comment calculer ses stats ?'),
-        const SizedBox(height: 4),
-        Text(
-          'Choisissez la méthode qui correspond le mieux à votre créature.',
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: Colors.grey.shade400),
-        ),
-        const SizedBox(height: 24),
-        _approachCard(
-          context,
-          selected: _useNcApproach == false,
-          icon: Icons.fit_screen,
-          title: 'Par gabarit (taille & archétype)',
-          description:
-              'Idéal pour les bêtes, monstres et créatures dont la puissance dépend de leur taille physique.',
-          onTap: () => setState(() {
-            _useNcApproach = false;
-            _creatureType = CreatureType.vivant;
-          }),
-        ),
-        const SizedBox(height: 12),
-        _approachCard(
-          context,
-          selected: _useNcApproach == true,
-          icon: Icons.military_tech,
-          title: 'Par expérience (NC)',
-          description:
-              'Pour les humanoïdes, guerriers expérimentés et créatures dont la puissance vient de leurs compétences.',
-          onTap: () => setState(() {
-            _useNcApproach = true;
-            _creatureType = CreatureType.humanoide;
-          }),
-        ),
-      ],
-    );
-  }
-
-  Widget _approachCard(
-    BuildContext context, {
-    required bool selected,
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.12)
-              : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? color : Colors.grey.shade700,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon,
-                color: selected ? color : Colors.grey.shade400, size: 32),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: selected ? color : Colors.white,
-                      )),
-                  const SizedBox(height: 4),
-                  Text(description,
-                      style: TextStyle(
-                        color: Colors.grey.shade400,
-                        fontSize: 12,
-                        height: 1.4,
-                      )),
-                ],
-              ),
-            ),
-            if (selected) ...[
-              const SizedBox(width: 8),
-              Icon(Icons.check_circle, color: color, size: 20),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   // ── Step: Gabarit ────────────────────────────────────────────────────────────
 
   Widget _buildGabaritStep(BuildContext context) {
@@ -572,7 +447,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         _stepTitle(context, 'Gabarit de la créature'),
         const SizedBox(height: 4),
         Text(
-          'Définissez le type, la taille et l\'archétype.',
+          'Définissez le type, la taille et l\'archétype. Le NC minimum sera calculé automatiquement.',
           style: Theme.of(context)
               .textTheme
               .bodySmall
@@ -594,7 +469,13 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           values: CreatureTaille.values,
           selected: _taille,
           labelOf: (e) => e.label,
-          onSelected: (v) => setState(() => _taille = v),
+          onSelected: (v) {
+            final newMin = _computeNcMin(v, _archetype);
+            setState(() {
+              _taille = v;
+              if (_nc < newMin) _nc = newMin;
+            });
+          },
         ),
         const SizedBox(height: 20),
         _sectionLabel(context, 'Archétype'),
@@ -604,6 +485,12 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         _gabaritPreview(context),
       ],
     );
+  }
+
+  int _computeNcMin(CreatureTaille taille, CreatureArchetype archetype) {
+    final entry = _archetypeTable[taille]?[archetype];
+    if (entry == null) return 0;
+    return entry.ncMiniIsHalf ? 0 : entry.ncMini;
   }
 
   Widget _archetypeCard(BuildContext context, CreatureArchetype a) {
@@ -618,7 +505,13 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           'Très agressif ou à la limite haute de sa catégorie, combat au-dessus de son gabarit.',
     };
     return GestureDetector(
-      onTap: () => setState(() => _archetype = a),
+      onTap: () {
+        final newMin = _computeNcMin(_taille, a);
+        setState(() {
+          _archetype = a;
+          if (_nc < newMin) _nc = newMin;
+        });
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.only(bottom: 8),
@@ -682,22 +575,23 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Aperçu des stats générées',
+          Text('Caractéristiques physiques & NC minimum',
               style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
-              _previewBadge('NC min', ncLabel),
-              _previewBadge('DEF', '${entry.def}'),
-              _previewBadge('PV', '${entry.pv}'),
-              _previewBadge('ATT', '+${entry.att}'),
-              _previewBadge('DM', entry.dm),
+              _previewBadge('NC mini', ncLabel),
               _previewBadge('FOR', forStr),
               _previewBadge('AGI', agiStr),
               _previewBadge('CON', conStr),
             ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Les stats de combat (DEF, PV, ATT, DM) seront déterminées par le NC choisi à l\'étape suivante.',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 11, height: 1.4),
           ),
         ],
       ),
@@ -707,8 +601,10 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   // ── Step: NC ─────────────────────────────────────────────────────────────────
 
   Widget _buildNcStep(BuildContext context) {
-    final entry = _ncTable.firstWhere((e) => e.nc == _nc);
+    final entry = _ncTable.firstWhere((e) => e.nc == _nc, orElse: () => _ncTable.first);
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
+    final archEntry = _archetypeTable[_taille]?[_archetype];
+    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '$_ncMin';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -716,19 +612,39 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         _stepTitle(context, 'Niveau de Danger (NC)'),
         const SizedBox(height: 4),
         Text(
-          'Sélectionnez le NC cible pour cette créature.',
+          'Le gabarit impose un NC minimum. Choisissez le NC final de la créature.',
           style: Theme.of(context)
               .textTheme
               .bodySmall
               ?.copyWith(color: Colors.grey.shade400),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+        // NC minimum reminder
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 14, color: color),
+              const SizedBox(width: 8),
+              Text(
+                'NC minimum pour ${_taille.label} ${_archetype.label} : $ncMinLabel',
+                style: TextStyle(color: color, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
         // NC picker
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              onPressed: _nc > 0 ? () => setState(() => _nc--) : null,
+              onPressed: _nc > _ncMin ? () => setState(() => _nc--) : null,
               icon: const Icon(Icons.remove_circle_outline, size: 28),
             ),
             const SizedBox(width: 8),
@@ -757,9 +673,9 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         ),
         Slider(
           value: _nc.toDouble(),
-          min: 0,
+          min: _ncMin.toDouble(),
           max: 20,
-          divisions: 20,
+          divisions: 20 - _ncMin,
           label: 'NC $_nc',
           onChanged: (v) => setState(() => _nc = v.round()),
           activeColor: color,
@@ -776,7 +692,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Stats pour NC $_nc',
+              Text('Stats de combat pour NC $_nc',
                   style:
                       TextStyle(color: Colors.grey.shade400, fontSize: 12)),
               const SizedBox(height: 10),
@@ -792,15 +708,6 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 20),
-        _sectionLabel(context, 'Type de créature'),
-        const SizedBox(height: 8),
-        _chipGroup<CreatureType>(
-          values: CreatureType.values,
-          selected: _creatureType,
-          labelOf: (e) => e.label,
-          onSelected: (v) => setState(() => _creatureType = v),
         ),
       ],
     );
@@ -935,20 +842,8 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   Widget _buildReviewStep(BuildContext context) {
     final template = _buildTemplate();
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
-
-    String? ncDisplay;
-    if (_useNcApproach == true) {
-      ncDisplay = 'NC $_nc';
-    } else {
-      final entry = _archetypeTable[_taille]?[_archetype];
-      if (entry != null) {
-        if (entry.ncMiniIsHalf) {
-          ncDisplay = 'NC ½ (mini)';
-        } else if (entry.ncMini > 0) {
-          ncDisplay = 'NC ${entry.ncMini} (mini)';
-        }
-      }
-    }
+    final archEntry = _archetypeTable[_taille]?[_archetype];
+    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '$_ncMin';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -991,7 +886,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
                       template.creatureType.label,
                       template.taille.label,
                       template.archetype.label,
-                      if (ncDisplay != null) ncDisplay,
+                      'NC $_nc (mini $ncMinLabel)',
                     ].join('  •  '),
                     style: TextStyle(color: color, fontSize: 12),
                   ),

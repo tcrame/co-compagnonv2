@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 10 | 140 | 24 | 16 | ------ |
+| 10 | 140 | 24 | 16 | 12m, vol 24m, nage 12m |
 
 ## Caractéristiques
 

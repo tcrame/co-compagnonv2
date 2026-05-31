@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 1 | 2 | 15 | 12 | ------ |
+| 1 | 2 | 15 | 12 | 9m, nage 9m |
 
 ## Caractéristiques
 

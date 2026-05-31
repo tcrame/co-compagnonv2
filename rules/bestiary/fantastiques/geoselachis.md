@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 7 | 110 | 22 | 15 | ------ |
+| 7 | 110 | 22 | 15 | 9m, fouissement 9m |
 
 ## Caractéristiques
 

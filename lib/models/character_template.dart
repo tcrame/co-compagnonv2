@@ -142,6 +142,7 @@ class CharacterTemplate {
   final int baseInitiative;
   final int maxHp;
   final int def;
+  final String vitesse;
   final String? imageUrl;
 
   // Extended creature fields
@@ -174,6 +175,7 @@ class CharacterTemplate {
     required this.baseInitiative,
     required this.maxHp,
     this.def = 10,
+    this.vitesse = '9m',
     this.imageUrl,
     this.nc,
     this.creatureType = CreatureType.vivant,
@@ -198,6 +200,7 @@ class CharacterTemplate {
         'base_initiative': baseInitiative,
         'max_hp': maxHp,
         'def': def,
+        'vitesse': vitesse,
         'image_url': imageUrl,
         'nc': nc,
         'creature_type': creatureType.name,
@@ -251,6 +254,7 @@ class CharacterTemplate {
       baseInitiative: map['base_initiative'] as int,
       maxHp: map['max_hp'] as int,
       def: (map['def'] as int?) ?? 10,
+      vitesse: (map['vitesse'] as String?) ?? '9m',
       imageUrl: map['image_url'] as String?,
       nc: map['nc'] as int?,
       creatureType: CreatureType.fromString(map['creature_type'] as String?),
@@ -276,6 +280,7 @@ class CharacterTemplate {
     int? baseInitiative,
     int? maxHp,
     int? def,
+    String? vitesse,
     String? imageUrl,
     bool clearImageUrl = false,
     Object? nc = _sentinel,
@@ -300,6 +305,7 @@ class CharacterTemplate {
         baseInitiative: baseInitiative ?? this.baseInitiative,
         maxHp: maxHp ?? this.maxHp,
         def: def ?? this.def,
+        vitesse: vitesse ?? this.vitesse,
         imageUrl: clearImageUrl ? null : (imageUrl ?? this.imageUrl),
         nc: nc == _sentinel ? this.nc : nc as int?,
         creatureType: creatureType ?? this.creatureType,

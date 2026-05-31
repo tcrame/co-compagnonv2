@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../constants/voies_data.dart';
+import '../data/bestiary_seed.dart';
 import '../models/character_sheet.dart';
 import '../models/character_template.dart';
 import '../models/combat_armor.dart';
@@ -36,9 +37,10 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 21,
+        version: 22,
           onCreate: (db, version) async {
             await _createTables(db);
+            await _seedBestiary(db);
           },
           onUpgrade: _onUpgrade,
         ),
@@ -50,9 +52,10 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 21,
+      version: 22,
       onCreate: (db, version) async {
         await _createTables(db);
+        await _seedBestiary(db);
       },
       onUpgrade: _onUpgrade,
     );
@@ -226,6 +229,17 @@ class DatabaseService {
                 "ALTER TABLE character_sheets ADD COLUMN superior_stats_json TEXT NOT NULL DEFAULT '[]'");
           } catch (_) {}
         }
+        if (oldVersion < 22) {
+          try {
+            await db.execute(
+                "ALTER TABLE character_templates ADD COLUMN vitesse TEXT NOT NULL DEFAULT '9m'");
+          } catch (_) {}
+          try {
+            await db.execute(
+                "ALTER TABLE character_templates ADD COLUMN is_predefined INTEGER NOT NULL DEFAULT 0");
+          } catch (_) {}
+          await _seedBestiary(db);
+        }
   }
 
   Future<void> _createTables(Database db) async {
@@ -261,6 +275,7 @@ class DatabaseService {
         base_initiative INTEGER NOT NULL,
         max_hp INTEGER NOT NULL,
         def INTEGER NOT NULL DEFAULT 10,
+        vitesse TEXT NOT NULL DEFAULT '9m',
         image_url TEXT,
         nc INTEGER,
         creature_type TEXT NOT NULL DEFAULT 'vivant',
@@ -275,7 +290,8 @@ class DatabaseService {
         vol_val INTEGER NOT NULL DEFAULT 0,
         attacks_json TEXT NOT NULL DEFAULT '[]',
         capacities_json TEXT NOT NULL DEFAULT '[]',
-        legendary_stats_json TEXT NOT NULL DEFAULT '[]'
+        legendary_stats_json TEXT NOT NULL DEFAULT '[]',
+        is_predefined INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.execute('''
@@ -451,6 +467,18 @@ class DatabaseService {
   }
 
   // ── Character Templates (Bestiaire) ─────────────────────────────────────────
+
+  Future<void> _seedBestiary(Database db) async {
+    final existing = await db.rawQuery(
+        'SELECT COUNT(*) as c FROM character_templates WHERE is_predefined = 1');
+    if ((existing.first['c'] as int) > 0) return;
+    final batch = db.batch();
+    for (final t in buildBestiarySeeds()) {
+      final m = t.toMap()..['is_predefined'] = 1;
+      batch.insert('character_templates', m);
+    }
+    await batch.commit(noResult: true);
+  }
 
   Future<List<CharacterTemplate>> getTemplates() async {
     final db = await database;

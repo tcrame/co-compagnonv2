@@ -4,7 +4,7 @@
 
 | NC | PV | Défense | Init | Vitesse |
 |----|----|---------|------|---------|
-| 3 | 30 | 17 | 14 | ------ |
+| 3 | 30 | 17 | 14 | 12m, escalade 12m |
 
 ## Caractéristiques
 
