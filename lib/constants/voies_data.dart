@@ -3118,7 +3118,51 @@ const kVoiesChoixPeuple = <String, List<VoieCatalogue>>{
   'Nain': [_voie_peuple_nain],
 };
 
+String _normalizePeupleKey(String value) => value
+    .toLowerCase()
+    .trim()
+    .replaceAll(RegExp(r'[‐‑‒–—−]'), '-')
+    .replaceAll(RegExp(r'\s+'), ' ')
+    .replaceAll('é', 'e')
+    .replaceAll('è', 'e')
+    .replaceAll('ê', 'e')
+    .replaceAll('ë', 'e')
+    .replaceAll('à', 'a')
+    .replaceAll('â', 'a')
+    .replaceAll('ä', 'a')
+    .replaceAll('î', 'i')
+    .replaceAll('ï', 'i')
+    .replaceAll('ô', 'o')
+    .replaceAll('ö', 'o')
+    .replaceAll('ù', 'u')
+    .replaceAll('û', 'u')
+    .replaceAll('ü', 'u')
+    .replaceAll('ç', 'c');
+
+const _kPeupleAliases = <String, String>{
+  'demi-elfe': 'Demi-elfe',
+  'demi elfe': 'Demi-elfe',
+  'demielfe': 'Demi-elfe',
+  'demi-orc': 'Demi-orc',
+  'demi orc': 'Demi-orc',
+  'demiorc': 'Demi-orc',
+  'demi-orque': 'Demi-orc',
+  'demi orque': 'Demi-orc',
+  'elfe haut': 'Elfe haut',
+  'elfe sylvain': 'Elfe sylvain',
+  'gnome': 'Gnome',
+  'halfelin': 'Halfelin',
+  'humain': 'Humain',
+  'nain': 'Nain',
+};
+
 /// Returns the list of possible peuple voies for a given peuple name.
 /// Returns empty list if peuple is unknown or empty.
-List<VoieCatalogue> getVoiesChoixPourPeuple(String peuple) =>
-    kVoiesChoixPeuple[peuple] ?? [];
+List<VoieCatalogue> getVoiesChoixPourPeuple(String peuple) {
+  final direct = kVoiesChoixPeuple[peuple];
+  if (direct != null) return direct;
+  final normalized = _normalizePeupleKey(peuple);
+  final canonical = _kPeupleAliases[normalized];
+  if (canonical == null) return const [];
+  return kVoiesChoixPeuple[canonical] ?? const [];
+}

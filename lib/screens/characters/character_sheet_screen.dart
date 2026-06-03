@@ -71,6 +71,9 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     setState(() => _sheet = sheet);
     if (sheet.id != null) {
       provider.loadVoieRangs(sheet.id!);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _ensureSingleChoicePeupleVoie(sheet.id!);
+      });
       // Repair mage origin if needed (for characters configured before this feature)
       if (sheet.voiePeupleId == 'peuple_voie-du-mage' &&
           sheet.voiePeupleOrigineId.isEmpty &&
@@ -80,6 +83,25 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
         });
       }
     }
+  }
+
+  /// Backfills voie de peuple for existing sheets that have a peuple but no voie.
+  /// Applies only when there is a single obvious voie for that peuple.
+  Future<void> _ensureSingleChoicePeupleVoie(int sheetId) async {
+    if (!mounted || _sheet == null) return;
+    if (_sheet!.race.isEmpty) return;
+    final choices = getVoiesChoixPourPeuple(_sheet!.race);
+    final isMageVoie = _sheet!.voiePeupleId == 'peuple_voie-du-mage';
+    final hasValidVoieForRace = _sheet!.voiePeupleId.isNotEmpty &&
+        (isMageVoie || choices.any((v) => v.id == _sheet!.voiePeupleId));
+    if (hasValidVoieForRace) return;
+    if (choices.length != 1) return;
+
+    final voieId = choices.first.id;
+    final provider = context.read<CharacterSheetProvider>();
+    await provider.setVoiePeuple(sheetId, voieId);
+    if (!mounted || _sheet == null) return;
+    setState(() => _sheet = _sheet!.copyWith(voiePeupleId: voieId));
   }
 
   Future<void> _onProfilChanged(String? newProfil) async {
@@ -643,9 +665,12 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
   }
 
   /// Called when peuple changes: resets racial values then shows choice dialog.
-  void _onPeupleChanged(String? newPeuple) {
+  void _onPeupleChanged(String? newPeuple) async {
     final resetSheet = _sheet!.copyWith(
       race: newPeuple ?? '',
+      voiePeupleId: '',
+      voiePeupleOrigineId: '',
+      voieMageRang2Pris: false,
       agiRacial: 0, conRacial: 0, forRacial: 0, perRacial: 0,
       chaRacial: 0, intRacial: 0, volRacial: 0,
     );
@@ -655,13 +680,17 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     });
     _scheduleSave();
     if (newPeuple != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _showRacialDialog(newPeuple);
-      });
-      // Resolve voie de peuple after racial dialog (slight delay so racial dialog shows first)
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _resolvePeupleVoie(newPeuple);
-      });
+      final sheetId = _sheet?.id;
+      if (sheetId != null) {
+        final provider = context.read<CharacterSheetProvider>();
+        await provider.setVoiePeuple(sheetId, '');
+        await provider.setVoiePeupleOrigine(sheetId, '');
+        await provider.setVoieMageRang2Pris(sheetId, false);
+      }
+      if (!mounted) return;
+      await _showRacialDialog(newPeuple);
+      if (!mounted) return;
+      await _resolvePeupleVoie(newPeuple);
     } else {
       // Peuple cleared: clear voie de peuple and restore resources
       final sheetId = _sheet?.id;
@@ -679,11 +708,11 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
     }
   }
 
-  void _showRacialDialog(String peuple) {
+  Future<void> _showRacialDialog(String peuple) async {
     final choice = getRacialChoice(peuple);
     if (choice == null) return;
 
-    showDialog<void>(
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => _RacialDialog(
@@ -1183,8 +1212,23 @@ class _VoiesTab extends StatelessWidget {
     final totalPc = sheet.level * 2;
     final remaining = totalPc - pcDepense;
     final voies = getVoiesPourProfil(sheet.profile);
-    final voiePeuple = voiePeupleId.isNotEmpty ? getVoieById(voiePeupleId) : null;
-    final isMageVoie = voiePeupleId == 'peuple_voie-du-mage';
+    final peupleChoices = getVoiesChoixPourPeuple(sheet.race);
+    String effectiveVoiePeupleId = voiePeupleId;
+    VoieCatalogue? voiePeuple =
+        voiePeupleId.isNotEmpty ? getVoieById(voiePeupleId) : null;
+    final isMageVoieSelected = voiePeupleId == 'peuple_voie-du-mage';
+    final voieCorrespondAuPeuple = peupleChoices.any((v) => v.id == voiePeupleId);
+    if (!isMageVoieSelected && voiePeuple != null && !voieCorrespondAuPeuple) {
+      voiePeuple = null;
+      effectiveVoiePeupleId = '';
+    }
+    if (voiePeuple == null && sheet.race.isNotEmpty) {
+      if (peupleChoices.length == 1) {
+        effectiveVoiePeupleId = peupleChoices.first.id;
+        voiePeuple = peupleChoices.first;
+      }
+    }
+    final isMageVoie = effectiveVoiePeupleId == 'peuple_voie-du-mage';
     final voieOrigine = (isMageVoie && voiePeupleOrigineId.isNotEmpty)
         ? getVoieById(voiePeupleOrigineId)
         : null;
@@ -1226,12 +1270,12 @@ class _VoiesTab extends StatelessWidget {
             padding: EdgeInsets.only(bottom: voieOrigine != null ? 8 : 12),
             child: _VoieCard(
               voie: voiePeuple,
-              rangActuel: voieRangs[voiePeupleId] ?? 0,
+              rangActuel: max(1, voieRangs[effectiveVoiePeupleId] ?? 0),
               rangMin: 1, // rang 1 always free & locked
               pcRestants: 999, // voie de peuple has no PC cost
               profil: sheet.profile,
               niveau: sheet.level,
-              onSetRang: (r) => onSetRang(voiePeupleId, r),
+              onSetRang: (r) => onSetRang(effectiveVoiePeupleId, r),
               mageRang2Disponible: mageRang2Disponible,
               onMageRang2Pris: onMageRang2Pris,
               onMageRang2Reset: onMageRang2Reset,
