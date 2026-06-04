@@ -9,6 +9,9 @@ class CharacterSheet {
   final String race;
   final String profile;
   final DateTime createdAt;
+  final String syncUuid;
+  final DateTime lastModifiedAt;
+  final DateTime? lastSyncedAt;
 
   // ── Caractéristiques ───────────────────────────────────────────────────────
   final String statPreset; // 'polyvalent' | 'expert' | 'specialiste' | ''
@@ -128,40 +131,78 @@ class CharacterSheet {
     this.race = '',
     this.profile = '',
     DateTime? createdAt,
+    this.syncUuid = '',
+    DateTime? lastModifiedAt,
+    this.lastSyncedAt,
     // caracs
     this.statPreset = '',
-    this.agiVal = 0, this.agiRacial = 0, this.agiBonus = 0,
-    this.conVal = 0, this.conRacial = 0, this.conBonus = 0,
-    this.forVal = 0, this.forRacial = 0, this.forBonus = 0,
-    this.perVal = 0, this.perRacial = 0, this.perBonus = 0,
-    this.chaVal = 0, this.chaRacial = 0, this.chaBonus = 0,
-    this.intVal = 0, this.intRacial = 0, this.intBonus = 0,
-    this.volVal = 0, this.volRacial = 0, this.volBonus = 0,
+    this.agiVal = 0,
+    this.agiRacial = 0,
+    this.agiBonus = 0,
+    this.conVal = 0,
+    this.conRacial = 0,
+    this.conBonus = 0,
+    this.forVal = 0,
+    this.forRacial = 0,
+    this.forBonus = 0,
+    this.perVal = 0,
+    this.perRacial = 0,
+    this.perBonus = 0,
+    this.chaVal = 0,
+    this.chaRacial = 0,
+    this.chaBonus = 0,
+    this.intVal = 0,
+    this.intRacial = 0,
+    this.intBonus = 0,
+    this.volVal = 0,
+    this.volRacial = 0,
+    this.volBonus = 0,
     // attaque
-    this.attContactBonus = 0, this.attContactMalus = 0,
-    this.attDistanceBonus = 0, this.attDistanceMalus = 0,
-    this.attMagiqueBonus = 0, this.attMagiqueMalus = 0,
+    this.attContactBonus = 0,
+    this.attContactMalus = 0,
+    this.attDistanceBonus = 0,
+    this.attDistanceMalus = 0,
+    this.attMagiqueBonus = 0,
+    this.attMagiqueMalus = 0,
     // initiative
-    this.initBase = 0, this.initBonus = 0, this.initMalus = 0,
+    this.initBase = 0,
+    this.initBonus = 0,
+    this.initMalus = 0,
     // PV
-    this.pvDv = '1d8', this.pvBase = 0, this.pvBonus = 0, this.pvActuel = 0,
+    this.pvDv = '1d8',
+    this.pvBase = 0,
+    this.pvBonus = 0,
+    this.pvActuel = 0,
     // DR
-    this.drBase = 0, this.drBonus = 0, this.drActuel = 0,
+    this.drBase = 0,
+    this.drBonus = 0,
+    this.drActuel = 0,
     // DEF
-    this.defBase = 10, this.defBonus = 0, this.defMalus = 0,
+    this.defBase = 10,
+    this.defBonus = 0,
+    this.defMalus = 0,
     // RD
-    this.rdBase = 0, this.rdBonus = 0, this.rdMalus = 0,
+    this.rdBase = 0,
+    this.rdBonus = 0,
+    this.rdMalus = 0,
     // PM
-    this.pmBase = 0, this.pmBonus = 0, this.pmActuel = 0,
+    this.pmBase = 0,
+    this.pmBonus = 0,
+    this.pmActuel = 0,
     // PC
-    this.pcBase = 0, this.pcBonus = 0, this.pcActuel = 0,
+    this.pcBase = 0,
+    this.pcBonus = 0,
+    this.pcActuel = 0,
     // Encombrement
-    this.encArmure = 0, this.encAutre = 0,
+    this.encArmure = 0,
+    this.encAutre = 0,
     // Points de compétence
     this.pointsCompetence = 0,
     // Monnaie
-    this.monnaiePC = 0, this.monnaiePA = 0,
-    this.monnaiePO = 0, this.monnaiePP = 0,
+    this.monnaiePC = 0,
+    this.monnaiePA = 0,
+    this.monnaiePO = 0,
+    this.monnaiePP = 0,
     // Notes
     this.description = '',
     this.notesCombat = '',
@@ -173,7 +214,8 @@ class CharacterSheet {
     this.voiePeupleOrigineId = '',
     this.voieMageRang2Pris = false,
     this.superiorStats = const {},
-  }) : createdAt = createdAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       lastModifiedAt = lastModifiedAt ?? createdAt ?? DateTime.now();
 
   // ── Valeurs calculées ──────────────────────────────────────────────────────
 
@@ -200,9 +242,15 @@ class CharacterSheet {
   int get attDistanceBase => level + agiTotal;
   int get attMagiqueBase => level + volTotal;
 
-  int get attContactTotal => attContactBase + attContactBonus + _eb('att_contact') - attContactMalus;
-  int get attDistanceTotal => attDistanceBase + attDistanceBonus + _eb('att_distance') - attDistanceMalus;
-  int get attMagiqueTotal => attMagiqueBase + attMagiqueBonus + _eb('att_magique') - attMagiqueMalus;
+  int get attContactTotal =>
+      attContactBase + attContactBonus + _eb('att_contact') - attContactMalus;
+  int get attDistanceTotal =>
+      attDistanceBase +
+      attDistanceBonus +
+      _eb('att_distance') -
+      attDistanceMalus;
+  int get attMagiqueTotal =>
+      attMagiqueBase + attMagiqueBonus + _eb('att_magique') - attMagiqueMalus;
 
   // Initiative : 10 + PER (+ bonus/malus manuels + équipement)
   int get initDerive => 10 + perTotal;
@@ -216,7 +264,8 @@ class CharacterSheet {
 
   // PV : (2 × pvFamille) au niv.1, +pvFamille par niveau suivant, +CON par niveau
   // Formule : pvFamille × (NIV + 1) + NIV × CON
-  int get pvDerive => pvFamilleForProfil(profile) * (level + 1) + level * conTotal;
+  int get pvDerive =>
+      pvFamilleForProfil(profile) * (level + 1) + level * conTotal;
   int get pvMax => pvDerive + pvBonus + _eb('pv');
 
   // DR : drFamille + CON (+ bonus manuel + équipement)
@@ -232,10 +281,14 @@ class CharacterSheet {
   /// Valeur max du dé de récupération (pour Random().nextInt)
   int get dvMaxValue {
     switch (dvDerive) {
-      case 'd6': return 6;
-      case 'd10': return 10;
-      case 'd12': return 12;
-      default: return 8; // d8
+      case 'd6':
+        return 6;
+      case 'd10':
+        return 10;
+      case 'd12':
+        return 12;
+      default:
+        return 8; // d8
     }
   }
 
@@ -258,27 +311,65 @@ class CharacterSheet {
     'profile': profile,
     'stat_preset': statPreset,
     'created_at': createdAt.toIso8601String(),
-    'agi_val': agiVal, 'agi_racial': agiRacial, 'agi_bonus': agiBonus,
-    'con_val': conVal, 'con_racial': conRacial, 'con_bonus': conBonus,
-    'for_val': forVal, 'for_racial': forRacial, 'for_bonus': forBonus,
-    'per_val': perVal, 'per_racial': perRacial, 'per_bonus': perBonus,
-    'cha_val': chaVal, 'cha_racial': chaRacial, 'cha_bonus': chaBonus,
-    'int_val': intVal, 'int_racial': intRacial, 'int_bonus': intBonus,
-    'vol_val': volVal, 'vol_racial': volRacial, 'vol_bonus': volBonus,
-    'att_contact_bonus': attContactBonus, 'att_contact_malus': attContactMalus,
-    'att_distance_bonus': attDistanceBonus, 'att_distance_malus': attDistanceMalus,
-    'att_magique_bonus': attMagiqueBonus, 'att_magique_malus': attMagiqueMalus,
-    'init_base': initBase, 'init_bonus': initBonus, 'init_malus': initMalus,
-    'pv_dv': pvDv, 'pv_base': pvBase, 'pv_bonus': pvBonus, 'pv_actuel': pvActuel,
-    'dr_base': drBase, 'dr_bonus': drBonus, 'dr_actuel': drActuel,
-    'def_base': defBase, 'def_bonus': defBonus, 'def_malus': defMalus,
-    'rd_base': rdBase, 'rd_bonus': rdBonus, 'rd_malus': rdMalus,
-    'pm_base': pmBase, 'pm_bonus': pmBonus, 'pm_actuel': pmActuel,
-    'pc_base': pcBase, 'pc_bonus': pcBonus, 'pc_actuel': pcActuel,
-    'enc_armure': encArmure, 'enc_autre': encAutre,
+    'sync_uuid': syncUuid,
+    'last_modified_at': lastModifiedAt.toIso8601String(),
+    'last_synced_at': lastSyncedAt?.toIso8601String(),
+    'agi_val': agiVal,
+    'agi_racial': agiRacial,
+    'agi_bonus': agiBonus,
+    'con_val': conVal,
+    'con_racial': conRacial,
+    'con_bonus': conBonus,
+    'for_val': forVal,
+    'for_racial': forRacial,
+    'for_bonus': forBonus,
+    'per_val': perVal,
+    'per_racial': perRacial,
+    'per_bonus': perBonus,
+    'cha_val': chaVal,
+    'cha_racial': chaRacial,
+    'cha_bonus': chaBonus,
+    'int_val': intVal,
+    'int_racial': intRacial,
+    'int_bonus': intBonus,
+    'vol_val': volVal,
+    'vol_racial': volRacial,
+    'vol_bonus': volBonus,
+    'att_contact_bonus': attContactBonus,
+    'att_contact_malus': attContactMalus,
+    'att_distance_bonus': attDistanceBonus,
+    'att_distance_malus': attDistanceMalus,
+    'att_magique_bonus': attMagiqueBonus,
+    'att_magique_malus': attMagiqueMalus,
+    'init_base': initBase,
+    'init_bonus': initBonus,
+    'init_malus': initMalus,
+    'pv_dv': pvDv,
+    'pv_base': pvBase,
+    'pv_bonus': pvBonus,
+    'pv_actuel': pvActuel,
+    'dr_base': drBase,
+    'dr_bonus': drBonus,
+    'dr_actuel': drActuel,
+    'def_base': defBase,
+    'def_bonus': defBonus,
+    'def_malus': defMalus,
+    'rd_base': rdBase,
+    'rd_bonus': rdBonus,
+    'rd_malus': rdMalus,
+    'pm_base': pmBase,
+    'pm_bonus': pmBonus,
+    'pm_actuel': pmActuel,
+    'pc_base': pcBase,
+    'pc_bonus': pcBonus,
+    'pc_actuel': pcActuel,
+    'enc_armure': encArmure,
+    'enc_autre': encAutre,
     'points_competence': pointsCompetence,
-    'monnaie_pc': monnaiePC, 'monnaie_pa': monnaiePA,
-    'monnaie_po': monnaiePO, 'monnaie_pp': monnaiePP,
+    'monnaie_pc': monnaiePC,
+    'monnaie_pa': monnaiePA,
+    'monnaie_po': monnaiePO,
+    'monnaie_pp': monnaiePP,
     'description': description,
     'notes_combat': notesCombat,
     'notes_inventaire': notesInventaire,
@@ -299,13 +390,40 @@ class CharacterSheet {
     profile: m['profile'] as String? ?? '',
     statPreset: m['stat_preset'] as String? ?? '',
     createdAt: DateTime.parse(m['created_at'] as String),
-    agiVal: m['agi_val'] as int? ?? 0, agiRacial: m['agi_racial'] as int? ?? 0, agiBonus: m['agi_bonus'] as int? ?? 0,
-    conVal: m['con_val'] as int? ?? 0, conRacial: m['con_racial'] as int? ?? 0, conBonus: m['con_bonus'] as int? ?? 0,
-    forVal: m['for_val'] as int? ?? 0, forRacial: m['for_racial'] as int? ?? 0, forBonus: m['for_bonus'] as int? ?? 0,
-    perVal: m['per_val'] as int? ?? 0, perRacial: m['per_racial'] as int? ?? 0, perBonus: m['per_bonus'] as int? ?? 0,
-    chaVal: m['cha_val'] as int? ?? 0, chaRacial: m['cha_racial'] as int? ?? 0, chaBonus: m['cha_bonus'] as int? ?? 0,
-    intVal: m['int_val'] as int? ?? 0, intRacial: m['int_racial'] as int? ?? 0, intBonus: m['int_bonus'] as int? ?? 0,
-    volVal: m['vol_val'] as int? ?? 0, volRacial: m['vol_racial'] as int? ?? 0, volBonus: m['vol_bonus'] as int? ?? 0,
+    syncUuid: m['sync_uuid'] as String? ?? '',
+    lastModifiedAt: () {
+      final raw = m['last_modified_at'] as String?;
+      if (raw == null || raw.isEmpty) {
+        return DateTime.parse(m['created_at'] as String);
+      }
+      return DateTime.parse(raw);
+    }(),
+    lastSyncedAt: () {
+      final raw = m['last_synced_at'] as String?;
+      if (raw == null || raw.isEmpty) return null;
+      return DateTime.parse(raw);
+    }(),
+    agiVal: m['agi_val'] as int? ?? 0,
+    agiRacial: m['agi_racial'] as int? ?? 0,
+    agiBonus: m['agi_bonus'] as int? ?? 0,
+    conVal: m['con_val'] as int? ?? 0,
+    conRacial: m['con_racial'] as int? ?? 0,
+    conBonus: m['con_bonus'] as int? ?? 0,
+    forVal: m['for_val'] as int? ?? 0,
+    forRacial: m['for_racial'] as int? ?? 0,
+    forBonus: m['for_bonus'] as int? ?? 0,
+    perVal: m['per_val'] as int? ?? 0,
+    perRacial: m['per_racial'] as int? ?? 0,
+    perBonus: m['per_bonus'] as int? ?? 0,
+    chaVal: m['cha_val'] as int? ?? 0,
+    chaRacial: m['cha_racial'] as int? ?? 0,
+    chaBonus: m['cha_bonus'] as int? ?? 0,
+    intVal: m['int_val'] as int? ?? 0,
+    intRacial: m['int_racial'] as int? ?? 0,
+    intBonus: m['int_bonus'] as int? ?? 0,
+    volVal: m['vol_val'] as int? ?? 0,
+    volRacial: m['vol_racial'] as int? ?? 0,
+    volBonus: m['vol_bonus'] as int? ?? 0,
     attContactBonus: m['att_contact_bonus'] as int? ?? 0,
     attContactMalus: m['att_contact_malus'] as int? ?? 0,
     attDistanceBonus: m['att_distance_bonus'] as int? ?? 0,
@@ -363,30 +481,77 @@ class CharacterSheet {
 
   CharacterSheet copyWith({
     int? id,
-    String? name, int? level, String? race, String? profile, String? statPreset,
-    int? agiVal, int? agiRacial, int? agiBonus,
-    int? conVal, int? conRacial, int? conBonus,
-    int? forVal, int? forRacial, int? forBonus,
-    int? perVal, int? perRacial, int? perBonus,
-    int? chaVal, int? chaRacial, int? chaBonus,
-    int? intVal, int? intRacial, int? intBonus,
-    int? volVal, int? volRacial, int? volBonus,
-    int? attContactBonus, int? attContactMalus,
-    int? attDistanceBonus, int? attDistanceMalus,
-    int? attMagiqueBonus, int? attMagiqueMalus,
-    int? initBase, int? initBonus, int? initMalus,
-    String? pvDv, int? pvBase, int? pvBonus, int? pvActuel,
-    int? drBase, int? drBonus, int? drActuel,
-    int? defBase, int? defBonus, int? defMalus,
-    int? rdBase, int? rdBonus, int? rdMalus,
-    int? pmBase, int? pmBonus, int? pmActuel,
-    int? pcBase, int? pcBonus, int? pcActuel,
-    int? encArmure, int? encAutre,
+    String? name,
+    int? level,
+    String? race,
+    String? profile,
+    String? statPreset,
+    String? syncUuid,
+    DateTime? createdAt,
+    DateTime? lastModifiedAt,
+    DateTime? lastSyncedAt,
+    bool clearLastSyncedAt = false,
+    int? agiVal,
+    int? agiRacial,
+    int? agiBonus,
+    int? conVal,
+    int? conRacial,
+    int? conBonus,
+    int? forVal,
+    int? forRacial,
+    int? forBonus,
+    int? perVal,
+    int? perRacial,
+    int? perBonus,
+    int? chaVal,
+    int? chaRacial,
+    int? chaBonus,
+    int? intVal,
+    int? intRacial,
+    int? intBonus,
+    int? volVal,
+    int? volRacial,
+    int? volBonus,
+    int? attContactBonus,
+    int? attContactMalus,
+    int? attDistanceBonus,
+    int? attDistanceMalus,
+    int? attMagiqueBonus,
+    int? attMagiqueMalus,
+    int? initBase,
+    int? initBonus,
+    int? initMalus,
+    String? pvDv,
+    int? pvBase,
+    int? pvBonus,
+    int? pvActuel,
+    int? drBase,
+    int? drBonus,
+    int? drActuel,
+    int? defBase,
+    int? defBonus,
+    int? defMalus,
+    int? rdBase,
+    int? rdBonus,
+    int? rdMalus,
+    int? pmBase,
+    int? pmBonus,
+    int? pmActuel,
+    int? pcBase,
+    int? pcBonus,
+    int? pcActuel,
+    int? encArmure,
+    int? encAutre,
     int? pointsCompetence,
-    int? monnaiePC, int? monnaiePA, int? monnaiePO, int? monnaiePP,
+    int? monnaiePC,
+    int? monnaiePA,
+    int? monnaiePO,
+    int? monnaiePP,
     String? description,
-    String? notesCombat, String? notesInventaire,
-    String? notesVoies, String? notesEffets,
+    String? notesCombat,
+    String? notesInventaire,
+    String? notesVoies,
+    String? notesEffets,
     String? equipmentBonusesJson,
     String? voiePeupleId,
     String? voiePeupleOrigineId,
@@ -399,14 +564,32 @@ class CharacterSheet {
     race: race ?? this.race,
     profile: profile ?? this.profile,
     statPreset: statPreset ?? this.statPreset,
-    createdAt: createdAt,
-    agiVal: agiVal ?? this.agiVal, agiRacial: agiRacial ?? this.agiRacial, agiBonus: agiBonus ?? this.agiBonus,
-    conVal: conVal ?? this.conVal, conRacial: conRacial ?? this.conRacial, conBonus: conBonus ?? this.conBonus,
-    forVal: forVal ?? this.forVal, forRacial: forRacial ?? this.forRacial, forBonus: forBonus ?? this.forBonus,
-    perVal: perVal ?? this.perVal, perRacial: perRacial ?? this.perRacial, perBonus: perBonus ?? this.perBonus,
-    chaVal: chaVal ?? this.chaVal, chaRacial: chaRacial ?? this.chaRacial, chaBonus: chaBonus ?? this.chaBonus,
-    intVal: intVal ?? this.intVal, intRacial: intRacial ?? this.intRacial, intBonus: intBonus ?? this.intBonus,
-    volVal: volVal ?? this.volVal, volRacial: volRacial ?? this.volRacial, volBonus: volBonus ?? this.volBonus,
+    syncUuid: syncUuid ?? this.syncUuid,
+    createdAt: createdAt ?? this.createdAt,
+    lastModifiedAt: lastModifiedAt ?? this.lastModifiedAt,
+    lastSyncedAt:
+        clearLastSyncedAt ? null : (lastSyncedAt ?? this.lastSyncedAt),
+    agiVal: agiVal ?? this.agiVal,
+    agiRacial: agiRacial ?? this.agiRacial,
+    agiBonus: agiBonus ?? this.agiBonus,
+    conVal: conVal ?? this.conVal,
+    conRacial: conRacial ?? this.conRacial,
+    conBonus: conBonus ?? this.conBonus,
+    forVal: forVal ?? this.forVal,
+    forRacial: forRacial ?? this.forRacial,
+    forBonus: forBonus ?? this.forBonus,
+    perVal: perVal ?? this.perVal,
+    perRacial: perRacial ?? this.perRacial,
+    perBonus: perBonus ?? this.perBonus,
+    chaVal: chaVal ?? this.chaVal,
+    chaRacial: chaRacial ?? this.chaRacial,
+    chaBonus: chaBonus ?? this.chaBonus,
+    intVal: intVal ?? this.intVal,
+    intRacial: intRacial ?? this.intRacial,
+    intBonus: intBonus ?? this.intBonus,
+    volVal: volVal ?? this.volVal,
+    volRacial: volRacial ?? this.volRacial,
+    volBonus: volBonus ?? this.volBonus,
     attContactBonus: attContactBonus ?? this.attContactBonus,
     attContactMalus: attContactMalus ?? this.attContactMalus,
     attDistanceBonus: attDistanceBonus ?? this.attDistanceBonus,

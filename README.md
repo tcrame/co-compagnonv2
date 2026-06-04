@@ -1,16 +1,91 @@
 # co_compagnon_v2
 
-A new Flutter project.
+Application Flutter pour COF2 (combat tracker, bestiaire, fiches personnages).
 
-## Getting Started
+## Synchronisation personnages (Neon)
 
-This project is a starting point for a Flutter application.
+La synchronisation cloud fonctionne via une API HTTPS (Cloudflare Worker) qui
+parle à Neon PostgreSQL. Le client Flutter ne stocke aucun secret PostgreSQL.
 
-A few resources to get you started if this is your first Flutter project:
+nom du worker : co-compagnon-sync.crame-teddy.workers.dev
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 1. Déployer le Worker de sync
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd sync_worker
+npm install
+npx wrangler secret put DATABASE_URL
+npx wrangler deploy
+```
+
+Le Worker expose:
+- `POST /sync/push`
+- `POST /sync/pull`
+- `POST /sync/list`
+
+### 2. Lancer l'app Flutter avec l'URL API
+
+```bash
+fvm flutter run --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+```
+
+Sans `SYNC_API_BASE_URL`, les boutons cloud sont désactivés.
+
+### 3. Commandes utiles (dev)
+
+#### Voir devices / émulateurs
+
+```bash
+fvm flutter devices
+fvm flutter emulators
+```
+
+#### Lancer un émulateur Android
+
+```bash
+fvm flutter emulators --launch Medium_Phone_API_36.0
+```
+
+#### Lancer l'app sur émulateur Android
+
+```bash
+fvm flutter run -d emulator-5554 --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+```
+
+#### Lancer l'app sur mobile Android branché
+
+```bash
+fvm flutter devices
+fvm flutter run -d <device_id_android> --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+```
+
+Exemple device id réel:
+
+```bash
+fvm flutter run -d 4B101JEKB01839 --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+```
+
+#### Builder APK avec URL de dev
+
+```bash
+fvm flutter build apk --debug --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+```
+
+APK générée:
+
+```bash
+build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Installer APK sur téléphone (optionnel):
+
+```bash
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+### 4. Utilisation
+
+Dans **Fiches de Personnages**:
+- Icône cloud upload: envoie personnage local vers Neon (mot de passe requis).
+- Icône cloud download: affiche liste cloud, puis demande mot de passe pour personnage choisi.
+- En cas de conflit (version plus récente de l'autre côté): app demande **Écraser** ou **Annuler**.

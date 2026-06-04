@@ -37,7 +37,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-        version: 22,
+          version: 23,
           onCreate: (db, version) async {
             await _createTables(db);
             await _seedBestiary(db);
@@ -52,7 +52,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 22,
+      version: 23,
       onCreate: (db, version) async {
         await _createTables(db);
         await _seedBestiary(db);
@@ -62,8 +62,8 @@ class DatabaseService {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('''
+    if (oldVersion < 2) {
+      await db.execute('''
             CREATE TABLE IF NOT EXISTS character_templates (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name TEXT NOT NULL,
@@ -72,11 +72,12 @@ class DatabaseService {
               max_hp INTEGER NOT NULL
             )
           ''');
-        }
-        if (oldVersion < 3) {
-          await db.execute(
-              'ALTER TABLE sessions ADD COLUMN turn_count INTEGER NOT NULL DEFAULT 0');
-          await db.execute('''
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE sessions ADD COLUMN turn_count INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute('''
             CREATE TABLE IF NOT EXISTS status_effects (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               participant_id INTEGER NOT NULL,
@@ -85,161 +86,205 @@ class DatabaseService {
               remaining_turns INTEGER NOT NULL DEFAULT 1
             )
           ''');
-        }
-        if (oldVersion < 4) {
-          await db.execute(
-              'ALTER TABLE participants ADD COLUMN image_url TEXT');
-          await db.execute(
-              'ALTER TABLE character_templates ADD COLUMN image_url TEXT');
-        }
-        if (oldVersion < 5) {
-          await _createCharacterSheetsTable(db);
-        }
-        if (oldVersion < 6) {
-          const cols = ['agi', 'con', 'for', 'per', 'cha', 'int', 'vol'];
-          for (final c in cols) {
-            await db.execute(
-                'ALTER TABLE character_sheets ADD COLUMN ${c}_bonus INTEGER NOT NULL DEFAULT 0');
-          }
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN stat_preset TEXT NOT NULL DEFAULT ''");
-        }
-        if (oldVersion < 7) {
-          await _createInventoryItemsTable(db);
-        }
-        if (oldVersion < 8) {
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN equipment_bonuses_json TEXT NOT NULL DEFAULT '{}'");
-          await _createCombatWeaponsTable(db);
-          await _createCombatArmorsTable(db);
-          await _createCombatCapacitiesTable(db);
-          await _createItemEffectsTable(db);
-        }
-        if (oldVersion < 9) {
-          await db.execute(
-              "ALTER TABLE combat_weapons ADD COLUMN dm TEXT NOT NULL DEFAULT ''");
-          await db.execute(
-              "ALTER TABLE combat_capacities ADD COLUMN dm TEXT NOT NULL DEFAULT ''");
-        }
-        if (oldVersion < 10) {
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN points_competence INTEGER NOT NULL DEFAULT 0");
-        }
-        if (oldVersion < 11) {
-          await _createCharacterVoieRangsTable(db);
-        }
-        if (oldVersion < 12) {
-          await db.execute(
-              "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0");
-          await db.execute(
-              "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''");
-        }
-        if (oldVersion < 13) {
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN monnaie_pc INTEGER NOT NULL DEFAULT 0");
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN monnaie_pa INTEGER NOT NULL DEFAULT 0");
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN monnaie_po INTEGER NOT NULL DEFAULT 0");
-          await db.execute(
-              "ALTER TABLE character_sheets ADD COLUMN monnaie_pp INTEGER NOT NULL DEFAULT 0");
-        }
-        if (oldVersion < 14) {
-          try {
-            await db.execute(
-                "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
-          } catch (_) {}
-          try {
-            await db.execute(
-                "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10");
-          } catch (_) {}
-        }
-        if (oldVersion < 15) {
-          // Fix: web DBs created at v8-v14 may be missing these columns
-          // (onCreate used an outdated _createCombatCapacitiesTable).
-          // try/catch is intentional — columns may already exist on Android.
-          try {
-            await db.execute(
-                "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0");
-          } catch (_) {}
-          try {
-            await db.execute(
-                "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''");
-          } catch (_) {}
-        }
-        if (oldVersion < 16) {
-          try {
-            await db.execute(
-                "ALTER TABLE character_sheets ADD COLUMN voie_peuple_id TEXT NOT NULL DEFAULT ''");
-          } catch (_) {}
-        }
-        if (oldVersion < 17) {
-          try {
-            await db.execute(
-                "ALTER TABLE character_sheets ADD COLUMN voie_peuple_origine_id TEXT NOT NULL DEFAULT ''");
-          } catch (_) {}
-          try {
-            await db.execute(
-                "ALTER TABLE character_sheets ADD COLUMN voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0");
-          } catch (_) {}
-        }
-        if (oldVersion < 18) {
-          // Extended creature fields for character_templates
-          for (final col in [
-            "nc INTEGER",
-            "creature_type TEXT NOT NULL DEFAULT 'vivant'",
-            "taille TEXT NOT NULL DEFAULT 'moyenne'",
-            "archetype TEXT NOT NULL DEFAULT 'standard'",
-            "for_val INTEGER NOT NULL DEFAULT 0",
-            "agi_val INTEGER NOT NULL DEFAULT 0",
-            "con_val INTEGER NOT NULL DEFAULT 0",
-            "int_val INTEGER NOT NULL DEFAULT 0",
-            "per_val INTEGER NOT NULL DEFAULT 0",
-            "cha_val INTEGER NOT NULL DEFAULT 0",
-            "vol_val INTEGER NOT NULL DEFAULT 0",
-            "attacks_json TEXT NOT NULL DEFAULT '[]'",
-            "capacities_json TEXT NOT NULL DEFAULT '[]'",
-          ]) {
-            try {
-              await db.execute(
-                  "ALTER TABLE character_templates ADD COLUMN $col");
-            } catch (_) {}
-          }
-          // Link participant → template
-          try {
-            await db.execute(
-                "ALTER TABLE participants ADD COLUMN template_id INTEGER");
-          } catch (_) {}
-        }
-        if (oldVersion < 19) {
-          try {
-            await db.execute(
-                "ALTER TABLE character_templates ADD COLUMN legendary_stats_json TEXT NOT NULL DEFAULT '[]'");
-          } catch (_) {}
-        }
-        if (oldVersion < 20) {
-          try {
-            await db.execute(
-                "ALTER TABLE participants ADD COLUMN character_sheet_id INTEGER");
-          } catch (_) {}
-        }
-        if (oldVersion < 21) {
-          try {
-            await db.execute(
-                "ALTER TABLE character_sheets ADD COLUMN superior_stats_json TEXT NOT NULL DEFAULT '[]'");
-          } catch (_) {}
-        }
-        if (oldVersion < 22) {
-          try {
-            await db.execute(
-                "ALTER TABLE character_templates ADD COLUMN vitesse TEXT NOT NULL DEFAULT '9m'");
-          } catch (_) {}
-          try {
-            await db.execute(
-                "ALTER TABLE character_templates ADD COLUMN is_predefined INTEGER NOT NULL DEFAULT 0");
-          } catch (_) {}
-          await _seedBestiary(db);
-        }
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE participants ADD COLUMN image_url TEXT');
+      await db.execute(
+        'ALTER TABLE character_templates ADD COLUMN image_url TEXT',
+      );
+    }
+    if (oldVersion < 5) {
+      await _createCharacterSheetsTable(db);
+    }
+    if (oldVersion < 6) {
+      const cols = ['agi', 'con', 'for', 'per', 'cha', 'int', 'vol'];
+      for (final c in cols) {
+        await db.execute(
+          'ALTER TABLE character_sheets ADD COLUMN ${c}_bonus INTEGER NOT NULL DEFAULT 0',
+        );
+      }
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN stat_preset TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (oldVersion < 7) {
+      await _createInventoryItemsTable(db);
+    }
+    if (oldVersion < 8) {
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN equipment_bonuses_json TEXT NOT NULL DEFAULT '{}'",
+      );
+      await _createCombatWeaponsTable(db);
+      await _createCombatArmorsTable(db);
+      await _createCombatCapacitiesTable(db);
+      await _createItemEffectsTable(db);
+    }
+    if (oldVersion < 9) {
+      await db.execute(
+        "ALTER TABLE combat_weapons ADD COLUMN dm TEXT NOT NULL DEFAULT ''",
+      );
+      await db.execute(
+        "ALTER TABLE combat_capacities ADD COLUMN dm TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (oldVersion < 10) {
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN points_competence INTEGER NOT NULL DEFAULT 0",
+      );
+    }
+    if (oldVersion < 11) {
+      await _createCharacterVoieRangsTable(db);
+    }
+    if (oldVersion < 12) {
+      await db.execute(
+        "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0",
+      );
+      await db.execute(
+        "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (oldVersion < 13) {
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN monnaie_pc INTEGER NOT NULL DEFAULT 0",
+      );
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN monnaie_pa INTEGER NOT NULL DEFAULT 0",
+      );
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN monnaie_po INTEGER NOT NULL DEFAULT 0",
+      );
+      await db.execute(
+        "ALTER TABLE character_sheets ADD COLUMN monnaie_pp INTEGER NOT NULL DEFAULT 0",
+      );
+    }
+    if (oldVersion < 14) {
+      try {
+        await db.execute(
+          "ALTER TABLE participants ADD COLUMN def INTEGER NOT NULL DEFAULT 10",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE character_templates ADD COLUMN def INTEGER NOT NULL DEFAULT 10",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 15) {
+      // Fix: web DBs created at v8-v14 may be missing these columns
+      // (onCreate used an outdated _createCombatCapacitiesTable).
+      // try/catch is intentional — columns may already exist on Android.
+      try {
+        await db.execute(
+          "ALTER TABLE combat_capacities ADD COLUMN is_from_voie INTEGER NOT NULL DEFAULT 0",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE combat_capacities ADD COLUMN voie_catalogue_id TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 16) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN voie_peuple_id TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 17) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN voie_peuple_origine_id TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 18) {
+      // Extended creature fields for character_templates
+      for (final col in [
+        "nc INTEGER",
+        "creature_type TEXT NOT NULL DEFAULT 'vivant'",
+        "taille TEXT NOT NULL DEFAULT 'moyenne'",
+        "archetype TEXT NOT NULL DEFAULT 'standard'",
+        "for_val INTEGER NOT NULL DEFAULT 0",
+        "agi_val INTEGER NOT NULL DEFAULT 0",
+        "con_val INTEGER NOT NULL DEFAULT 0",
+        "int_val INTEGER NOT NULL DEFAULT 0",
+        "per_val INTEGER NOT NULL DEFAULT 0",
+        "cha_val INTEGER NOT NULL DEFAULT 0",
+        "vol_val INTEGER NOT NULL DEFAULT 0",
+        "attacks_json TEXT NOT NULL DEFAULT '[]'",
+        "capacities_json TEXT NOT NULL DEFAULT '[]'",
+      ]) {
+        try {
+          await db.execute("ALTER TABLE character_templates ADD COLUMN $col");
+        } catch (_) {}
+      }
+      // Link participant → template
+      try {
+        await db.execute(
+          "ALTER TABLE participants ADD COLUMN template_id INTEGER",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 19) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_templates ADD COLUMN legendary_stats_json TEXT NOT NULL DEFAULT '[]'",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 20) {
+      try {
+        await db.execute(
+          "ALTER TABLE participants ADD COLUMN character_sheet_id INTEGER",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 21) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN superior_stats_json TEXT NOT NULL DEFAULT '[]'",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 22) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_templates ADD COLUMN vitesse TEXT NOT NULL DEFAULT '9m'",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE character_templates ADD COLUMN is_predefined INTEGER NOT NULL DEFAULT 0",
+        );
+      } catch (_) {}
+      await _seedBestiary(db);
+    }
+    if (oldVersion < 23) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN sync_uuid TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN last_modified_at TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN last_synced_at TEXT",
+        );
+      } catch (_) {}
+      await db.execute(
+        "UPDATE character_sheets SET last_modified_at = created_at WHERE last_modified_at = ''",
+      );
+    }
   }
 
   Future<void> _createTables(Database db) async {
@@ -321,6 +366,9 @@ class DatabaseService {
         race TEXT NOT NULL DEFAULT '',
         profile TEXT NOT NULL DEFAULT '',
         created_at TEXT NOT NULL,
+        sync_uuid TEXT NOT NULL DEFAULT '',
+        last_modified_at TEXT NOT NULL,
+        last_synced_at TEXT,
         agi_val INTEGER NOT NULL DEFAULT 0,
         agi_racial INTEGER NOT NULL DEFAULT 0,
         agi_bonus INTEGER NOT NULL DEFAULT 0,
@@ -470,7 +518,8 @@ class DatabaseService {
 
   Future<void> _seedBestiary(Database db) async {
     final existing = await db.rawQuery(
-        'SELECT COUNT(*) as c FROM character_templates WHERE is_predefined = 1');
+      'SELECT COUNT(*) as c FROM character_templates WHERE is_predefined = 1',
+    );
     if ((existing.first['c'] as int) > 0) return;
     final batch = db.batch();
     for (final t in buildBestiarySeeds()) {
@@ -511,16 +560,24 @@ class DatabaseService {
 
   Future<int> getTurnCount(int sessionId) async {
     final db = await database;
-    final rows = await db.query('sessions',
-        columns: ['turn_count'], where: 'id = ?', whereArgs: [sessionId]);
+    final rows = await db.query(
+      'sessions',
+      columns: ['turn_count'],
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
     if (rows.isEmpty) return 0;
     return (rows.first['turn_count'] as int?) ?? 0;
   }
 
   Future<void> updateTurnCount(int sessionId, int turnCount) async {
     final db = await database;
-    await db.update('sessions', {'turn_count': turnCount},
-        where: 'id = ?', whereArgs: [sessionId]);
+    await db.update(
+      'sessions',
+      {'turn_count': turnCount},
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
   }
 
   // ── Status Effects ───────────────────────────────────────────────────────────
@@ -533,8 +590,12 @@ class DatabaseService {
 
   Future<void> updateStatusEffectTurns(int id, int remainingTurns) async {
     final db = await database;
-    await db.update('status_effects', {'remaining_turns': remainingTurns},
-        where: 'id = ?', whereArgs: [id]);
+    await db.update(
+      'status_effects',
+      {'remaining_turns': remainingTurns},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> deleteStatusEffect(int id) async {
@@ -544,8 +605,11 @@ class DatabaseService {
 
   Future<void> deleteStatusEffectsForParticipant(int participantId) async {
     final db = await database;
-    await db.delete('status_effects',
-        where: 'participant_id = ?', whereArgs: [participantId]);
+    await db.delete(
+      'status_effects',
+      where: 'participant_id = ?',
+      whereArgs: [participantId],
+    );
   }
 
   Future<List<StatusEffect>> getStatusEffectsForSession(int sessionId) async {
@@ -581,6 +645,30 @@ class DatabaseService {
     return rows.map(CharacterSheet.fromMap).toList();
   }
 
+  Future<CharacterSheet?> getCharacterSheetById(int id) async {
+    final db = await database;
+    final rows = await db.query(
+      'character_sheets',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return CharacterSheet.fromMap(rows.first);
+  }
+
+  Future<CharacterSheet?> getCharacterSheetBySyncUuid(String syncUuid) async {
+    final db = await database;
+    final rows = await db.query(
+      'character_sheets',
+      where: 'sync_uuid = ?',
+      whereArgs: [syncUuid],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return CharacterSheet.fromMap(rows.first);
+  }
+
   Future<CharacterSheet> insertCharacterSheet(CharacterSheet sheet) async {
     final db = await database;
     final id = await db.insert('character_sheets', sheet.toMap());
@@ -588,6 +676,11 @@ class DatabaseService {
   }
 
   Future<void> updateCharacterSheet(CharacterSheet sheet) async {
+    final updated = sheet.copyWith(lastModifiedAt: DateTime.now());
+    await replaceCharacterSheet(updated);
+  }
+
+  Future<void> replaceCharacterSheet(CharacterSheet sheet) async {
     final db = await database;
     await db.update(
       'character_sheets',
@@ -597,9 +690,99 @@ class DatabaseService {
     );
   }
 
+  Future<void> setCharacterSyncUuid(int sheetId, String syncUuid) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'sync_uuid': syncUuid},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
+  }
+
+  Future<void> setCharacterLastSyncedAt(int sheetId, DateTime syncedAt) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'last_synced_at': syncedAt.toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
+  }
+
   Future<void> deleteCharacterSheet(int id) async {
     final db = await database;
     await db.delete('character_sheets', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearCharacterDetails(int sheetId) async {
+    final db = await database;
+    final weaponRows = await db.query(
+      'combat_weapons',
+      columns: ['id'],
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    final armorRows = await db.query(
+      'combat_armors',
+      columns: ['id'],
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    final capacityRows = await db.query(
+      'combat_capacities',
+      columns: ['id'],
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+
+    for (final row in weaponRows) {
+      await db.delete(
+        'item_effects',
+        where: "item_type = 'weapon' AND item_id = ?",
+        whereArgs: [row['id']],
+      );
+    }
+    for (final row in armorRows) {
+      await db.delete(
+        'item_effects',
+        where: "item_type = 'armor' AND item_id = ?",
+        whereArgs: [row['id']],
+      );
+    }
+    for (final row in capacityRows) {
+      await db.delete(
+        'item_effects',
+        where: "item_type = 'capacity' AND item_id = ?",
+        whereArgs: [row['id']],
+      );
+    }
+
+    await db.delete(
+      'inventory_items',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    await db.delete(
+      'combat_weapons',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    await db.delete(
+      'combat_armors',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    await db.delete(
+      'combat_capacities',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
+    await db.delete(
+      'character_voie_rangs',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+    );
   }
 
   // ── Inventory Items ──────────────────────────────────────────────────────────
@@ -710,10 +893,12 @@ class DatabaseService {
 
   Future<List<CombatWeapon>> getCombatWeapons(int sheetId) async {
     final db = await database;
-    final rows = await db.query('combat_weapons',
-        where: 'character_sheet_id = ?',
-        whereArgs: [sheetId],
-        orderBy: 'position ASC, id ASC');
+    final rows = await db.query(
+      'combat_weapons',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+      orderBy: 'position ASC, id ASC',
+    );
     return rows.map(CombatWeapon.fromMap).toList();
   }
 
@@ -725,25 +910,34 @@ class DatabaseService {
 
   Future<void> updateCombatWeapon(CombatWeapon w) async {
     final db = await database;
-    await db.update('combat_weapons', w.toMap(),
-        where: 'id = ?', whereArgs: [w.id]);
+    await db.update(
+      'combat_weapons',
+      w.toMap(),
+      where: 'id = ?',
+      whereArgs: [w.id],
+    );
   }
 
   Future<void> deleteCombatWeapon(int id) async {
     final db = await database;
     await db.delete('combat_weapons', where: 'id = ?', whereArgs: [id]);
-    await db.delete('item_effects',
-        where: "item_type = 'weapon' AND item_id = ?", whereArgs: [id]);
+    await db.delete(
+      'item_effects',
+      where: "item_type = 'weapon' AND item_id = ?",
+      whereArgs: [id],
+    );
   }
 
   // ── Combat Armors CRUD ───────────────────────────────────────────────────────
 
   Future<List<CombatArmor>> getCombatArmors(int sheetId) async {
     final db = await database;
-    final rows = await db.query('combat_armors',
-        where: 'character_sheet_id = ?',
-        whereArgs: [sheetId],
-        orderBy: 'id ASC');
+    final rows = await db.query(
+      'combat_armors',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+      orderBy: 'id ASC',
+    );
     return rows.map(CombatArmor.fromMap).toList();
   }
 
@@ -755,25 +949,34 @@ class DatabaseService {
 
   Future<void> updateCombatArmor(CombatArmor a) async {
     final db = await database;
-    await db.update('combat_armors', a.toMap(),
-        where: 'id = ?', whereArgs: [a.id]);
+    await db.update(
+      'combat_armors',
+      a.toMap(),
+      where: 'id = ?',
+      whereArgs: [a.id],
+    );
   }
 
   Future<void> deleteCombatArmor(int id) async {
     final db = await database;
     await db.delete('combat_armors', where: 'id = ?', whereArgs: [id]);
-    await db.delete('item_effects',
-        where: "item_type = 'armor' AND item_id = ?", whereArgs: [id]);
+    await db.delete(
+      'item_effects',
+      where: "item_type = 'armor' AND item_id = ?",
+      whereArgs: [id],
+    );
   }
 
   // ── Combat Capacities CRUD ───────────────────────────────────────────────────
 
   Future<List<CombatCapacity>> getCombatCapacities(int sheetId) async {
     final db = await database;
-    final rows = await db.query('combat_capacities',
-        where: 'character_sheet_id = ?',
-        whereArgs: [sheetId],
-        orderBy: 'position ASC, id ASC');
+    final rows = await db.query(
+      'combat_capacities',
+      where: 'character_sheet_id = ?',
+      whereArgs: [sheetId],
+      orderBy: 'position ASC, id ASC',
+    );
     return rows.map(CombatCapacity.fromMap).toList();
   }
 
@@ -785,15 +988,22 @@ class DatabaseService {
 
   Future<void> updateCombatCapacity(CombatCapacity c) async {
     final db = await database;
-    await db.update('combat_capacities', c.toMap(),
-        where: 'id = ?', whereArgs: [c.id]);
+    await db.update(
+      'combat_capacities',
+      c.toMap(),
+      where: 'id = ?',
+      whereArgs: [c.id],
+    );
   }
 
   Future<void> deleteCombatCapacity(int id) async {
     final db = await database;
     await db.delete('combat_capacities', where: 'id = ?', whereArgs: [id]);
-    await db.delete('item_effects',
-        where: "item_type = 'capacity' AND item_id = ?", whereArgs: [id]);
+    await db.delete(
+      'item_effects',
+      where: "item_type = 'capacity' AND item_id = ?",
+      whereArgs: [id],
+    );
   }
 
   /// Inserts an auto-managed combat capacity from a voie (skips if already present).
@@ -809,14 +1019,20 @@ class DatabaseService {
     final db = await database;
     final existing = await db.query(
       'combat_capacities',
-      where: 'character_sheet_id = ? AND voie_catalogue_id = ? AND rang = ? AND is_from_voie = 1',
+      where:
+          'character_sheet_id = ? AND voie_catalogue_id = ? AND rang = ? AND is_from_voie = 1',
       whereArgs: [sheetId, voieCatalogueId, rang],
       limit: 1,
     );
     if (existing.isNotEmpty) return; // already present
-    final position = Sqflite.firstIntValue(await db.rawQuery(
-          'SELECT COUNT(*) FROM combat_capacities WHERE character_sheet_id = ?',
-          [sheetId])) ?? 0;
+    final position =
+        Sqflite.firstIntValue(
+          await db.rawQuery(
+            'SELECT COUNT(*) FROM combat_capacities WHERE character_sheet_id = ?',
+            [sheetId],
+          ),
+        ) ??
+        0;
     await db.insert('combat_capacities', {
       'character_sheet_id': sheetId,
       'name': nom,
@@ -835,11 +1051,15 @@ class DatabaseService {
 
   /// Deletes auto-managed combat capacities for a voie starting from [fromRang].
   Future<void> deleteVoieCombatCapacitiesFromRang(
-      int sheetId, String voieCatalogueId, int fromRang) async {
+    int sheetId,
+    String voieCatalogueId,
+    int fromRang,
+  ) async {
     final db = await database;
     await db.delete(
       'combat_capacities',
-      where: 'character_sheet_id = ? AND voie_catalogue_id = ? AND rang >= ? AND is_from_voie = 1',
+      where:
+          'character_sheet_id = ? AND voie_catalogue_id = ? AND rang >= ? AND is_from_voie = 1',
       whereArgs: [sheetId, voieCatalogueId, fromRang],
     );
   }
@@ -858,9 +1078,11 @@ class DatabaseService {
 
   Future<List<ItemEffect>> getItemEffects(String itemType, int itemId) async {
     final db = await database;
-    final rows = await db.query('item_effects',
-        where: 'item_type = ? AND item_id = ?',
-        whereArgs: [itemType, itemId]);
+    final rows = await db.query(
+      'item_effects',
+      where: 'item_type = ? AND item_id = ?',
+      whereArgs: [itemType, itemId],
+    );
     return rows.map(ItemEffect.fromMap).toList();
   }
 
@@ -872,8 +1094,12 @@ class DatabaseService {
 
   Future<void> updateItemEffect(ItemEffect e) async {
     final db = await database;
-    await db.update('item_effects', e.toMap(),
-        where: 'id = ?', whereArgs: [e.id]);
+    await db.update(
+      'item_effects',
+      e.toMap(),
+      where: 'id = ?',
+      whereArgs: [e.id],
+    );
   }
 
   Future<void> deleteItemEffect(int id) async {
@@ -891,9 +1117,11 @@ class DatabaseService {
     final Map<String, int> bonuses = {};
 
     // 1. Equipped armors → DEF + ENC
-    final armorRows = await db.query('combat_armors',
-        where: 'character_sheet_id = ? AND equipped = 1',
-        whereArgs: [sheetId]);
+    final armorRows = await db.query(
+      'combat_armors',
+      where: 'character_sheet_id = ? AND equipped = 1',
+      whereArgs: [sheetId],
+    );
     int encArmureTotal = 0;
     for (final row in armorRows) {
       final armor = CombatArmor.fromMap(row);
@@ -902,13 +1130,18 @@ class DatabaseService {
     }
 
     // 2. Effects from equipped weapons
-    final weaponRows = await db.query('combat_weapons',
-        where: 'character_sheet_id = ? AND equipped = 1',
-        whereArgs: [sheetId]);
+    final weaponRows = await db.query(
+      'combat_weapons',
+      where: 'character_sheet_id = ? AND equipped = 1',
+      whereArgs: [sheetId],
+    );
     for (final row in weaponRows) {
       final wId = row['id'] as int;
-      final effects = await db.query('item_effects',
-          where: "item_type = 'weapon' AND item_id = ?", whereArgs: [wId]);
+      final effects = await db.query(
+        'item_effects',
+        where: "item_type = 'weapon' AND item_id = ?",
+        whereArgs: [wId],
+      );
       for (final e in effects) {
         final key = e['stat_key'] as String;
         bonuses[key] = (bonuses[key] ?? 0) + (e['modifier_value'] as int);
@@ -918,8 +1151,11 @@ class DatabaseService {
     // 3. Effects from equipped armors
     for (final row in armorRows) {
       final aId = row['id'] as int;
-      final effects = await db.query('item_effects',
-          where: "item_type = 'armor' AND item_id = ?", whereArgs: [aId]);
+      final effects = await db.query(
+        'item_effects',
+        where: "item_type = 'armor' AND item_id = ?",
+        whereArgs: [aId],
+      );
       for (final e in effects) {
         final key = e['stat_key'] as String;
         bonuses[key] = (bonuses[key] ?? 0) + (e['modifier_value'] as int);
@@ -927,13 +1163,18 @@ class DatabaseService {
     }
 
     // 4. Effects from activated capacities
-    final capacityRows = await db.query('combat_capacities',
-        where: 'character_sheet_id = ? AND activated = 1',
-        whereArgs: [sheetId]);
+    final capacityRows = await db.query(
+      'combat_capacities',
+      where: 'character_sheet_id = ? AND activated = 1',
+      whereArgs: [sheetId],
+    );
     for (final row in capacityRows) {
       final cId = row['id'] as int;
-      final effects = await db.query('item_effects',
-          where: "item_type = 'capacity' AND item_id = ?", whereArgs: [cId]);
+      final effects = await db.query(
+        'item_effects',
+        where: "item_type = 'capacity' AND item_id = ?",
+        whereArgs: [cId],
+      );
       for (final e in effects) {
         final key = e['stat_key'] as String;
         bonuses[key] = (bonuses[key] ?? 0) + (e['modifier_value'] as int);
@@ -950,8 +1191,11 @@ class DatabaseService {
     );
 
     // 6. Return fresh sheet
-    final rows =
-        await db.query('character_sheets', where: 'id = ?', whereArgs: [sheetId]);
+    final rows = await db.query(
+      'character_sheets',
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
     if (rows.isEmpty) return null;
     return CharacterSheet.fromMap(rows.first);
   }
