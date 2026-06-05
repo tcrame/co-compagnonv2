@@ -1,51 +1,49 @@
-name: Build Flutter APK (Release)
+name: Build and Release Flutter APK
 
-# Se déclenche à chaque push sur la branche principale (main)
 on:
   push:
-    branches:
-      - main
-  # Permet aussi de lancer le build manuellement depuis l'onglet "Actions" de GitHub
+    # Se déclenche uniquement lorsque tu pousses un tag de version (ex: v1.0.2, v2.1.0)
+    tags:
+      - 'v*'
+  # Te permet toujours de lancer le build manuellement pour tester
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupération du code source depuis le dépôt GitHub
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configuration de Java (obligatoire pour compiler sur Android)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu' # Utilisation de l'environnement JDK Zulu officiel
+          distribution: 'zulu'
           java-version: '17'
 
-      # 3. Configuration de l'environnement Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Spécifie la version si tu utilises fvm (ex: '3.22.0').
-          # Par défaut, 'stable' prendra la toute dernière version stable.
           channel: 'stable'
-          cache: true # Active le cache pour rendre les builds suivants beaucoup plus rapides
+          cache: true
 
-      # 4. Récupération des dépendances Flutter (pub get)
       - name: Install dependencies
         run: flutter pub get
 
-      # 5. Compilation de l'APK en mode Release avec ta variable de production
       - name: Build APK Release
         run: |
           flutter build apk --release --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 
-      # 6. Upload de l'APK généré pour le rendre disponible sur GitHub
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+      # Remplacement de l'artifact temporaire par une Release définitive
+      - name: Create GitHub Release and Upload APK
+        uses: softprops/action-gh-release@v2
         with:
-          name: co-compagnon-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 7 # L'APK restera téléchargeable pendant 7 jours sur GitHub
+          # Spécifie le chemin de l'APK à inclure dans la Release
+          files: build/app/outputs/flutter-apk/app-release.apk
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Clé secrète fournie automatiquement par GitHub
