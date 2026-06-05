@@ -457,6 +457,27 @@ async function handleShares(payload, googleUser, sql, origin) {
   }, 200, origin);
 }
 
+async function handleDelete(payload, googleUser, sql, origin) {
+  const { sync_uuid } = payload;
+  if (!sync_uuid) return jsonResponse({ error: 'sync_uuid requis' }, 400, origin);
+
+  // On vérifie que le personnage appartient bien à l'utilisateur connecté avant de supprimer
+  const existing = await sql`
+    SELECT sync_uuid FROM character_sync WHERE sync_uuid = ${sync_uuid} AND user_id = ${googleUser.sub}
+  `;
+
+  if (existing.length === 0) {
+    return jsonResponse({ error: 'Personnage introuvable ou non autorisé' }, 404, origin);
+  }
+
+  // Suppression définitive dans le Cloud
+  await sql`
+    DELETE FROM character_sync WHERE sync_uuid = ${sync_uuid} AND user_id = ${googleUser.sub}
+  `;
+
+  return jsonResponse({ ok: true, message: 'Personnage supprimé du cloud' }, 200, origin);
+}
+
 export default {
   async fetch(request, env) {
     const origin = parseOrigin(request, env);
@@ -498,6 +519,7 @@ export default {
     if (path === '/sync/share') return handleShare(payload, googleUser, sql, origin);
     if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin);
     if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin);
+    if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin);
 
     return jsonResponse({ error: 'Route inconnue' }, 404, origin);
   },

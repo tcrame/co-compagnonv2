@@ -185,10 +185,48 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                           color: Colors.red.shade800,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.delete, color: Colors.white),
+                        child: const Icon(Icons.delete_sweep, color: Colors.white),
                       ),
-                      confirmDismiss: (_) async => _confirmDelete(context),
-                      onDismissed: (_) => provider.deleteSheet(sheet.id!),
+
+                      // 1. On intercepte les choix de l'utilisateur
+                      confirmDismiss: (_) async {
+                        final result = await _confirmAdvancedDelete(
+                          context,
+                          sheet.name,
+                          sheet.syncUuid.isNotEmpty, // true si le perso est dans le cloud
+                        );
+
+                        if (result == null) return false; // Annulé, on ne fait rien
+
+                        try {
+                          // 2. On exécute le choix personnalisé du joueur
+                          await _sync.deleteCharacter(
+                            sheetId: sheet.id!,
+                            syncUuid: sheet.syncUuid,
+                            deleteLocal: result['local']!,
+                            deleteCloud: result['cloud']!,
+                          );
+
+                          if (context.mounted) {
+                            // 3. On rafraîchit les données locales (le Provider)
+                            await context.read<CharacterSheetProvider>().loadSheets();
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Action de suppression effectuée avec succès.'), backgroundColor: Colors.green),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('❌ Échec de la suppression : $e'), backgroundColor: Colors.red),
+                            );
+                          }
+                        }
+
+                        // 🔴 TRÈS IMPORTANT : Le Dismissible ne doit s'animer visuellement et quitter
+                        // l'écran QUE si le personnage a été supprimé localement.
+                        return result['local']!;
+                      },
                       child: Card(
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -288,24 +326,112 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
     );
   }
 
-  Future<bool?> _confirmDelete(BuildContext context) {
-    return showDialog<bool>(
+  Future<Map<String, bool>?> _confirmAdvancedDelete(BuildContext context, String characterName, bool hasCloudBackup) {
+    final controller = TextEditingController();
+    String enteredName = '';
+
+    // Par défaut, si le perso est sur le cloud, on propose de supprimer "Partout". Sinon, "Local uniquement".
+    String deleteMode = hasCloudBackup ? 'both' : 'local';
+
+    return showDialog<Map<String, bool>>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-        title: const Text('Supprimer la fiche ?'),
-        content: const Text('Cette action est irréversible.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
+              const SizedBox(width: 10),
+              const Text('Option de suppression'),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Choisissez où vous souhaitez supprimer ce personnage :',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+
+              // Option 1 : Local uniquement
+              RadioListTile<String>(
+                title: const Text('Uniquement sur ce téléphone'),
+                subtitle: const Text('Le personnage restera accessible dans le cloud.'),
+                value: 'local',
+                groupValue: deleteMode,
+                activeColor: Colors.red.shade700,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) => setState(() => deleteMode = val!),
+              ),
+
+              // Option 2 : Cloud uniquement (Affiché uniquement si le perso possède un syncUuid)
+              if (hasCloudBackup)
+                RadioListTile<String>(
+                  title: const Text('Uniquement dans le cloud'),
+                  subtitle: const Text('Le personnage restera sur ce téléphone mais ne sera plus synchronisé.'),
+                  value: 'cloud',
+                  groupValue: deleteMode,
+                  activeColor: Colors.red.shade700,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (val) => setState(() => deleteMode = val!),
+                ),
+
+              // Option 3 : Partout
+              if (hasCloudBackup)
+                RadioListTile<String>(
+                  title: const Text('Partout (Téléphone + Cloud)'),
+                  subtitle: Text('Action destructive définitive.', style: TextStyle(color: Colors.red.shade700)),
+                  value: 'both',
+                  groupValue: deleteMode,
+                  activeColor: Colors.red.shade700,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (val) => setState(() => deleteMode = val!),
+                ),
+
+              const Divider(height: 24),
+              Text(
+                'Pour valider, veuillez saisir le nom du personnage ($characterName) :',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: characterName,
+                  border: const OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.red.shade700),
+                  ),
+                ),
+                onChanged: (v) => setState(() => enteredName = v.trim()),
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: enteredName == characterName.trim()
+                  ? () {
+                Navigator.pop(ctx, {
+                  'local': deleteMode == 'local' || deleteMode == 'both',
+                  'cloud': deleteMode == 'cloud' || deleteMode == 'both',
+                });
+              }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: const Text('Confirmer'),
+            ),
+          ],
+        ),
       ),
     );
   }

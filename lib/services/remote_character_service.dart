@@ -271,6 +271,17 @@ class RemoteCharacterService {
         .toList();
   }
 
+  Future<void> deleteRemoteCharacter({required String syncUuid}) async {
+    final headers = await _getSecureHeaders();
+
+    final response = await _client.post(
+      _uri('/sync/delete'),
+      headers: headers,
+      body: jsonEncode({'sync_uuid': syncUuid}),
+    );
+    _ensureSuccess(response);
+  }
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     throw StateError(

@@ -155,4 +155,55 @@ class CharacterSyncService {
     await _db.setCharacterSyncUuid(sheet.id!, generated);
     return generated;
   }
+
+  Future<void> deleteCharacterEverywhere({required int sheetId, required String syncUuid}) async {
+    // 1. Si le personnage est synchronisé, on le supprime d'abord du Cloud
+    if (syncUuid.isNotEmpty && isConfigured) {
+      try {
+        await _remote.deleteRemoteCharacter(syncUuid: syncUuid);
+      } catch (e) {
+        // Optionnel : On peut lever l'erreur ou laisser passer si le cloud est inaccessible,
+        // mais idéalement on prévient l'utilisateur.
+        print("Erreur suppression Cloud (ignorable si le serveur est down) : $e");
+      }
+    }
+
+    // 2. Nettoyage complet des tables liées localement (armes, armures, capacités, inventaire)
+    await _db.clearCharacterDetails(sheetId);
+
+    // 3. Suppression définitive de la fiche principale dans SQLite
+    await _db.deleteCharacterSheet(sheetId);
+  }
+
+  Future<void> deleteCharacter({
+    required int sheetId,
+    required String syncUuid,
+    required bool deleteLocal,
+    required bool deleteCloud,
+  }) async {
+    // 1. Suppression dans le Cloud si demandé et configuré
+    if (deleteCloud && syncUuid.isNotEmpty && isConfigured) {
+      try {
+        await _remote.deleteRemoteCharacter(syncUuid: syncUuid);
+      } catch (e) {
+        print("Erreur lors de la suppression Cloud : $e");
+        // Si on ne supprime QUE le cloud et que ça plante, on lève l'exception pour avertir l'utilisateur
+        if (!deleteLocal) rethrow;
+      }
+    }
+
+    // 2. Suppression Locale si demandée
+    if (deleteLocal) {
+      // Nettoyage des tables secondaires (armes, armures, capacités, inventaire)
+      await _db.clearCharacterDetails(sheetId);
+      // Suppression de la fiche principale
+      await _db.deleteCharacterSheet(sheetId);
+    } else if (deleteCloud) {
+      // Cas particulier : On a supprimé le cloud mais on GARDE le personnage en local.
+      // Il faut donc vider le 'sync_uuid' et le 'last_synced_at' dans la base SQLite locale
+      // pour que l'application sache que ce personnage n'est plus lié au cloud.
+      await _db.setCharacterSyncUuid(sheetId, '');
+      await _db.setCharacterLastSyncedAt(sheetId, DateTime.fromMillisecondsSinceEpoch(0)); // Reset date
+    }
+  }
 }
