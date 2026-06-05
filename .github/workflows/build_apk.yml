@@ -1,0 +1,51 @@
+name: Build Flutter APK (Release)
+
+# Se déclenche à chaque push sur la branche principale (main)
+on:
+  push:
+    branches:
+      - main
+  # Permet aussi de lancer le build manuellement depuis l'onglet "Actions" de GitHub
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupération du code source depuis le dépôt GitHub
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configuration de Java (obligatoire pour compiler sur Android)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu' # Utilisation de l'environnement JDK Zulu officiel
+          java-version: '17'
+
+      # 3. Configuration de l'environnement Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Spécifie la version si tu utilises fvm (ex: '3.22.0').
+          # Par défaut, 'stable' prendra la toute dernière version stable.
+          channel: 'stable'
+          cache: true # Active le cache pour rendre les builds suivants beaucoup plus rapides
+
+      # 4. Récupération des dépendances Flutter (pub get)
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. Compilation de l'APK en mode Release avec ta variable de production
+      - name: Build APK Release
+        run: |
+          flutter build apk --release --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
+
+      # 6. Upload de l'APK généré pour le rendre disponible sur GitHub
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: co-compagnon-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7 # L'APK restera téléchargeable pendant 7 jours sur GitHub
