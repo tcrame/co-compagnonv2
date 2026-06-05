@@ -1,18 +1,12 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 import 'auth_service.dart';
 
-enum CloudCharacterCategory {
-  owned,
-  writeShared,
-  readShared,
-}
+enum CloudCharacterCategory { owned, writeShared, readShared }
 
-enum CloudSharePermission {
-  read,
-  write,
-}
+enum CloudSharePermission { read, write }
 
 class CloudCharacterInfo {
   CloudCharacterInfo({
@@ -38,7 +32,9 @@ class CloudCharacterInfo {
   final String? ownerEmail;
 
   bool get isOwned => accessType == 'owner';
+
   bool get canWrite => accessType == 'owner' || accessType == 'write';
+
   CloudCharacterCategory get category {
     if (accessType == 'write') return CloudCharacterCategory.writeShared;
     if (accessType == 'read') return CloudCharacterCategory.readShared;
@@ -56,21 +52,34 @@ class CloudCharacterInfo {
   }
 
   factory CloudCharacterInfo.fromMap(Map<String, dynamic> map) {
-    final rawPermission = (map['permission_type'] as String? ?? 'owner').toLowerCase();
+    final rawPermission =
+        (map['permission_type'] as String? ?? 'owner').toLowerCase();
+
+    // Sécurisation du décodage du niveau
+    int? parsedLevel;
+    if (map['level'] != null) {
+      if (map['level'] is num) {
+        parsedLevel = (map['level'] as num).toInt();
+      } else if (map['level'] is String) {
+        parsedLevel = int.tryParse(map['level'] as String);
+      }
+    }
+
     return CloudCharacterInfo(
       syncUuid: map['sync_uuid'] as String? ?? '',
       name: map['name'] as String? ?? '(Sans nom)',
-      level: (map['level'] as num?)?.toInt(),
+      level: parsedLevel,
       profile: map['profile'] as String? ?? '',
       race: map['race'] as String? ?? '',
       lastModifiedAt: () {
-        final raw = map['last_modified_at'] as String?;
-        if (raw == null || raw.isEmpty) return null;
-        return DateTime.tryParse(raw);
+        final raw = map['last_modified_at'];
+        if (raw == null || raw.toString().isEmpty) return null;
+        return DateTime.tryParse(raw.toString());
       }(),
-      accessType: rawPermission == 'read' || rawPermission == 'write'
-          ? rawPermission
-          : 'owner',
+      accessType:
+          rawPermission == 'read' || rawPermission == 'write'
+              ? rawPermission
+              : 'owner',
       ownerUserId: map['owner_user_id'] as String?,
       ownerEmail: map['owner_email'] as String?,
     );
@@ -95,14 +104,17 @@ class CloudCharacterShareInfo {
   final DateTime? createdAt;
 
   factory CloudCharacterShareInfo.fromMap(Map<String, dynamic> map) {
-    final rawPermission = (map['permission_type'] as String? ?? 'read').toLowerCase();
+    final rawPermission =
+        (map['permission_type'] as String? ?? 'read').toLowerCase();
     return CloudCharacterShareInfo(
       shareId: (map['share_id'] as num?)?.toInt() ?? 0,
       syncUuid: map['sync_uuid'] as String? ?? '',
       sharedWithUserId: map['shared_with_user_id'] as String? ?? '',
       sharedWithEmail: map['shared_with_email'] as String? ?? '',
       permissionType:
-          rawPermission == 'write' ? CloudSharePermission.write : CloudSharePermission.read,
+          rawPermission == 'write'
+              ? CloudSharePermission.write
+              : CloudSharePermission.read,
       createdAt: () {
         final raw = map['created_at'] as String?;
         if (raw == null || raw.isEmpty) return null;
@@ -114,9 +126,9 @@ class CloudCharacterShareInfo {
 
 class RemoteCharacterService {
   RemoteCharacterService({http.Client? client, String? baseUrl})
-      : _client = client ?? http.Client(),
-        _baseUrl =
-        (baseUrl ?? const String.fromEnvironment('SYNC_API_BASE_URL')).trim();
+    : _client = client ?? http.Client(),
+      _baseUrl =
+          (baseUrl ?? const String.fromEnvironment('SYNC_API_BASE_URL')).trim();
 
   final http.Client _client;
   final String _baseUrl;
@@ -128,7 +140,7 @@ class RemoteCharacterService {
     if (_baseUrl.isEmpty) {
       throw StateError(
         'SYNC_API_BASE_URL manquante. Lancez Flutter avec '
-            '--dart-define=SYNC_API_BASE_URL=https://votre-api',
+        '--dart-define=SYNC_API_BASE_URL=https://votre-api',
       );
     }
     return Uri.parse('$_baseUrl$path');
@@ -150,7 +162,7 @@ class RemoteCharacterService {
     required Map<String, dynamic> characterEntry,
     required String lastModifiedAt,
   }) async {
-    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+    final headers = await _getSecureHeaders();
 
     final response = await _client.post(
       _uri('/sync/push'),
@@ -164,10 +176,8 @@ class RemoteCharacterService {
     _ensureSuccess(response);
   }
 
-  Future<Map<String, dynamic>> pullCharacter({
-    required String syncUuid,
-  }) async {
-    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+  Future<Map<String, dynamic>> pullCharacter({required String syncUuid}) async {
+    final headers = await _getSecureHeaders();
 
     final response = await _client.post(
       _uri('/sync/pull'),
@@ -185,7 +195,7 @@ class RemoteCharacterService {
   }
 
   Future<List<CloudCharacterInfo>> listCharacters() async {
-    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+    final headers = await _getSecureHeaders();
 
     final response = await _client.post(
       _uri('/sync/list'),
@@ -194,12 +204,13 @@ class RemoteCharacterService {
     );
     _ensureSuccess(response);
 
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    final rows = <Map<String, dynamic>>[];
-    rows.addAll(_extractCharacters(payload, 'owned_characters', 'owner'));
-    rows.addAll(_extractCharacters(payload, 'write_shared_characters', 'write'));
-    rows.addAll(_extractCharacters(payload, 'read_shared_characters', 'read'));
-    return rows.map(CloudCharacterInfo.fromMap).toList();
+    final Map<String, dynamic> payload = jsonDecode(response.body);
+    final List<dynamic> characterList =
+        payload['characters'] as List<dynamic>? ?? [];
+
+    return characterList
+        .map((c) => CloudCharacterInfo.fromMap(c as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> shareCharacter({
@@ -214,7 +225,8 @@ class RemoteCharacterService {
       body: jsonEncode({
         'sync_uuid': syncUuid,
         'email': email,
-        'permission_type': permissionType == CloudSharePermission.write ? 'write' : 'read',
+        'permission_type':
+            permissionType == CloudSharePermission.write ? 'write' : 'read',
       }),
     );
     _ensureSuccess(response);
@@ -255,22 +267,6 @@ class RemoteCharacterService {
     return raw.map(CloudCharacterShareInfo.fromMap).toList();
   }
 
-  List<Map<String, dynamic>> _extractCharacters(
-    Map<String, dynamic> payload,
-    String key,
-    String permissionType,
-  ) {
-    final raw = (payload[key] as List? ?? []).cast<Map<String, dynamic>>();
-    return raw
-        .map(
-          (row) => <String, dynamic>{
-            ...row,
-            'permission_type': permissionType,
-          },
-        )
-        .toList();
-  }
-
   Future<void> deleteRemoteCharacter({required String syncUuid}) async {
     final headers = await _getSecureHeaders();
 
@@ -280,6 +276,24 @@ class RemoteCharacterService {
       body: jsonEncode({'sync_uuid': syncUuid}),
     );
     _ensureSuccess(response);
+  }
+
+  Future<Map<String, dynamic>> getCloudProfileInfo() async {
+    final headers = await _getSecureHeaders();
+
+    final response = await _client.post(
+      _uri('/sync/list'),
+      headers: headers,
+      body: jsonEncode({}),
+    );
+    _ensureSuccess(response);
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return {
+      'role': payload['role'] as String? ?? 'free',
+      'total': payload['total'] as int? ?? 0,
+    };
   }
 
   void _ensureSuccess(http.Response response) {

@@ -13,70 +13,90 @@ class LandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(flex: 1),
-              _buildHeader(context),
-              const Spacer(flex: 2),
-              _buildNavCard(
-                context,
-                title: 'Tracker de Combat',
-                subtitle: 'Gérez vos sessions de combat,\nl\'initiative et les points de vie',
-                icon: Icons.shield,
-                gradientColors: const [Color(0xFF8B1A2E), Color(0xFFCF6679)],
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: ConstrainedBox(
+                // On force le contenu à prendre au moins toute la hauteur disponible
+                // pour que le design reste bien espacé sur les grands écrans.
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 48, // 48 correspond au padding vertical total
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 16),
+                      _buildHeader(context),
+
+                      // Remplacement des Spacers par des espacements flexibles ou fixes
+                      const SizedBox(height: 32),
+
+                      _buildNavCard(
+                        context,
+                        title: 'Tracker de Combat',
+                        subtitle: 'Gérez vos sessions de combat,\nl\'initiative et les points de vie',
+                        icon: Icons.shield,
+                        gradientColors: const [Color(0xFF8B1A2E), Color(0xFFCF6679)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildNavCard(
+                        context,
+                        title: 'Bestiaire',
+                        subtitle: 'Consultez et gérez\nvos créatures et personnages',
+                        icon: Icons.auto_fix_high,
+                        gradientColors: const [Color(0xFF1B5E20), Color(0xFF4CAF50)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BestiaryScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildNavCard(
+                        context,
+                        title: 'Fiches de Personnages',
+                        subtitle: 'Créez et gérez vos\nfiches de personnages COF2',
+                        icon: Icons.person,
+                        gradientColors: const [Color(0xFF311B92), Color(0xFF7B1FA2)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CharacterListScreen()),
+                        ),
+                      ),
+
+                      // Ce Spacer va pousser le bloc de sauvegarde vers le bas
+                      // uniquement s'il y a de la place à l'écran.
+                      const Spacer(),
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'Chronique Oublié V2',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurfaceMuted,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      IconButton(
+                        icon: Icon(Icons.backup_outlined,
+                            color: AppColors.onSurfaceMuted, size: 20),
+                        tooltip: 'Sauvegarde & Restauration',
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BackupScreen()),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              _buildNavCard(
-                context,
-                title: 'Bestiaire',
-                subtitle: 'Consultez et gérez\nvos créatures et personnages',
-                icon: Icons.auto_fix_high,
-                gradientColors: const [Color(0xFF1B5E20), Color(0xFF4CAF50)],
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const BestiaryScreen()),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildNavCard(
-                context,
-                title: 'Fiches de Personnages',
-                subtitle: 'Créez et gérez vos\nfiches de personnages COF2',
-                icon: Icons.person,
-                gradientColors: const [Color(0xFF311B92), Color(0xFF7B1FA2)],
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CharacterListScreen()),
-                ),
-              ),
-              const Spacer(flex: 2),
-              Text(
-                'Chronique Oublié V2',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.onSurfaceMuted,
-                      letterSpacing: 1.5,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              IconButton(
-                icon: Icon(Icons.backup_outlined,
-                    color: AppColors.onSurfaceMuted, size: 20),
-                tooltip: 'Sauvegarde & Restauration',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const BackupScreen()),
-                ),
-              ),
-              const SizedBox(height: 4),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -109,29 +129,29 @@ class LandingScreen extends StatelessWidget {
         Text(
           'CO Compagnon',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 28,
-                letterSpacing: 1.2,
-              ),
+            fontSize: 28,
+            letterSpacing: 1.2,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
           'Votre compagnon de jeu',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                letterSpacing: 0.8,
-              ),
+            letterSpacing: 0.8,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildNavCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required List<Color> gradientColors,
-    required VoidCallback onTap,
-  }) {
+      BuildContext context, {
+        required String title,
+        required String subtitle,
+        required IconData icon,
+        required List<Color> gradientColors,
+        required VoidCallback onTap,
+      }) {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),

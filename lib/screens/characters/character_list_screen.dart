@@ -3,13 +3,15 @@ import 'package:provider/provider.dart';
 
 import '../../models/character_sheet.dart';
 import '../../providers/character_sheet_provider.dart';
+import '../../services/auth_service.dart';
 import '../../services/character_sync_service.dart';
 import '../../services/remote_character_service.dart';
-import '../../services/auth_service.dart'; // 👈 N'oubliez pas cet import !
-import 'character_sheet_screen.dart';
 import 'character_share_screen.dart';
+import 'character_sheet_screen.dart';
 
-// --- NOUVEAU WIDGET : BANNIÈRE D'AUTHENTIFICATION ---
+final GlobalKey<_CloudAuthBannerState> cloudAuthBannerKey =
+    GlobalKey<_CloudAuthBannerState>();
+
 class CloudAuthBanner extends StatefulWidget {
   const CloudAuthBanner({super.key});
 
@@ -19,35 +21,66 @@ class CloudAuthBanner extends StatefulWidget {
 
 class _CloudAuthBannerState extends State<CloudAuthBanner> {
   final AuthService _auth = AuthService();
+  final RemoteCharacterService _remoteService = RemoteCharacterService();
+
   bool _isLoggedIn = false;
   bool _isLoading = true;
+
+  String _role = 'free';
+  int _totalCharacters = 0;
+
+  // 👇 AJOUTE CES DEUX LIGNES ICI :
+  String get currentRole => _role;
+  int get totalCharacters => _totalCharacters;
 
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    checkAuthAndFetchQuota();
   }
 
-  Future<void> _checkAuth() async {
+  Future<void> checkAuthAndFetchQuota() async {
     final loggedIn = await _auth.isLoggedIn();
-    if (mounted) {
-      setState(() {
-        _isLoggedIn = loggedIn;
-        _isLoading = false;
-      });
+    if (!loggedIn) {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final profile = await _remoteService.getCloudProfileInfo();
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = true;
+          _role = profile['role'];
+          _totalCharacters = profile['total'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = true;
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _login() async {
     setState(() => _isLoading = true);
     await _auth.signIn();
-    await _checkAuth();
+    await checkAuthAndFetchQuota();
   }
 
   Future<void> _logout() async {
     setState(() => _isLoading = true);
     await _auth.signOut();
-    await _checkAuth();
+    await checkAuthAndFetchQuota();
   }
 
   @override
@@ -57,25 +90,81 @@ class _CloudAuthBannerState extends State<CloudAuthBanner> {
     }
 
     if (_isLoggedIn) {
+      final int maxLimit = _role == 'premium' ? 10 : 3;
+      final bool isLimitReached = _totalCharacters >= maxLimit;
+
       return Material(
-        color: Colors.green.shade50,
+        color: isLimitReached ? Colors.orange.shade50 : Colors.green.shade50,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Column(
             children: [
-              const Icon(Icons.cloud_done, color: Colors.green),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Connecté au Cloud",
-                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Icon(
+                    isLimitReached ? Icons.cloud_queue : Icons.cloud_done,
+                    color:
+                        isLimitReached
+                            ? Colors.orange.shade800
+                            : Colors.green.shade700,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _role == 'premium'
+                              ? "Compte Premium 👑"
+                              : "Compte Gratuit",
+                          style: TextStyle(
+                            color:
+                                _role == 'premium'
+                                    ? Colors.purple.shade900
+                                    : Colors.green.shade900,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Stockage Cloud : $_totalCharacters / $maxLimit personnages",
+                          style: TextStyle(
+                            color:
+                                isLimitReached
+                                    ? Colors.orange.shade900
+                                    : Colors.grey.shade700,
+                            fontSize: 12,
+                            fontWeight:
+                                isLimitReached
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _logout,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.grey.shade800,
+                    ),
+                    child: const Text("Déconnexion"),
+                  ),
+                ],
+              ),
+              if (_role == 'free' && isLimitReached)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6.0),
+                  child: Text(
+                    "⚠️ Quota max atteint. Passez Premium pour stocker jusqu'à 10 personnages !",
+                    style: TextStyle(
+                      color: Colors.orange.shade900,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
-              TextButton(
-                onPressed: _logout,
-                style: TextButton.styleFrom(foregroundColor: Colors.green.shade900),
-                child: const Text("Se déconnecter"),
-              ),
             ],
           ),
         ),
@@ -111,7 +200,6 @@ class _CloudAuthBannerState extends State<CloudAuthBanner> {
     );
   }
 }
-// ----------------------------------------------------
 
 class CharacterListScreen extends StatefulWidget {
   const CharacterListScreen({super.key});
@@ -130,6 +218,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CharacterSheetProvider>().loadSheets();
       _refreshCloudAccess();
+      cloudAuthBannerKey.currentState?.checkAuthAndFetchQuota();
     });
   }
 
@@ -144,7 +233,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
             tooltip: 'Récupérer depuis le cloud',
             icon: const Icon(Icons.cloud_download_outlined),
             onPressed:
-            _sync.isConfigured ? () => _pullFromCloud(context) : null,
+                _sync.isConfigured ? () => _pullFromCloud(context) : null,
           ),
         ],
       ),
@@ -155,9 +244,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       ),
       body: Column(
         children: [
-          // 👈 Insertion de notre bannière Cloud ici !
-          const CloudAuthBanner(),
-
+          CloudAuthBanner(key: cloudAuthBannerKey),
           Expanded(
             child: Consumer<CharacterSheetProvider>(
               builder: (context, provider, _) {
@@ -185,21 +272,21 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                           color: Colors.red.shade800,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.delete_sweep, color: Colors.white),
+                        child: const Icon(
+                          Icons.delete_sweep,
+                          color: Colors.white,
+                        ),
                       ),
-
-                      // 1. On intercepte les choix de l'utilisateur
                       confirmDismiss: (_) async {
                         final result = await _confirmAdvancedDelete(
                           context,
                           sheet.name,
-                          sheet.syncUuid.isNotEmpty, // true si le perso est dans le cloud
+                          sheet.syncUuid.isNotEmpty,
                         );
 
-                        if (result == null) return false; // Annulé, on ne fait rien
+                        if (result == null) return false;
 
                         try {
-                          // 2. On exécute le choix personnalisé du joueur
                           await _sync.deleteCharacter(
                             sheetId: sheet.id!,
                             syncUuid: sheet.syncUuid,
@@ -208,23 +295,30 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                           );
 
                           if (context.mounted) {
-                            // 3. On rafraîchit les données locales (le Provider)
-                            await context.read<CharacterSheetProvider>().loadSheets();
+                            await provider.loadSheets();
+                            cloudAuthBannerKey.currentState
+                                ?.checkAuthAndFetchQuota();
+                            _refreshCloudAccess();
 
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Action de suppression effectuée avec succès.'), backgroundColor: Colors.green),
+                              const SnackBar(
+                                content: Text(
+                                  'Action de suppression effectuée avec succès.',
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
                             );
                           }
                         } catch (e) {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('❌ Échec de la suppression : $e'), backgroundColor: Colors.red),
+                              SnackBar(
+                                content: Text('❌ Échec de la suppression : $e'),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         }
-
-                        // 🔴 TRÈS IMPORTANT : Le Dismissible ne doit s'animer visuellement et quitter
-                        // l'écran QUE si le personnage a été supprimé localement.
                         return result['local']!;
                       },
                       child: Card(
@@ -250,7 +344,11 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           subtitle: Text(
-                            _buildSubtitle(sheet.race, sheet.profile, sheet.level),
+                            _buildSubtitle(
+                              sheet.race,
+                              sheet.profile,
+                              sheet.level,
+                            ),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                           trailing: Row(
@@ -260,28 +358,81 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                                 IconButton(
                                   tooltip: 'Partager',
                                   icon: const Icon(Icons.ios_share_outlined),
-                                  onPressed: () => _openShareScreen(context, sheet.id!, sheet.syncUuid),
+                                  onPressed:
+                                      () => _openShareScreen(
+                                        context,
+                                        sheet.id!,
+                                        sheet.syncUuid,
+                                      ),
                                 ),
-                              IconButton(
-                                tooltip: _canPush(sheet)
-                                    ? 'Synchroniser vers le cloud'
-                                    : 'Lecture seule',
-                                icon: const Icon(Icons.cloud_upload_outlined),
-                                onPressed: _sync.isConfigured && _canPush(sheet)
-                                    ? () => _pushToCloud(context, sheet.id!)
-                                    : null,
+                              Builder(
+                                builder: (context) {
+                                  // 1. Une fiche est VRAIMENT synchronisée si elle a un UUID
+                                  // ET que le Worker a confirmé ses droits d'accès.
+                                  final bool hasUuid = sheet.syncUuid.isNotEmpty;
+                                  final bool isKnownByCloud = _cloudAccessBySyncUuid.containsKey(sheet.syncUuid);
+                                  final bool isSynchronized = hasUuid && isKnownByCloud;
+
+                                  final bool canPush = _canPush(sheet);
+
+                                  // 2. Récupération des quotas
+                                  final bannerState = cloudAuthBannerKey.currentState;
+                                  final String userRole = bannerState?.currentRole ?? 'free';
+                                  final int currentTotal = bannerState?.totalCharacters ?? 0;
+
+                                  final int maxLimit = userRole == 'premium' ? 10 : 3;
+                                  final bool isLimitReached = currentTotal >= maxLimit;
+
+                                  // 3. Si le quota est atteint ET que le perso n'est pas encore synchronisé sur CE compte,
+                                  // on masque l'icône immédiatement.
+                                  if (isLimitReached && !isSynchronized) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  IconData iconData;
+                                  Color iconColor;
+                                  String tooltipMessage;
+
+                                  // Le reste de ta logique de dessin d'icône 👇
+                                  if (!isSynchronized) {
+                                    iconData = Icons.cloud_upload_outlined;
+                                    iconColor = Colors.grey.shade600;
+                                    tooltipMessage = 'Sauvegarder dans le cloud';
+                                  } else if (!canPush) {
+                                    iconData = Icons.lock_outline;
+                                    iconColor = Colors.amber.shade700;
+                                    tooltipMessage = 'Personnage en lecture seule (partagé)';
+                                  } else {
+                                    iconData = Icons.cloud_done;
+                                    iconColor = Colors.green.shade600;
+                                    tooltipMessage = 'Synchronisé dans le cloud (cliquer pour mettre à jour)';
+                                  }
+
+                                  return IconButton(
+                                    tooltip: tooltipMessage,
+                                    icon: Icon(
+                                      iconData,
+                                      color: _sync.isConfigured ? iconColor : Colors.grey.shade400,
+                                    ),
+                                    onPressed: _sync.isConfigured && canPush
+                                        ? () => _pushToCloud(context, sheet.id!)
+                                        : null,
+                                  );
+                                },
                               ),
                               const Icon(Icons.chevron_right),
                             ],
                           ),
                           onTap:
                               () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => CharacterSheetScreen(sheetId: sheet.id!),
-                            ),
-                          ),
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => CharacterSheetScreen(
+                                        sheetId: sheet.id!,
+                                      ),
+                                ),
+                              ),
                         ),
                       ),
                     );
@@ -326,113 +477,136 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
     );
   }
 
-  Future<Map<String, bool>?> _confirmAdvancedDelete(BuildContext context, String characterName, bool hasCloudBackup) {
+  Future<Map<String, bool>?> _confirmAdvancedDelete(
+    BuildContext context,
+    String characterName,
+    bool hasCloudBackup,
+  ) {
     final controller = TextEditingController();
     String enteredName = '';
-
-    // Par défaut, si le perso est sur le cloud, on propose de supprimer "Partout". Sinon, "Local uniquement".
     String deleteMode = hasCloudBackup ? 'both' : 'local';
 
     return showDialog<Map<String, bool>>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red.shade700),
-              const SizedBox(width: 10),
-              const Text('Option de suppression'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Choisissez où vous souhaitez supprimer ce personnage :',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-
-              // Option 1 : Local uniquement
-              RadioListTile<String>(
-                title: const Text('Uniquement sur ce téléphone'),
-                subtitle: const Text('Le personnage restera accessible dans le cloud.'),
-                value: 'local',
-                groupValue: deleteMode,
-                activeColor: Colors.red.shade700,
-                contentPadding: EdgeInsets.zero,
-                onChanged: (val) => setState(() => deleteMode = val!),
-              ),
-
-              // Option 2 : Cloud uniquement (Affiché uniquement si le perso possède un syncUuid)
-              if (hasCloudBackup)
-                RadioListTile<String>(
-                  title: const Text('Uniquement dans le cloud'),
-                  subtitle: const Text('Le personnage restera sur ce téléphone mais ne sera plus synchronisé.'),
-                  value: 'cloud',
-                  groupValue: deleteMode,
-                  activeColor: Colors.red.shade700,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: (val) => setState(() => deleteMode = val!),
-                ),
-
-              // Option 3 : Partout
-              if (hasCloudBackup)
-                RadioListTile<String>(
-                  title: const Text('Partout (Téléphone + Cloud)'),
-                  subtitle: Text('Action destructive définitive.', style: TextStyle(color: Colors.red.shade700)),
-                  value: 'both',
-                  groupValue: deleteMode,
-                  activeColor: Colors.red.shade700,
-                  contentPadding: EdgeInsets.zero,
-                  onChanged: (val) => setState(() => deleteMode = val!),
-                ),
-
-              const Divider(height: 24),
-              Text(
-                'Pour valider, veuillez saisir le nom du personnage ($characterName) :',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: characterName,
-                  border: const OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.red.shade700),
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setState) => AlertDialog(
+                  title: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.red.shade700,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text('Option de suppression'),
+                    ],
                   ),
+                  // 💡 AJOUT D'UN SINGLECHILDSCROLLVIEW ICI POUR ÉVITER L'OVERFLOW AVEC LE CLAVIER
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Choisissez où vous souhaitez supprimer ce personnage :',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        RadioListTile<String>(
+                          title: const Text('Uniquement sur ce téléphone'),
+                          subtitle: const Text(
+                            'Le personnage restera accessible dans le cloud.',
+                          ),
+                          value: 'local',
+                          groupValue: deleteMode,
+                          activeColor: Colors.red.shade700,
+                          contentPadding: EdgeInsets.zero,
+                          onChanged: (val) => setState(() => deleteMode = val!),
+                        ),
+                        if (hasCloudBackup)
+                          RadioListTile<String>(
+                            title: const Text('Uniquement dans le cloud'),
+                            subtitle: const Text(
+                              'Le personnage restera sur ce téléphone mais ne sera plus synchronisé.',
+                            ),
+                            value: 'cloud',
+                            groupValue: deleteMode,
+                            activeColor: Colors.red.shade700,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged:
+                                (val) => setState(() => deleteMode = val!),
+                          ),
+                        if (hasCloudBackup)
+                          RadioListTile<String>(
+                            title: const Text('Partout (Téléphone + Cloud)'),
+                            subtitle: Text(
+                              'Action destructive définitive.',
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                            value: 'both',
+                            groupValue: deleteMode,
+                            activeColor: Colors.red.shade700,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged:
+                                (val) => setState(() => deleteMode = val!),
+                          ),
+                        const Divider(height: 24),
+                        Text(
+                          'Pour valider, veuillez saisir le nom du personnage ($characterName) :',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: controller,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: characterName,
+                            border: const OutlineInputBorder(),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: Colors.red.shade700,
+                              ),
+                            ),
+                          ),
+                          onChanged:
+                              (v) => setState(() => enteredName = v.trim()),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, null),
+                      child: const Text('Annuler'),
+                    ),
+                    ElevatedButton(
+                      onPressed:
+                          enteredName == characterName.trim()
+                              ? () {
+                                Navigator.pop(ctx, {
+                                  'local':
+                                      deleteMode == 'local' ||
+                                      deleteMode == 'both',
+                                  'cloud':
+                                      deleteMode == 'cloud' ||
+                                      deleteMode == 'both',
+                                });
+                              }
+                              : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                      ),
+                      child: const Text('Confirmer'),
+                    ),
+                  ],
                 ),
-                onChanged: (v) => setState(() => enteredName = v.trim()),
-              ),
-            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, null),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: enteredName == characterName.trim()
-                  ? () {
-                Navigator.pop(ctx, {
-                  'local': deleteMode == 'local' || deleteMode == 'both',
-                  'cloud': deleteMode == 'cloud' || deleteMode == 'both',
-                });
-              }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              child: const Text('Confirmer'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -442,24 +616,24 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       context: context,
       builder:
           (ctx) => AlertDialog(
-        title: const Text('Nouveau personnage'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: 'Nom du personnage'),
-          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler'),
+            title: const Text('Nouveau personnage'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Nom du personnage'),
+              onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annuler'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                child: const Text('Créer'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Créer'),
-          ),
-        ],
-      ),
     );
 
     if (result != null && result.isNotEmpty && context.mounted) {
@@ -478,7 +652,6 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
   }
 
   Future<void> _pushToCloud(BuildContext context, int sheetId) async {
-    // 🗑️ PLUS DE DEMANDE DE MOT DE PASSE ICI
     final provider = context.read<CharacterSheetProvider>();
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -487,6 +660,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       if (!context.mounted) return;
       await provider.loadSheets();
       await _refreshCloudAccess();
+      cloudAuthBannerKey.currentState?.checkAuthAndFetchQuota();
       messenger.showSnackBar(
         SnackBar(
           content: Text('✅ Sync envoyée. Code: $syncUuid'),
@@ -499,7 +673,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         context,
         title: 'Conflit de synchronisation',
         message:
-        'Version cloud plus récente détectée.\n\nÉcraser version cloud avec version locale ?',
+            'Version cloud plus récente détectée.\n\nÉcraser version cloud avec version locale ?',
       );
       if (overwrite != true || !context.mounted) return;
       try {
@@ -510,6 +684,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         if (!context.mounted) return;
         await provider.loadSheets();
         await _refreshCloudAccess();
+        cloudAuthBannerKey.currentState?.checkAuthAndFetchQuota();
         messenger.showSnackBar(
           SnackBar(
             content: Text('✅ Sync forcée envoyée. Code: $syncUuid'),
@@ -559,7 +734,6 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       if (selected == null || !context.mounted) return;
       selectedCharacter = selected;
 
-      // 🗑️ PLUS DE DEMANDE DE MOT DE PASSE ICI
       await _sync.pullSheet(
         syncUuid: selected.syncUuid,
         remoteLastModifiedAt: selected.lastModifiedAt,
@@ -568,6 +742,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       if (!context.mounted) return;
       await provider.loadSheets();
       await _refreshCloudAccess();
+      cloudAuthBannerKey.currentState?.checkAuthAndFetchQuota();
       messenger.showSnackBar(
         const SnackBar(
           content: Text('✅ Personnage synchronisé depuis le cloud'),
@@ -580,7 +755,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         context,
         title: 'Conflit de synchronisation',
         message:
-        'Version locale plus récente détectée.\n\nÉcraser version locale avec version cloud ?',
+            'Version locale plus récente détectée.\n\nÉcraser version locale avec version cloud ?',
       );
       if (overwrite != true || !context.mounted) return;
       if (selectedCharacter == null) return;
@@ -594,6 +769,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         if (!context.mounted) return;
         await provider.loadSheets();
         await _refreshCloudAccess();
+        cloudAuthBannerKey.currentState?.checkAuthAndFetchQuota();
         messenger.showSnackBar(
           const SnackBar(
             content: Text('✅ Sync cloud forcée'),
@@ -621,38 +797,77 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
   }
 
   Future<CloudCharacterInfo?> _pickCloudCharacter(
-      BuildContext context,
-      List<CloudCharacterInfo> characters,
-      ) {
+    BuildContext context,
+    List<CloudCharacterInfo> characters,
+  ) {
     final owned = characters.where((c) => c.isOwned).toList();
     final writeShared =
-        characters.where((c) => c.category == CloudCharacterCategory.writeShared).toList();
+        characters
+            .where((c) => c.category == CloudCharacterCategory.writeShared)
+            .toList();
     final readShared =
-        characters.where((c) => c.category == CloudCharacterCategory.readShared).toList();
+        characters
+            .where((c) => c.category == CloudCharacterCategory.readShared)
+            .toList();
 
     return showDialog<CloudCharacterInfo>(
       context: context,
       builder:
           (ctx) => AlertDialog(
-        title: const Text('Choisir un personnage cloud'),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 420,
-          child: ListView(
-            children: [
-              _buildCloudSection(ctx, 'Mes Personnages', owned),
-              _buildCloudSection(ctx, 'Partagés en écriture', writeShared),
-              _buildCloudSection(ctx, 'Partagés en lecture', readShared),
-            ].whereType<Widget>().toList(),
+            title: const Text('Choisir un personnage cloud'),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: 420,
+              child: ListView(
+                children: [
+                  if (owned.isEmpty &&
+                      writeShared.isEmpty &&
+                      readShared.isEmpty &&
+                      characters.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 6),
+                      child: Text(
+                        'Tous les personnages (${characters.length})',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                    ...characters.map(
+                      (c) => ListTile(
+                        title: Text(c.name),
+                        subtitle: Text('ID de synchro : ${c.syncUuid}'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.pop(context, c),
+                      ),
+                    ),
+                  ] else ...[
+                    if (owned.isNotEmpty)
+                      _buildCloudSection(ctx, 'Mes Personnages', owned),
+                    if (writeShared.isNotEmpty)
+                      _buildCloudSection(
+                        ctx,
+                        'Partagés en écriture',
+                        writeShared,
+                      ),
+                    if (readShared.isNotEmpty)
+                      _buildCloudSection(
+                        ctx,
+                        'Partagés en lecture',
+                        readShared,
+                      ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annuler'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -696,17 +911,15 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
   }
 
   Future<void> _openShareScreen(
-      BuildContext context,
-      int sheetId,
-      String syncUuid,
-      ) async {
+    BuildContext context,
+    int sheetId,
+    String syncUuid,
+  ) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CharacterShareScreen(
-          sheetId: sheetId,
-          syncUuid: syncUuid,
-        ),
+        builder:
+            (_) => CharacterShareScreen(sheetId: sheetId, syncUuid: syncUuid),
       ),
     );
     if (context.mounted) {
@@ -714,41 +927,39 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
     }
   }
 
-  Widget? _buildCloudSection(
+  Widget _buildCloudSection(
     BuildContext context,
     String title,
     List<CloudCharacterInfo> characters,
   ) {
-    if (characters.isEmpty) return null;
+    if (characters.isEmpty) return const SizedBox.shrink();
 
     final children = <Widget>[
       Padding(
         padding: const EdgeInsets.only(top: 12, bottom: 6),
         child: Text(
           title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
-      ...characters.map(
-        (c) {
-          final parts = <String>[];
-          if (c.level != null) parts.add('Niv. ${c.level}');
-          if (c.race.isNotEmpty) parts.add(c.race);
-          if (c.profile.isNotEmpty) parts.add(c.profile);
-          if (c.ownerEmail != null && c.ownerEmail!.isNotEmpty && !c.isOwned) {
-            parts.add('Propriétaire: ${c.ownerEmail}');
-          }
-          final subtitle = parts.join(' · ');
-          return ListTile(
-            title: Text(c.name),
-            subtitle: subtitle.isEmpty ? null : Text(subtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.pop(context, c),
-          );
-        },
-      ),
+      ...characters.map((c) {
+        final parts = <String>[];
+        if (c.level != null) parts.add('Niv. ${c.level}');
+        if (c.race.isNotEmpty) parts.add(c.race);
+        if (c.profile.isNotEmpty) parts.add(c.profile);
+        if (c.ownerEmail != null && c.ownerEmail!.isNotEmpty && !c.isOwned) {
+          parts.add('Propriétaire: ${c.ownerEmail}');
+        }
+        final subtitle = parts.join(' · ');
+        return ListTile(
+          title: Text(c.name),
+          subtitle: subtitle.isEmpty ? null : Text(subtitle),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.pop(context, c),
+        );
+      }),
       const Divider(height: 1),
     ];
 
@@ -759,27 +970,27 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
   }
 
   Future<bool?> _confirmOverwrite(
-      BuildContext context, {
-        required String title,
-        required String message,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
     return showDialog<bool>(
       context: context,
       builder:
           (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Annuler'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Écraser'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Écraser'),
-          ),
-        ],
-      ),
     );
   }
 }
