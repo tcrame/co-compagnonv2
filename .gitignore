@@ -96,7 +96,7 @@ app.*.map.json
 .env
 .env.*
 secrets.dart
-secrets
+.iacontext/
 secrets.yml
 
 # Node

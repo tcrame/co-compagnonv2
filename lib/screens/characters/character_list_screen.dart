@@ -227,11 +227,22 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
   }
 
   Future<void> _pushToCloud(BuildContext context, int sheetId) async {
-    final password = await _askPassword(
-      context,
-      title: 'Synchroniser ce personnage',
-      label: 'Mot de passe personnage',
+    final sheet = context.read<CharacterSheetProvider>().sheets.firstWhere(
+      (s) => s.id == sheetId,
     );
+
+    final password =
+        sheet.syncUuid.isEmpty
+            ? await _askPasswordWithConfirmation(
+              context,
+              title: 'Créer mot de passe sync',
+              label: 'Mot de passe personnage',
+            )
+            : await _askPassword(
+              context,
+              title: 'Mot de passe sync',
+              label: 'Mot de passe personnage',
+            );
     if (password == null || password.isEmpty || !context.mounted) return;
 
     try {
@@ -451,6 +462,82 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
     required String label,
   }) {
     return _askText(context, title: title, label: label, obscureText: true);
+  }
+
+  Future<String?> _askPasswordWithConfirmation(
+    BuildContext context, {
+    required String title,
+    required String label,
+  }) async {
+    String password = '';
+    String confirmation = '';
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setState) => AlertDialog(
+                  title: Text(title),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Mot de passe sync non récupérable. Impossible de le retrouver ou le réinitialiser.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        autofocus: true,
+                        obscureText: true,
+                        decoration: InputDecoration(labelText: label),
+                        onChanged: (v) => password = v,
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirmer mot de passe',
+                        ),
+                        onChanged: (v) => confirmation = v,
+                      ),
+                      if (error != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          error!,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Annuler'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        final p = password.trim();
+                        final c = confirmation.trim();
+                        if (p.isEmpty || c.isEmpty || p != c) {
+                          setState(() {
+                            error =
+                                'Les deux mots de passe doivent être identiques.';
+                          });
+                          return;
+                        }
+                        Navigator.pop(ctx, p);
+                      },
+                      child: const Text('Valider'),
+                    ),
+                  ],
+                ),
+          ),
+    );
   }
 
   Future<String?> _askText(

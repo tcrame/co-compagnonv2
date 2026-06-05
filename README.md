@@ -62,7 +62,7 @@ fvm flutter run -d <device_id_android> --dart-define=SYNC_API_BASE_URL=https://<
 Exemple device id réel:
 
 ```bash
-fvm flutter run -d 4B101JEKB01839 --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+fvm flutter run -d 4B101JEKB01839 --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 ```
 
 #### Builder APK avec URL de dev
@@ -87,5 +87,7 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
 Dans **Fiches de Personnages**:
 - Icône cloud upload: envoie personnage local vers Neon (mot de passe requis).
+- Premier upload: mot de passe saisi 2 fois. Ensuite: 1 seul mot de passe.
 - Icône cloud download: affiche liste cloud, puis demande mot de passe pour personnage choisi.
 - En cas de conflit (version plus récente de l'autre côté): app demande **Écraser** ou **Annuler**.
+- Mot de passe sync: saisi deux fois à la création, impossible à retrouver ou réinitialiser.
