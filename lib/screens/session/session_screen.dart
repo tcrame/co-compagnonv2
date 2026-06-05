@@ -615,96 +615,102 @@ class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
   Widget build(BuildContext context) {
     final filtered = widget.templates
         .where((t) =>
-            t.name.toLowerCase().contains(_search.toLowerCase()))
+        t.name.toLowerCase().contains(_search.toLowerCase()))
         .toList();
+
+    // 💡 Détection de la hauteur prise par le clavier
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Choisir dans le bestiaire',
-                  style: Theme.of(context).textTheme.titleLarge),
-              IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            autofocus: false,
-            decoration: const InputDecoration(
-              hintText: 'Rechercher…',
-              prefixIcon: Icon(Icons.search),
+      child: SingleChildScrollView( // 🔗 1. Ajout du ScrollView global pour encaisser le clavier
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Choisir dans le bestiaire',
+                    style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close)),
+              ],
             ),
-            onChanged: (v) => setState(() => _search = v),
-          ),
-          const SizedBox(height: 8),
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45,
+            const SizedBox(height: 8),
+            TextField(
+              autofocus: false,
+              decoration: const InputDecoration(
+                hintText: 'Rechercher…',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (v) => setState(() => _search = v),
             ),
-            child: filtered.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('Aucun résultat'),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                // 🔗 2. Hauteur dynamique : 30% si le clavier est sorti, 45% s'il est caché
+                maxHeight: MediaQuery.of(context).size.height * (keyboardOpen ? 0.30 : 0.45),
+              ),
+              child: filtered.isEmpty
+                  ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('Aucun résultat'),
+                ),
+              )
+                  : ListView.separated(
+                shrinkWrap: true,
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 6),
+                itemBuilder: (ctx, i) {
+                  final t = filtered[i];
+                  return Card(
+                    child: ListTile(
+                      leading: ParticipantAvatar(
+                        name: t.name,
+                        isAlly: t.isAlly,
+                        imageUrl: t.imageUrl,
+                        radius: 20,
+                      ),
+                      title: Text(t.name,
+                          style: Theme.of(context).textTheme.titleMedium),
+                      subtitle: Text(
+                        [
+                          'Init: ${t.baseInitiative}',
+                          'PV: ${t.maxHp}',
+                          'DEF: ${t.def}',
+                          if (t.nc != null) 'NC ${t.nc}',
+                          t.isAlly ? 'Aventurier' : 'Ennemi',
+                        ].join('  •  '),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.info_outline,
+                            color: Colors.grey.shade500, size: 20),
+                        tooltip: 'Détails',
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: AppColors.surface,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            builder: (_) =>
+                                CreatureDetailSheet(template: t),
+                          );
+                        },
+                      ),
+                      onTap: () => Navigator.pop(ctx, t),
                     ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 6),
-                    itemBuilder: (ctx, i) {
-                      final t = filtered[i];
-                      return Card(
-                        child: ListTile(
-                          leading: ParticipantAvatar(
-                            name: t.name,
-                            isAlly: t.isAlly,
-                            imageUrl: t.imageUrl,
-                            radius: 20,
-                          ),
-                          title: Text(t.name,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          subtitle: Text(
-                            [
-                              'Init: ${t.baseInitiative}',
-                              'PV: ${t.maxHp}',
-                              'DEF: ${t.def}',
-                              if (t.nc != null) 'NC ${t.nc}',
-                              t.isAlly ? 'Aventurier' : 'Ennemi',
-                            ].join('  •  '),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.info_outline,
-                                color: Colors.grey.shade500, size: 20),
-                            tooltip: 'Détails',
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                backgroundColor: AppColors.surface,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20)),
-                                ),
-                                builder: (_) =>
-                                    CreatureDetailSheet(template: t),
-                              );
-                            },
-                          ),
-                          onTap: () => Navigator.pop(ctx, t),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -727,68 +733,74 @@ class _CharacterPickerSheetState extends State<_CharacterPickerSheet> {
         .where((s) => s.name.toLowerCase().contains(_search.toLowerCase()))
         .toList();
 
+    // 💡 Détection de la hauteur prise par le clavier
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Choisir un personnage',
-                  style: Theme.of(context).textTheme.titleLarge),
-              IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            autofocus: false,
-            decoration: const InputDecoration(
-              hintText: 'Rechercher…',
-              prefixIcon: Icon(Icons.search),
+      child: SingleChildScrollView( // 🔗 1. Ajout du ScrollView global
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Choisir un personnage',
+                    style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close)),
+              ],
             ),
-            onChanged: (v) => setState(() => _search = v),
-          ),
-          const SizedBox(height: 8),
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45,
+            const SizedBox(height: 8),
+            TextField(
+              autofocus: false,
+              decoration: const InputDecoration(
+                hintText: 'Rechercher…',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (v) => setState(() => _search = v),
             ),
-            child: filtered.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('Aucun résultat'),
+            const SizedBox(height: 8),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                // 🔗 2. Hauteur dynamique : 30% si le clavier est sorti, 45% s'il est caché
+                maxHeight: MediaQuery.of(context).size.height * (keyboardOpen ? 0.30 : 0.45),
+              ),
+              child: filtered.isEmpty
+                  ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('Aucun résultat'),
+                ),
+              )
+                  : ListView.separated(
+                shrinkWrap: true,
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 6),
+                itemBuilder: (ctx, i) {
+                  final s = filtered[i];
+                  return Card(
+                    child: ListTile(
+                      leading: ParticipantAvatar(
+                        name: s.name,
+                        isAlly: true,
+                        radius: 20,
+                      ),
+                      title: Text(s.name,
+                          style: Theme.of(context).textTheme.titleMedium),
+                      subtitle: Text(
+                        'Niv. ${s.level}  •  ${s.profile.isNotEmpty ? s.profile : 'Sans profil'}  •  Init: ${s.initTotal}  •  PV: ${s.pvMax}  •  DEF: ${s.defTotal}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      onTap: () => Navigator.pop(ctx, s),
                     ),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 6),
-                    itemBuilder: (ctx, i) {
-                      final s = filtered[i];
-                      return Card(
-                        child: ListTile(
-                          leading: ParticipantAvatar(
-                            name: s.name,
-                            isAlly: true,
-                            radius: 20,
-                          ),
-                          title: Text(s.name,
-                              style: Theme.of(context).textTheme.titleMedium),
-                          subtitle: Text(
-                            'Niv. ${s.level}  •  ${s.profile.isNotEmpty ? s.profile : 'Sans profil'}  •  Init: ${s.initTotal}  •  PV: ${s.pvMax}  •  DEF: ${s.defTotal}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          onTap: () => Navigator.pop(ctx, s),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
