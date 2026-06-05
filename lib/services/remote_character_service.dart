@@ -1,6 +1,8 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+
+// N'oubliez pas d'importer le service d'authentification que nous avons créé
+import 'auth_service.dart';
 
 class CloudCharacterInfo {
   CloudCharacterInfo({
@@ -37,12 +39,13 @@ class CloudCharacterInfo {
 
 class RemoteCharacterService {
   RemoteCharacterService({http.Client? client, String? baseUrl})
-    : _client = client ?? http.Client(),
-      _baseUrl =
-          (baseUrl ?? const String.fromEnvironment('SYNC_API_BASE_URL')).trim();
+      : _client = client ?? http.Client(),
+        _baseUrl =
+        (baseUrl ?? const String.fromEnvironment('SYNC_API_BASE_URL')).trim();
 
   final http.Client _client;
   final String _baseUrl;
+  final AuthService _authService = AuthService(); // Ajout du service d'authentification
 
   bool get isConfigured => _baseUrl.isNotEmpty;
 
@@ -50,24 +53,38 @@ class RemoteCharacterService {
     if (_baseUrl.isEmpty) {
       throw StateError(
         'SYNC_API_BASE_URL manquante. Lancez Flutter avec '
-        '--dart-define=SYNC_API_BASE_URL=https://votre-api',
+            '--dart-define=SYNC_API_BASE_URL=https://votre-api',
       );
     }
     return Uri.parse('$_baseUrl$path');
   }
 
+  // --- MÉTHODE UTILITAIRE POUR LES HEADERS SÉCURISÉS ---
+  Future<Map<String, String>> _getSecureHeaders() async {
+    final token = await _authService.getToken();
+    if (token == null) {
+      throw StateError('Utilisateur non connecté. Impossible de synchroniser.');
+    }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  // 🗑️ SUPPRESSION: Le paramètre password a disparu
   Future<void> pushCharacter({
     required String syncUuid,
-    required String password,
     required Map<String, dynamic> characterEntry,
     required String lastModifiedAt,
   }) async {
+    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+
     final response = await _client.post(
       _uri('/sync/push'),
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode({
         'sync_uuid': syncUuid,
-        'password': password,
+        // 🗑️ SUPPRESSION: password retiré du JSON
         'character_blob': characterEntry,
         'last_modified_at': lastModifiedAt,
       }),
@@ -75,16 +92,19 @@ class RemoteCharacterService {
     _ensureSuccess(response);
   }
 
+  // 🗑️ SUPPRESSION: Le paramètre password a disparu
   Future<Map<String, dynamic>> pullCharacter({
     required String syncUuid,
-    required String password,
   }) async {
+    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+
     final response = await _client.post(
       _uri('/sync/pull'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'sync_uuid': syncUuid, 'password': password}),
+      headers: headers,
+      body: jsonEncode({'sync_uuid': syncUuid}), // 🗑️ SUPPRESSION: password retiré du JSON
     );
     _ensureSuccess(response);
+
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
     final blob = payload['character_blob'];
     if (blob is! Map<String, dynamic>) {
@@ -94,15 +114,18 @@ class RemoteCharacterService {
   }
 
   Future<List<CloudCharacterInfo>> listCharacters() async {
+    final headers = await _getSecureHeaders(); // 🔒 Récupération du token
+
     final response = await _client.post(
       _uri('/sync/list'),
-      headers: {'Content-Type': 'application/json'},
+      headers: headers,
       body: jsonEncode({}),
     );
     _ensureSuccess(response);
+
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
     final raw =
-        (payload['characters'] as List? ?? []).cast<Map<String, dynamic>>();
+    (payload['characters'] as List? ?? []).cast<Map<String, dynamic>>();
     return raw.map(CloudCharacterInfo.fromMap).toList();
   }
 

@@ -4,3 +4,4 @@ compatibility_date = "2026-01-01"
 
 [vars]
 ALLOWED_ORIGIN = "*"
+GOOGLE_CLIENT_ID = "716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com"

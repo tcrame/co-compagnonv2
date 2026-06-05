@@ -49,14 +49,14 @@ fvm flutter emulators --launch Medium_Phone_API_36.0
 #### Lancer l'app sur émulateur Android
 
 ```bash
-fvm flutter run -d emulator-5554 --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+fvm flutter run -d emulator-5554 --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 ```
 
 #### Lancer l'app sur mobile Android branché
 
 ```bash
 fvm flutter devices
-fvm flutter run -d <device_id_android> --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+fvm flutter run -d <device_id_android> --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 ```
 
 Exemple device id réel:
@@ -68,7 +68,7 @@ fvm flutter run -d 4B101JEKB01839 --dart-define=SYNC_API_BASE_URL=https://co-com
 #### Builder APK avec URL de dev
 
 ```bash
-fvm flutter build apk --debug --dart-define=SYNC_API_BASE_URL=https://<votre-worker>.workers.dev
+fvm flutter build apk --debug --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 ```
 
 APK générée:

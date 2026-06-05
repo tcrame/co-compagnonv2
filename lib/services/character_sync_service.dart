@@ -32,10 +32,10 @@ class CharacterSyncService {
     RemoteCharacterService? remoteService,
     Uuid? uuid,
   }) : _db = databaseService ?? DatabaseService(),
-       _backup =
-           backupService ?? BackupService(databaseService ?? DatabaseService()),
-       _remote = remoteService ?? RemoteCharacterService(),
-       _uuid = uuid ?? const Uuid();
+        _backup =
+            backupService ?? BackupService(databaseService ?? DatabaseService()),
+        _remote = remoteService ?? RemoteCharacterService(),
+        _uuid = uuid ?? const Uuid();
 
   final DatabaseService _db;
   final BackupService _backup;
@@ -46,13 +46,8 @@ class CharacterSyncService {
 
   Future<String> pushSheet({
     required int sheetId,
-    required String password,
     bool allowOverwriteRemote = false,
   }) async {
-    if (password.trim().isEmpty) {
-      throw ArgumentError('Mot de passe requis pour la synchronisation');
-    }
-
     final sheet = await _db.getCharacterSheetById(sheetId);
     if (sheet == null) {
       throw StateError('Fiche introuvable');
@@ -88,7 +83,6 @@ class CharacterSyncService {
 
     await _remote.pushCharacter(
       syncUuid: syncUuid,
-      password: password,
       characterEntry: entry,
       lastModifiedAt: refreshed.lastModifiedAt.toIso8601String(),
     );
@@ -99,15 +93,11 @@ class CharacterSyncService {
 
   Future<CharacterSheet> pullSheet({
     required String syncUuid,
-    required String password,
     DateTime? remoteLastModifiedAt,
     bool allowOverwriteLocal = false,
   }) async {
     if (syncUuid.trim().isEmpty) {
       throw ArgumentError('Code de synchronisation requis');
-    }
-    if (password.trim().isEmpty) {
-      throw ArgumentError('Mot de passe requis pour la synchronisation');
     }
 
     if (!allowOverwriteLocal && remoteLastModifiedAt != null) {
@@ -123,7 +113,6 @@ class CharacterSyncService {
 
     final entry = await _remote.pullCharacter(
       syncUuid: syncUuid.trim(),
-      password: password,
     );
     return _backup.upsertCharacterEntryFromSync(entry);
   }
