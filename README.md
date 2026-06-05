@@ -63,6 +63,7 @@ Exemple device id réel:
 
 ```bash
 fvm flutter run -d 4B101JEKB01839 --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
+fvm flutter run -d RF8N31XXMHB --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 ```
 
 #### Builder APK avec URL de dev

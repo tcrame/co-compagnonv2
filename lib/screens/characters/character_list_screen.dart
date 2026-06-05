@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/character_sheet.dart';
 import '../../providers/character_sheet_provider.dart';
 import '../../services/character_sync_service.dart';
 import '../../services/remote_character_service.dart';
 import '../../services/auth_service.dart'; // 👈 N'oubliez pas cet import !
 import 'character_sheet_screen.dart';
+import 'character_share_screen.dart';
 
 // --- NOUVEAU WIDGET : BANNIÈRE D'AUTHENTIFICATION ---
 class CloudAuthBanner extends StatefulWidget {
@@ -120,12 +122,14 @@ class CharacterListScreen extends StatefulWidget {
 
 class _CharacterListScreenState extends State<CharacterListScreen> {
   final _sync = CharacterSyncService();
+  final Map<String, String> _cloudAccessBySyncUuid = {};
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CharacterSheetProvider>().loadSheets();
+      _refreshCloudAccess();
     });
   }
 
@@ -214,11 +218,18 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              if (_canShare(sheet))
+                                IconButton(
+                                  tooltip: 'Partager',
+                                  icon: const Icon(Icons.ios_share_outlined),
+                                  onPressed: () => _openShareScreen(context, sheet.id!, sheet.syncUuid),
+                                ),
                               IconButton(
-                                tooltip: 'Synchroniser vers le cloud',
+                                tooltip: _canPush(sheet)
+                                    ? 'Synchroniser vers le cloud'
+                                    : 'Lecture seule',
                                 icon: const Icon(Icons.cloud_upload_outlined),
-                                onPressed:
-                                _sync.isConfigured
+                                onPressed: _sync.isConfigured && _canPush(sheet)
                                     ? () => _pushToCloud(context, sheet.id!)
                                     : null,
                               ),
@@ -342,12 +353,15 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
 
   Future<void> _pushToCloud(BuildContext context, int sheetId) async {
     // 🗑️ PLUS DE DEMANDE DE MOT DE PASSE ICI
+    final provider = context.read<CharacterSheetProvider>();
+    final messenger = ScaffoldMessenger.of(context);
     try {
       final syncUuid = await _sync.pushSheet(sheetId: sheetId);
 
       if (!context.mounted) return;
-      await context.read<CharacterSheetProvider>().loadSheets();
-      ScaffoldMessenger.of(context).showSnackBar(
+      await provider.loadSheets();
+      await _refreshCloudAccess();
+      messenger.showSnackBar(
         SnackBar(
           content: Text('✅ Sync envoyée. Code: $syncUuid'),
           backgroundColor: Colors.green,
@@ -368,8 +382,9 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
           allowOverwriteRemote: true,
         );
         if (!context.mounted) return;
-        await context.read<CharacterSheetProvider>().loadSheets();
-        ScaffoldMessenger.of(context).showSnackBar(
+        await provider.loadSheets();
+        await _refreshCloudAccess();
+        messenger.showSnackBar(
           SnackBar(
             content: Text('✅ Sync forcée envoyée. Code: $syncUuid'),
             backgroundColor: Colors.green,
@@ -377,7 +392,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         );
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('❌ Échec sync envoi: $e'),
             backgroundColor: Colors.red,
@@ -386,7 +401,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       }
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text('❌ Échec sync envoi: $e'),
           backgroundColor: Colors.red,
@@ -397,13 +412,15 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
 
   Future<void> _pullFromCloud(BuildContext context) async {
     CloudCharacterInfo? selectedCharacter;
+    final provider = context.read<CharacterSheetProvider>();
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final candidates = await _sync.listCloudCharacters();
       if (!context.mounted) return;
 
       if (candidates.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Aucun personnage cloud disponible'),
             backgroundColor: Colors.orange,
@@ -423,8 +440,9 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       );
 
       if (!context.mounted) return;
-      await context.read<CharacterSheetProvider>().loadSheets();
-      ScaffoldMessenger.of(context).showSnackBar(
+      await provider.loadSheets();
+      await _refreshCloudAccess();
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('✅ Personnage synchronisé depuis le cloud'),
           backgroundColor: Colors.green,
@@ -448,8 +466,9 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
           allowOverwriteLocal: true,
         );
         if (!context.mounted) return;
-        await context.read<CharacterSheetProvider>().loadSheets();
-        ScaffoldMessenger.of(context).showSnackBar(
+        await provider.loadSheets();
+        await _refreshCloudAccess();
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('✅ Sync cloud forcée'),
             backgroundColor: Colors.green,
@@ -457,7 +476,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         );
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('❌ Échec sync réception: $e'),
             backgroundColor: Colors.red,
@@ -466,7 +485,7 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       }
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text('❌ Échec sync réception: $e'),
           backgroundColor: Colors.red,
@@ -479,6 +498,12 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
       BuildContext context,
       List<CloudCharacterInfo> characters,
       ) {
+    final owned = characters.where((c) => c.isOwned).toList();
+    final writeShared =
+        characters.where((c) => c.category == CloudCharacterCategory.writeShared).toList();
+    final readShared =
+        characters.where((c) => c.category == CloudCharacterCategory.readShared).toList();
+
     return showDialog<CloudCharacterInfo>(
       context: context,
       builder:
@@ -486,23 +511,13 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
         title: const Text('Choisir un personnage cloud'),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: characters.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final c = characters[index];
-              final parts = <String>[];
-              if (c.level != null) parts.add('Niv. ${c.level}');
-              if (c.race.isNotEmpty) parts.add(c.race);
-              if (c.profile.isNotEmpty) parts.add(c.profile);
-              final subtitle = parts.join(' · ');
-              return ListTile(
-                title: Text(c.name),
-                subtitle: subtitle.isEmpty ? null : Text(subtitle),
-                onTap: () => Navigator.pop(ctx, c),
-              );
-            },
+          height: 420,
+          child: ListView(
+            children: [
+              _buildCloudSection(ctx, 'Mes Personnages', owned),
+              _buildCloudSection(ctx, 'Partagés en écriture', writeShared),
+              _buildCloudSection(ctx, 'Partagés en lecture', readShared),
+            ].whereType<Widget>().toList(),
           ),
         ),
         actions: [
@@ -512,6 +527,108 @@ class _CharacterListScreenState extends State<CharacterListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _refreshCloudAccess() async {
+    if (!_sync.isConfigured) {
+      if (mounted) {
+        setState(() {
+          _cloudAccessBySyncUuid.clear();
+        });
+      }
+      return;
+    }
+
+    try {
+      final characters = await _sync.listCloudCharacters();
+      if (!mounted) return;
+      setState(() {
+        _cloudAccessBySyncUuid
+          ..clear()
+          ..addEntries(
+            characters.map((c) => MapEntry(c.syncUuid, c.accessType)),
+          );
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _cloudAccessBySyncUuid.clear();
+      });
+    }
+  }
+
+  bool _canShare(CharacterSheet sheet) {
+    if (sheet.syncUuid.isEmpty) return false;
+    return _cloudAccessBySyncUuid[sheet.syncUuid] == 'owner';
+  }
+
+  bool _canPush(CharacterSheet sheet) {
+    if (sheet.syncUuid.isEmpty) return _sync.isConfigured;
+    final access = _cloudAccessBySyncUuid[sheet.syncUuid];
+    return access != 'read';
+  }
+
+  Future<void> _openShareScreen(
+      BuildContext context,
+      int sheetId,
+      String syncUuid,
+      ) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CharacterShareScreen(
+          sheetId: sheetId,
+          syncUuid: syncUuid,
+        ),
+      ),
+    );
+    if (context.mounted) {
+      await _refreshCloudAccess();
+    }
+  }
+
+  Widget? _buildCloudSection(
+    BuildContext context,
+    String title,
+    List<CloudCharacterInfo> characters,
+  ) {
+    if (characters.isEmpty) return null;
+
+    final children = <Widget>[
+      Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 6),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ),
+      ...characters.map(
+        (c) {
+          final parts = <String>[];
+          if (c.level != null) parts.add('Niv. ${c.level}');
+          if (c.race.isNotEmpty) parts.add(c.race);
+          if (c.profile.isNotEmpty) parts.add(c.profile);
+          if (c.ownerEmail != null && c.ownerEmail!.isNotEmpty && !c.isOwned) {
+            parts.add('Propriétaire: ${c.ownerEmail}');
+          }
+          final subtitle = parts.join(' · ');
+          return ListTile(
+            title: Text(c.name),
+            subtitle: subtitle.isEmpty ? null : Text(subtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.pop(context, c),
+          );
+        },
+      ),
+      const Divider(height: 1),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 

@@ -121,6 +121,34 @@ class CharacterSyncService {
     return _remote.listCharacters();
   }
 
+  Future<List<CloudCharacterShareInfo>> listCloudShares(String syncUuid) async {
+    return _remote.listShares(syncUuid: syncUuid);
+  }
+
+  Future<void> shareCloudCharacter({
+    required String syncUuid,
+    required String email,
+    required CloudSharePermission permissionType,
+  }) async {
+    await _remote.shareCharacter(
+      syncUuid: syncUuid,
+      email: email,
+      permissionType: permissionType,
+    );
+  }
+
+  Future<void> revokeCloudCharacterShare({
+    required String syncUuid,
+    String? sharedWithUserId,
+    String? email,
+  }) async {
+    await _remote.revokeCharacterShare(
+      syncUuid: syncUuid,
+      sharedWithUserId: sharedWithUserId,
+      email: email,
+    );
+  }
+
   Future<String> _ensureSyncUuid(CharacterSheet sheet) async {
     if (sheet.syncUuid.isNotEmpty) return sheet.syncUuid;
     final generated = _uuid.v4();

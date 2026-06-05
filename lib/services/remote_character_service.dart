@@ -1,8 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// N'oubliez pas d'importer le service d'authentification que nous avons créé
 import 'auth_service.dart';
+
+enum CloudCharacterCategory {
+  owned,
+  writeShared,
+  readShared,
+}
+
+enum CloudSharePermission {
+  read,
+  write,
+}
 
 class CloudCharacterInfo {
   CloudCharacterInfo({
@@ -12,6 +22,9 @@ class CloudCharacterInfo {
     required this.profile,
     required this.race,
     required this.lastModifiedAt,
+    required this.accessType,
+    required this.ownerUserId,
+    required this.ownerEmail,
   });
 
   final String syncUuid;
@@ -20,16 +33,78 @@ class CloudCharacterInfo {
   final String profile;
   final String race;
   final DateTime? lastModifiedAt;
+  final String accessType;
+  final String? ownerUserId;
+  final String? ownerEmail;
+
+  bool get isOwned => accessType == 'owner';
+  bool get canWrite => accessType == 'owner' || accessType == 'write';
+  CloudCharacterCategory get category {
+    if (accessType == 'write') return CloudCharacterCategory.writeShared;
+    if (accessType == 'read') return CloudCharacterCategory.readShared;
+    return CloudCharacterCategory.owned;
+  }
+
+  String get categoryLabel {
+    if (category == CloudCharacterCategory.writeShared) {
+      return 'Partagés en écriture';
+    }
+    if (category == CloudCharacterCategory.readShared) {
+      return 'Partagés en lecture';
+    }
+    return 'Mes Personnages';
+  }
 
   factory CloudCharacterInfo.fromMap(Map<String, dynamic> map) {
+    final rawPermission = (map['permission_type'] as String? ?? 'owner').toLowerCase();
     return CloudCharacterInfo(
       syncUuid: map['sync_uuid'] as String? ?? '',
       name: map['name'] as String? ?? '(Sans nom)',
-      level: map['level'] as int?,
+      level: (map['level'] as num?)?.toInt(),
       profile: map['profile'] as String? ?? '',
       race: map['race'] as String? ?? '',
       lastModifiedAt: () {
         final raw = map['last_modified_at'] as String?;
+        if (raw == null || raw.isEmpty) return null;
+        return DateTime.tryParse(raw);
+      }(),
+      accessType: rawPermission == 'read' || rawPermission == 'write'
+          ? rawPermission
+          : 'owner',
+      ownerUserId: map['owner_user_id'] as String?,
+      ownerEmail: map['owner_email'] as String?,
+    );
+  }
+}
+
+class CloudCharacterShareInfo {
+  CloudCharacterShareInfo({
+    required this.shareId,
+    required this.syncUuid,
+    required this.sharedWithUserId,
+    required this.sharedWithEmail,
+    required this.permissionType,
+    required this.createdAt,
+  });
+
+  final int shareId;
+  final String syncUuid;
+  final String sharedWithUserId;
+  final String sharedWithEmail;
+  final CloudSharePermission permissionType;
+  final DateTime? createdAt;
+
+  factory CloudCharacterShareInfo.fromMap(Map<String, dynamic> map) {
+    final rawPermission = (map['permission_type'] as String? ?? 'read').toLowerCase();
+    return CloudCharacterShareInfo(
+      shareId: (map['share_id'] as num?)?.toInt() ?? 0,
+      syncUuid: map['sync_uuid'] as String? ?? '',
+      sharedWithUserId: map['shared_with_user_id'] as String? ?? '',
+      sharedWithEmail: map['shared_with_email'] as String? ?? '',
+      permissionType:
+          rawPermission == 'write' ? CloudSharePermission.write : CloudSharePermission.read,
+      createdAt: () {
+        final raw = map['created_at'] as String?;
         if (raw == null || raw.isEmpty) return null;
         return DateTime.tryParse(raw);
       }(),
@@ -45,7 +120,7 @@ class RemoteCharacterService {
 
   final http.Client _client;
   final String _baseUrl;
-  final AuthService _authService = AuthService(); // Ajout du service d'authentification
+  final AuthService _authService = AuthService();
 
   bool get isConfigured => _baseUrl.isNotEmpty;
 
@@ -59,7 +134,6 @@ class RemoteCharacterService {
     return Uri.parse('$_baseUrl$path');
   }
 
-  // --- MÉTHODE UTILITAIRE POUR LES HEADERS SÉCURISÉS ---
   Future<Map<String, String>> _getSecureHeaders() async {
     final token = await _authService.getToken();
     if (token == null) {
@@ -71,7 +145,6 @@ class RemoteCharacterService {
     };
   }
 
-  // 🗑️ SUPPRESSION: Le paramètre password a disparu
   Future<void> pushCharacter({
     required String syncUuid,
     required Map<String, dynamic> characterEntry,
@@ -84,7 +157,6 @@ class RemoteCharacterService {
       headers: headers,
       body: jsonEncode({
         'sync_uuid': syncUuid,
-        // 🗑️ SUPPRESSION: password retiré du JSON
         'character_blob': characterEntry,
         'last_modified_at': lastModifiedAt,
       }),
@@ -92,7 +164,6 @@ class RemoteCharacterService {
     _ensureSuccess(response);
   }
 
-  // 🗑️ SUPPRESSION: Le paramètre password a disparu
   Future<Map<String, dynamic>> pullCharacter({
     required String syncUuid,
   }) async {
@@ -101,7 +172,7 @@ class RemoteCharacterService {
     final response = await _client.post(
       _uri('/sync/pull'),
       headers: headers,
-      body: jsonEncode({'sync_uuid': syncUuid}), // 🗑️ SUPPRESSION: password retiré du JSON
+      body: jsonEncode({'sync_uuid': syncUuid}),
     );
     _ensureSuccess(response);
 
@@ -124,9 +195,80 @@ class RemoteCharacterService {
     _ensureSuccess(response);
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
-    final raw =
-    (payload['characters'] as List? ?? []).cast<Map<String, dynamic>>();
-    return raw.map(CloudCharacterInfo.fromMap).toList();
+    final rows = <Map<String, dynamic>>[];
+    rows.addAll(_extractCharacters(payload, 'owned_characters', 'owner'));
+    rows.addAll(_extractCharacters(payload, 'write_shared_characters', 'write'));
+    rows.addAll(_extractCharacters(payload, 'read_shared_characters', 'read'));
+    return rows.map(CloudCharacterInfo.fromMap).toList();
+  }
+
+  Future<void> shareCharacter({
+    required String syncUuid,
+    required String email,
+    required CloudSharePermission permissionType,
+  }) async {
+    final headers = await _getSecureHeaders();
+    final response = await _client.post(
+      _uri('/sync/share'),
+      headers: headers,
+      body: jsonEncode({
+        'sync_uuid': syncUuid,
+        'email': email,
+        'permission_type': permissionType == CloudSharePermission.write ? 'write' : 'read',
+      }),
+    );
+    _ensureSuccess(response);
+  }
+
+  Future<void> revokeCharacterShare({
+    required String syncUuid,
+    String? sharedWithUserId,
+    String? email,
+  }) async {
+    final headers = await _getSecureHeaders();
+    final response = await _client.post(
+      _uri('/sync/revoke'),
+      headers: headers,
+      body: jsonEncode({
+        'sync_uuid': syncUuid,
+        if (sharedWithUserId != null && sharedWithUserId.isNotEmpty)
+          'shared_with_user_id': sharedWithUserId,
+        if (email != null && email.isNotEmpty) 'email': email,
+      }),
+    );
+    _ensureSuccess(response);
+  }
+
+  Future<List<CloudCharacterShareInfo>> listShares({
+    required String syncUuid,
+  }) async {
+    final headers = await _getSecureHeaders();
+    final response = await _client.post(
+      _uri('/sync/shares'),
+      headers: headers,
+      body: jsonEncode({'sync_uuid': syncUuid}),
+    );
+    _ensureSuccess(response);
+
+    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    final raw = (payload['shares'] as List? ?? []).cast<Map<String, dynamic>>();
+    return raw.map(CloudCharacterShareInfo.fromMap).toList();
+  }
+
+  List<Map<String, dynamic>> _extractCharacters(
+    Map<String, dynamic> payload,
+    String key,
+    String permissionType,
+  ) {
+    final raw = (payload[key] as List? ?? []).cast<Map<String, dynamic>>();
+    return raw
+        .map(
+          (row) => <String, dynamic>{
+            ...row,
+            'permission_type': permissionType,
+          },
+        )
+        .toList();
   }
 
   void _ensureSuccess(http.Response response) {
