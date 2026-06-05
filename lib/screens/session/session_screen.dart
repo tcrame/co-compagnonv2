@@ -251,210 +251,214 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final allyColor = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom; //
+    final allyColor = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary; //
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomInset), //
       child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Ajouter un participant',
-                    style: Theme.of(context).textTheme.titleLarge),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Bouton Personnages
-            OutlinedButton.icon(
-              onPressed: () => _pickFromCharacters(context),
-              icon: const Icon(Icons.person_pin, size: 18),
-              label: const Text('Depuis les personnages'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 40),
-                side: BorderSide(
-                    color: AppColors.allyPrimary.withValues(alpha: 0.6)),
-                foregroundColor: AppColors.allyPrimary,
+        key: _formKey, //
+        // 💡 RENDRE LE FORMULAIRE SCROLLABLE POUR ÉVITER L'OVERFLOW AVEC LE CLAVIER
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, //
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, //
+                children: [
+                  Text('Ajouter un participant',
+                      style: Theme.of(context).textTheme.titleLarge), //
+                  IconButton(
+                    onPressed: () => Navigator.pop(context), //
+                    icon: const Icon(Icons.close), //
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            // Bouton Bestiaire
-            OutlinedButton.icon(
-              onPressed: () => _pickFromBestiary(context),
-              icon: const Icon(Icons.auto_fix_high, size: 18),
-              label: const Text('Piocher dans le bestiaire'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 40),
-                side: BorderSide(
-                    color: const Color(0xFFCF6679).withValues(alpha: 0.6)),
-                foregroundColor: const Color(0xFFCF6679),
+              const SizedBox(height: 8), //
+              // Bouton Personnages
+              OutlinedButton.icon(
+                onPressed: () => _pickFromCharacters(context), //
+                icon: const Icon(Icons.person_pin, size: 18), //
+                label: const Text('Depuis les personnages'), //
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 40), //
+                  side: BorderSide(
+                      color: AppColors.allyPrimary.withValues(alpha: 0.6)), //
+                  foregroundColor: AppColors.allyPrimary, //
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            // Type toggle
-            Row(
-              children: [
-                Expanded(
-                  child: _typeButton(
-                    label: 'Aventurier',
-                    icon: Icons.person,
-                    selected: _isAlly,
-                    color: AppColors.allyPrimary,
-                    onTap: () => setState(() => _isAlly = true),
-                  ),
+              const SizedBox(height: 8), //
+              // Bouton Bestiaire
+              OutlinedButton.icon(
+                onPressed: () => _pickFromBestiary(context), //
+                icon: const Icon(Icons.auto_fix_high, size: 18), //
+                label: const Text('Piocher dans le bestiaire'), //
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 40), //
+                  side: BorderSide(
+                      color: const Color(0xFFCF6679).withValues(alpha: 0.6)), //
+                  foregroundColor: const Color(0xFFCF6679), //
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _typeButton(
-                    label: 'Ennemi',
-                    icon: Icons.dangerous,
-                    selected: !_isAlly,
-                    color: AppColors.enemyPrimary,
-                    onTap: () => setState(() => _isAlly = false),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameCtrl,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Nom du personnage',
-                prefixIcon: Icon(Icons.badge),
               ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Requis' : null,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _initCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'Initiative de base',
-                      prefixIcon: Icon(Icons.bolt),
+              const SizedBox(height: 16), //
+              // Type toggle
+              Row(
+                children: [
+                  Expanded(
+                    child: _typeButton(
+                      label: 'Aventurier', //
+                      icon: Icons.person, //
+                      selected: _isAlly, //
+                      color: AppColors.allyPrimary, //
+                      onTap: () => setState(() => _isAlly = true), //
                     ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Requis' : null,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _hpCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'PV max',
-                      prefixIcon: Icon(Icons.favorite),
+                  const SizedBox(width: 10), //
+                  Expanded(
+                    child: _typeButton(
+                      label: 'Ennemi', //
+                      icon: Icons.dangerous, //
+                      selected: !_isAlly, //
+                      color: AppColors.enemyPrimary, //
+                      onTap: () => setState(() => _isAlly = false), //
                     ),
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Requis';
-                      if (int.tryParse(v) == null || int.parse(v) <= 0) {
-                        return '> 0';
-                      }
-                      return null;
-                    },
                   ),
+                ],
+              ),
+              const SizedBox(height: 16), //
+              TextFormField(
+                controller: _nameCtrl, //
+                autofocus: true, //
+                decoration: const InputDecoration(
+                  labelText: 'Nom du personnage',
+                  prefixIcon: Icon(Icons.badge), //
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _defCtrl,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'DEF',
-                      prefixIcon: Icon(Icons.shield_outlined),
-                    ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Requis' : null,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Image picker
-            ImagePickerField(
-              initialUrl: _imageUrl,
-              participantName: _nameCtrl.text.isNotEmpty
-                  ? _nameCtrl.text
-                  : (_isAlly ? 'A' : 'E'),
-              isAlly: _isAlly,
-              onChanged: (url) => setState(() => _imageUrl = url),
-            ),
-            const SizedBox(height: 16),
-            // Quantity selector
-            Row(
-              children: [
-                Text('Quantité', style: Theme.of(context).textTheme.bodyMedium),
-                const Spacer(),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: _quantity > 1
-                            ? () => setState(() => _quantity--)
-                            : null,
-                        icon: const Icon(Icons.remove, size: 18),
-                        padding: const EdgeInsets.all(6),
-                        constraints: const BoxConstraints(),
+                validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Requis' : null, //
+              ),
+              const SizedBox(height: 12), //
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _initCtrl, //
+                      keyboardType: TextInputType.number, //
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], //
+                      decoration: const InputDecoration(
+                        labelText: 'Initiative de base',
+                        prefixIcon: Icon(Icons.bolt), //
                       ),
-                      SizedBox(
-                        width: 32,
-                        child: Text(
-                          '$_quantity',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
+                      validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Requis' : null, //
+                    ),
+                  ),
+                  const SizedBox(width: 12), //
+                  Expanded(
+                    child: TextFormField(
+                      controller: _hpCtrl, //
+                      keyboardType: TextInputType.number, //
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], //
+                      decoration: const InputDecoration(
+                        labelText: 'PV max',
+                        prefixIcon: Icon(Icons.favorite), //
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Requis'; //
+                        if (int.tryParse(v) == null || int.parse(v) <= 0) { //
+                          return '> 0'; //
+                        }
+                        return null; //
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12), //
+                  Expanded(
+                    child: TextFormField(
+                      controller: _defCtrl, //
+                      keyboardType: TextInputType.number, //
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly], //
+                      decoration: const InputDecoration(
+                        labelText: 'DEF',
+                        prefixIcon: Icon(Icons.shield_outlined), //
+                      ),
+                      validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Requis' : null, //
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16), //
+              // Image picker
+              ImagePickerField(
+                initialUrl: _imageUrl, //
+                participantName: _nameCtrl.text.isNotEmpty //
+                    ? _nameCtrl.text //
+                    : (_isAlly ? 'A' : 'E'), //
+                isAlly: _isAlly, //
+                onChanged: (url) => setState(() => _imageUrl = url), //
+              ),
+              const SizedBox(height: 16), //
+              // Quantity selector
+              Row(
+                children: [
+                  Text('Quantité', style: Theme.of(context).textTheme.bodyMedium), //
+                  const Spacer(), //
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant, //
+                      borderRadius: BorderRadius.circular(10), //
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: _quantity > 1 //
+                              ? () => setState(() => _quantity--) //
+                              : null,
+                          icon: const Icon(Icons.remove, size: 18), //
+                          padding: const EdgeInsets.all(6), //
+                          constraints: const BoxConstraints(), //
                         ),
-                      ),
-                      IconButton(
-                        onPressed: _quantity < 20
-                            ? () => setState(() => _quantity++)
-                            : null,
-                        icon: const Icon(Icons.add, size: 18),
-                        padding: const EdgeInsets.all(6),
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                        SizedBox(
+                          width: 32,
+                          child: Text(
+                            '$_quantity', //
+                            textAlign: TextAlign.center, //
+                            style: Theme.of(context).textTheme.titleMedium, //
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _quantity < 20 //
+                              ? () => setState(() => _quantity++) //
+                              : null,
+                          icon: const Icon(Icons.add, size: 18), //
+                          padding: const EdgeInsets.all(6), //
+                          constraints: const BoxConstraints(), //
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20), //
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _submit, //
+                  icon: const Icon(Icons.add, color: Colors.white), //
+                  label: Text(_quantity > 1 //
+                      ? 'Ajouter $_quantity ${_isAlly ? 'aventuriers' : 'ennemis'}' //
+                      : 'Ajouter l\'${_isAlly ? 'aventurier' : 'ennemi'}'), //
+                  style: FilledButton.styleFrom(
+                    backgroundColor: allyColor, //
+                    padding: const EdgeInsets.symmetric(vertical: 14), //
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: Text(_quantity > 1
-                    ? 'Ajouter $_quantity ${_isAlly ? 'aventuriers' : 'ennemis'}'
-                    : 'Ajouter l\'${_isAlly ? 'aventurier' : 'ennemi'}'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: allyColor,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

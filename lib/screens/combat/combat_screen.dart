@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import '../../app_theme.dart';
-import '../../constants/image_bank.dart';
+import '../../services/remote_character_service.dart';
 import '../../widgets/dice_roller_sheet.dart';
 import '../../constants/status_effects_data.dart';
 import '../../models/character_sheet.dart';
@@ -16,7 +17,6 @@ import '../../providers/character_sheet_provider.dart';
 import '../../providers/combat_provider.dart';
 import '../../services/database_service.dart';
 import '../../widgets/participant_avatar.dart';
-import '../bestiary/bestiary_screen.dart' show CreatureDetailSheet;
 import '../session/session_screen.dart';
 
 class CombatScreen extends StatefulWidget {
@@ -1547,118 +1547,241 @@ class _ImageEditSheetState extends State<_ImageEditSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final TextEditingController _urlCtrl;
-  final List<String> _categories = imageBankCategories;
+
+  final RemoteCharacterService _remoteService = RemoteCharacterService();
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  List<Map<String, dynamic>> _icons = [];
+  bool _isLoading = false;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _urlCtrl =
-        TextEditingController(text: widget.participant.imageUrl ?? '');
-    _tabController =
-        TabController(length: _categories.length + 1, vsync: this);
+    _urlCtrl = TextEditingController(text: widget.participant.imageUrl ?? ''); //
+    _tabController = TabController(length: 2, vsync: this); //
+    _fetchIcons(''); //
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _urlCtrl.dispose();
+    _tabController.dispose(); //
+    _urlCtrl.dispose(); //
+    _searchCtrl.dispose(); //
+    _debounce?.cancel(); //
     super.dispose();
   }
 
-  void _select(String url) => Navigator.pop(context, url);
+  Future<void> _fetchIcons(String query) async {
+    setState(() => _isLoading = true); //
+    final results = await _remoteService.searchCloudIcons(query); //
+    if (mounted) {
+      setState(() {
+        _icons = results; //
+        _isLoading = false; //
+      });
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel(); //
+    _debounce = Timer(const Duration(milliseconds: 300), () { //
+      _fetchIcons(query); //
+    });
+  }
+
+  void _select(String url) => Navigator.pop(context, url); //
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.75,
-      maxChildSize: 0.95,
-      minChildSize: 0.4,
-      expand: false,
+      initialChildSize: 0.75, //
+      maxChildSize: 0.95, //
+      minChildSize: 0.4, //
+      expand: false, //
       builder: (_, scrollCtrl) => Column(
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 8), //
           Container(
-            width: 40, height: 4,
+            width: 40, height: 4, //
             decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(2),
+              color: Colors.white24, //
+              borderRadius: BorderRadius.circular(2), //
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 12), //
           Text(
-            'Changer l\'icône — ${widget.participant.name}',
+            'Changer l\'icône — ${widget.participant.name}', //
             style: const TextStyle(
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 4), //
           TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white38,
-            indicatorColor: Colors.purple,
-            tabs: [
-              ..._categories.map((c) => Tab(text: c)),
-              const Tab(text: 'URL'),
+            controller: _tabController, //
+            labelColor: Colors.white, //
+            unselectedLabelColor: Colors.white38, //
+            indicatorColor: Colors.purple, //
+            tabs: const [
+              Tab(text: 'Catalogue Cloud'), //
+              Tab(text: 'URL personnalisée'), //
             ],
           ),
           Expanded(
             child: TabBarView(
-              controller: _tabController,
+              controller: _tabController, //
               children: [
-                ..._categories.map((cat) => _BankGrid(
-                      entries: imageBankForCategory(cat),
-                      onSelect: _select,
-                    )),
-                // URL tab
+                // ── Onglet 1 : Catalogue dynamique avec barre de recherche
+                Column(
+                  children: [
+                    const SizedBox(height: 12), //
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16), //
+                      child: TextField(
+                        controller: _searchCtrl, //
+                        style: const TextStyle(color: Colors.white), //
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher (ex: skeleton, chest, fire, sword)...', //
+                          hintStyle: const TextStyle(color: Colors.white38), //
+                          prefixIcon: const Icon(Icons.search, color: Colors.white54), //
+                          filled: true, //
+                          fillColor: const Color(0xFF2A2A3E), //
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8), //
+                            borderSide: BorderSide.none, //
+                          ),
+                          suffixIcon: _searchCtrl.text.isNotEmpty //
+                              ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.white54), //
+                            onPressed: () {
+                              _searchCtrl.clear(); //
+                              _fetchIcons(''); //
+                            },
+                          )
+                              : null, //
+                        ),
+                        onChanged: _onSearchChanged, //
+                      ),
+                    ),
+                    const SizedBox(height: 8), //
+                    Expanded(
+                      child: _isLoading //
+                          ? const Center(child: CircularProgressIndicator(color: Colors.purple)) //
+                          : _icons.isEmpty //
+                          ? const Center(
+                        child: Text(
+                          'Aucune icône trouvée.\nMots-clés en anglais.', //
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white38),
+                        ),
+                      )
+                          : GridView.builder(
+                        controller: scrollCtrl, //
+                        padding: const EdgeInsets.all(12), //
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4, //
+                          crossAxisSpacing: 8, //
+                          mainAxisSpacing: 8, //
+                          childAspectRatio: 0.8, //
+                        ),
+                        itemCount: _icons.length, //
+                        itemBuilder: (ctx, i) {
+                          final icon = _icons[i]; //
+                          final String iconName = icon['n'] ?? 'Icon'; //
+                          final String slug = icon['p'] ?? ''; //
+                          final String iconUrl = "https://api.iconify.design/game-icons/$slug.svg?color=%23ffffff"; //
+
+                          return InkWell(
+                            onTap: () => _select(iconUrl), //
+                            borderRadius: BorderRadius.circular(8), //
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center, //
+                              children: [
+                                Container(
+                                  width: 56, //
+                                  height: 56, //
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2A2A3E), //
+                                    borderRadius: BorderRadius.circular(8), //
+                                  ),
+                                  padding: const EdgeInsets.all(6), //
+                                  child: SvgPicture.network(
+                                    iconUrl, //
+                                    fit: BoxFit.contain, //
+                                    placeholderBuilder: (_) => const Center(
+                                      child: SizedBox(
+                                        width: 16, //
+                                        height: 16, //
+                                        child: CircularProgressIndicator(strokeWidth: 2), //
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4), //
+                                Text(
+                                  iconName, //
+                                  style: const TextStyle(color: Colors.white70, fontSize: 10), //
+                                  textAlign: TextAlign.center, //
+                                  maxLines: 2, //
+                                  overflow: TextOverflow.ellipsis, //
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Onglet 2 : URL (Inchangé mais nettoyé pour correspondre au design)
                 Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20), //
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start, //
                     children: [
                       const Text('URL de l\'image',
-                          style: TextStyle(color: Colors.white70)),
-                      const SizedBox(height: 8),
+                          style: TextStyle(color: Colors.white70)), //
+                      const SizedBox(height: 8), //
                       Row(
                         children: [
                           Expanded(
                             child: TextField(
-                              controller: _urlCtrl,
-                              style: const TextStyle(color: Colors.white),
+                              controller: _urlCtrl, //
+                              style: const TextStyle(color: Colors.white), //
                               decoration: InputDecoration(
-                                hintText: 'https://...',
+                                hintText: 'https://...', //
                                 hintStyle:
-                                    const TextStyle(color: Colors.white38),
-                                filled: true,
-                                fillColor: const Color(0xFF2A2A3E),
+                                const TextStyle(color: Colors.white38), //
+                                filled: true, //
+                                fillColor: const Color(0xFF2A2A3E), //
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide.none,
+                                  borderRadius: BorderRadius.circular(8), //
+                                  borderSide: BorderSide.none, //
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 8), //
                           ElevatedButton(
                             onPressed: () =>
-                                _select(_urlCtrl.text.trim()),
+                                _select(_urlCtrl.text.trim()), //
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.purple,
+                              backgroundColor: Colors.purple, //
                             ),
-                            child: const Text('OK'),
+                            child: const Text('OK'), //
                           ),
                         ],
                       ),
-                      if (widget.participant.imageUrl != null) ...[
-                        const SizedBox(height: 20),
+                      if (widget.participant.imageUrl != null) ...[ //
+                        const SizedBox(height: 20), //
                         TextButton.icon(
-                          onPressed: () => _select(''),
+                          onPressed: () => _select(''), //
                           icon: const Icon(Icons.clear,
-                              color: Colors.red),
+                              color: Colors.red), //
                           label: const Text('Retirer l\'icône',
-                              style: TextStyle(color: Colors.red)),
+                              style: TextStyle(color: Colors.red)), //
                         ),
                       ],
                     ],
@@ -1669,75 +1792,6 @@ class _ImageEditSheetState extends State<_ImageEditSheet>
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BankGrid extends StatelessWidget {
-  final List<ImageBankEntry> entries;
-  final ValueChanged<String> onSelect;
-  const _BankGrid({required this.entries, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: entries.length,
-      itemBuilder: (_, i) {
-        final entry = entries[i];
-        return InkWell(
-          onTap: () => onSelect(entry.url),
-          borderRadius: BorderRadius.circular(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A3E),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.all(8),
-                child: entry.url.endsWith('.svg')
-                    ? SvgPicture.network(
-                        entry.url,
-                        fit: BoxFit.contain,
-                        placeholderBuilder: (_) => const Center(
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child:
-                                CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      )
-                    : Image.network(entry.url,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
-                              Icons.broken_image,
-                              color: Colors.white24,
-                            )),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                entry.name,
-                style: const TextStyle(
-                    color: Colors.white70, fontSize: 10),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

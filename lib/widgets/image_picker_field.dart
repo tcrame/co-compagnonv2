@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../constants/image_bank.dart';
+import '../../services/remote_character_service.dart'; // Vérifie le chemin vers ton service
 import 'participant_avatar.dart';
 
 class ImagePickerField extends StatefulWidget {
@@ -83,15 +84,15 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   suffixIcon: url.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.white54),
-                          onPressed: () {
-                            setState(() => _ctrl.clear());
-                            widget.onChanged(null);
-                          },
-                        )
+                    icon: const Icon(Icons.clear, color: Colors.white54),
+                    onPressed: () {
+                      setState(() => _ctrl.clear());
+                      widget.onChanged(null);
+                    },
+                  )
                       : null,
                 ),
                 onChanged: (v) {
@@ -109,7 +110,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
                 backgroundColor: const Color(0xFF3A3A5E),
                 foregroundColor: Colors.white,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               ),
             ),
           ],
@@ -126,21 +127,45 @@ class _ImageBankSheet extends StatefulWidget {
   State<_ImageBankSheet> createState() => _ImageBankSheetState();
 }
 
-class _ImageBankSheetState extends State<_ImageBankSheet>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final List<String> _categories = imageBankCategories;
+class _ImageBankSheetState extends State<_ImageBankSheet> {
+  final RemoteCharacterService _remoteService = RemoteCharacterService();
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  List<Map<String, dynamic>> _icons = [];
+  bool _isLoading = false;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _categories.length, vsync: this);
+    _fetchIcons(''); // Charge les premières icônes par défaut
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchCtrl.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  // Effectue la recherche sur ton Worker Cloudflare
+  Future<void> _fetchIcons(String query) async {
+    setState(() => _isLoading = true);
+    final results = await _remoteService.searchCloudIcons(query);
+    if (mounted) {
+      setState(() {
+        _icons = results;
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Évite d'étouffer ton Worker en attendant que l'utilisateur s'arrête de taper
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _fetchIcons(query);
+    });
   }
 
   @override
@@ -150,7 +175,7 @@ class _ImageBankSheetState extends State<_ImageBankSheet>
       maxChildSize: 0.95,
       minChildSize: 0.4,
       expand: false,
-      builder: (_, controller) => Column(
+      builder: (_, scrollController) => Column(
         children: [
           const SizedBox(height: 8),
           Container(
@@ -163,124 +188,123 @@ class _ImageBankSheetState extends State<_ImageBankSheet>
           ),
           const SizedBox(height: 12),
           const Text(
-            'Banque d\'icônes RPG',
+            'Banque d\'icônes RPG Dynamique',
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
           const Text(
-            'game-icons.net — CC BY 3.0',
+            'Iconify (Game-icons) — Mots-clés en anglais',
             style: TextStyle(color: Colors.white38, fontSize: 11),
           ),
-          TabBar(
-            controller: _tabController,
-            tabs: _categories.map((c) => Tab(text: c)).toList(),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white38,
-            indicatorColor: Colors.purple,
-            isScrollable: true,
+          const SizedBox(height: 12),
+
+          // 🔍 Barre de recherche intégrée
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _searchCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Rechercher (ex: sword, shield, dragon, wolf)...',
+                hintStyle: const TextStyle(color: Colors.white38),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                filled: true,
+                fillColor: const Color(0xFF2A2A3E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: _searchCtrl.text.isNotEmpty
+                    ? IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.white54),
+                  onPressed: () {
+                    _searchCtrl.clear();
+                    _fetchIcons('');
+                  },
+                )
+                    : null,
+              ),
+              onChanged: _onSearchChanged,
+            ),
           ),
+          const SizedBox(height: 8),
+
+          // 🎴 Zone de résultats de recherche
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: _categories
-                  .map((cat) => _CategoryGrid(
-                        entries: imageBankForCategory(cat),
-                        onSelect: (url) => Navigator.pop(context, url),
-                      ))
-                  .toList(),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.purple))
+                : _icons.isEmpty
+                ? const Center(
+              child: Text(
+                'Aucune icône trouvée.\nEssayez en anglais (ex: ghost, fire, chest).',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white38),
+              ),
+            )
+                : GridView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: _icons.length,
+              itemBuilder: (ctx, i) {
+                final icon = _icons[i];
+                final String iconName = icon['n'] ?? 'Icon';
+                final String slug = icon['p'] ?? '';
+
+                // Construction de l'URL CDN universelle d'Iconify hébergeant Game-icons
+                final String iconUrl = "https://api.iconify.design/game-icons/$slug.svg?color=%23ffffff";
+
+                return InkWell(
+                  onTap: () => Navigator.pop(context, iconUrl),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A3E),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: SvgPicture.network(
+                            iconUrl,
+                            fit: BoxFit.contain,
+                            placeholderBuilder: (_) => const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        iconName,
+                        style: const TextStyle(color: Colors.white70, fontSize: 10),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _CategoryGrid extends StatelessWidget {
-  final List<ImageBankEntry> entries;
-  final ValueChanged<String> onSelect;
-
-  const _CategoryGrid({required this.entries, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: entries.length,
-      itemBuilder: (_, i) {
-        final entry = entries[i];
-        return InkWell(
-          onTap: () => onSelect(entry.url),
-          borderRadius: BorderRadius.circular(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A3E),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: entry.url.endsWith('.svg')
-                      ? SvgPicture.network(
-                          entry.url,
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.contain,
-                          placeholderBuilder: (_) => const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        )
-                      : Image.network(
-                          entry.url,
-                          fit: BoxFit.contain,
-                          loadingBuilder: (_, child, progress) =>
-                              progress == null
-                                  ? child
-                                  : const Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2),
-                                      ),
-                                    ),
-                          errorBuilder: (_, __, ___) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white24,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                entry.name,
-                style:
-                    const TextStyle(color: Colors.white70, fontSize: 10),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

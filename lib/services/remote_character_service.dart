@@ -296,6 +296,32 @@ class RemoteCharacterService {
     };
   }
 
+  Future<List<Map<String, dynamic>>> searchCloudIcons(String query) async {
+    // Si l'URL de ton API est vide, on lève une erreur
+    if (!isConfigured) return [];
+
+    try {
+      final response = await _client.post(
+        _uri('/icons/search'),
+        headers: {
+          'Content-Type': 'application/json',
+          // Pas besoin de token d'authentification ici si tu as mis la route publique,
+          // sinon utilise: ...(await _getSecureHeaders())
+        },
+        body: jsonEncode({'query': query}),
+      );
+
+      if (response.statusCode != 200) return [];
+
+      final payload = jsonDecode(response.body) as Map<String, dynamic>;
+      final List<dynamic> rawIcons = payload['icons'] as List<dynamic>? ?? [];
+
+      return rawIcons.map((icon) => icon as Map<String, dynamic>).toList();
+    } catch (_) {
+      return []; // En cas d'erreur réseau, on renvoie une liste vide pour éviter le crash
+    }
+  }
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     throw StateError(

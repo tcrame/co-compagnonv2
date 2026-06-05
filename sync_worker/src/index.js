@@ -1,5 +1,6 @@
 import {neon} from '@neondatabase/serverless';
 import {createRemoteJWKSet, jwtVerify} from 'jose';
+import { gameIconsBank } from './game_icons_bank.js';
 
 function corsHeaders(origin = '*') {
     return {
@@ -492,49 +493,76 @@ async function handleDelete(payload, googleUser, sql, origin) {
     return jsonResponse({ok: true, message: 'Personnage supprimé du cloud'}, 200, origin);
 }
 
+async function handleIconSearch(payload, origin) {
+    const query = (payload.query || '').toLowerCase().trim();
+
+    if (!query) {
+        // Si la recherche est vide, on renvoie les 30 premières icônes par défaut
+        return jsonResponse({ ok: true, icons: gameIconsBank.slice(0, 30) }, 200, origin);
+    }
+
+    // Filtrage intelligent : on cherche dans le nom (n) OU dans les tags/catégories (t)
+    const filtered = gameIconsBank.filter(icon => {
+        const matchName = icon.n.toLowerCase().includes(query);
+        const matchTags = icon.t.some(tag => tag.toLowerCase().includes(query));
+        return matchName || matchTags;
+    });
+
+    // On limite à 50 résultats pour que la réponse reste ultra-rapide et légère
+    return jsonResponse({ ok: true, icons: filtered.slice(0, 50) }, 200, origin);
+}
+
 export default {
     async fetch(request, env) {
-        const origin = parseOrigin(request, env);
+        const origin = parseOrigin(request, env); //
 
-        if (request.method === 'OPTIONS') {
-            return new Response(null, {status: 204, headers: corsHeaders(origin)});
+        if (request.method === 'OPTIONS') { //
+            return new Response(null, {status: 204, headers: corsHeaders(origin)}); //
         }
-        if (request.method !== 'POST') {
-            return jsonResponse({error: 'Méthode non autorisée'}, 405, origin);
-        }
-
-        if (!env.DATABASE_URL || !env.GOOGLE_CLIENT_ID) {
-            return jsonResponse({error: 'Variables environnement manquantes'}, 500, origin);
+        if (request.method !== 'POST') { //
+            return jsonResponse({error: 'Méthode non autorisée'}, 405, origin); //
         }
 
-        let payload;
+        if (!env.DATABASE_URL || !env.GOOGLE_CLIENT_ID) { //
+            return jsonResponse({error: 'Variables environnement manquantes'}, 500, origin); //
+        }
+
+        let payload; //
         try {
-            payload = await request.json();
+            payload = await request.json(); //
         } catch (_) {
-            return jsonResponse({error: 'JSON invalide'}, 400, origin);
+            return jsonResponse({error: 'JSON invalide'}, 400, origin); //
         }
 
-        let googleUser;
-        try {
-            googleUser = await verifyGoogleToken(request, env);
-        } catch (e) {
-            return jsonResponse({error: 'Non autorisé: ' + e.message}, 401, origin);
-        }
-
-        const sql = neon(env.DATABASE_URL);
-        await ensureSchema(sql);
-
-        const role = await upsertUserAndGetRole(googleUser, sql);
+        // 🔓 EXTRACTION DU PATH EN AMONT POUR LES ROUTES PUBLIQUES
         const path = new URL(request.url).pathname;
 
-        if (path === '/sync/push') return handlePush(payload, googleUser, role, sql, origin);
-        if (path === '/sync/pull') return handlePull(payload, googleUser, sql, origin);
-        if (path === '/sync/list') return handleList(googleUser, role, sql, origin);
-        if (path === '/sync/share') return handleShare(payload, googleUser, sql, origin);
-        if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin);
-        if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin);
-        if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin);
+        // 🔍 ROUTE PUBLIQUE : Recherche d'icônes accessible sans authentification Google
+        if (path === '/icons/search') return handleIconSearch(payload, origin);
 
-        return jsonResponse({error: 'Route inconnue'}, 404, origin);
+        // 🔐 BARRIÈRE DE SÉCURITÉ : Tout ce qui est en dessous nécessite un compte Google valide
+        let googleUser; //
+        try {
+            googleUser = await verifyGoogleToken(request, env); //
+        } catch (e) {
+            return jsonResponse({error: 'Non autorisé: ' + e.message}, 401, origin); //
+        }
+
+        // Connexion à la base de données et initialisation des schémas (uniquement pour les routes privées)
+        const sql = neon(env.DATABASE_URL); //
+        await ensureSchema(sql); //
+
+        const role = await upsertUserAndGetRole(googleUser, sql); //
+
+        // Aiguillage des routes protégées
+        if (path === '/sync/push') return handlePush(payload, googleUser, role, sql, origin); //
+        if (path === '/sync/pull') return handlePull(payload, googleUser, sql, origin); //
+        if (path === '/sync/list') return handleList(googleUser, role, sql, origin); //
+        if (path === '/sync/share') return handleShare(payload, googleUser, sql, origin); //
+        if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin); //
+        if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin); //
+        if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin); //
+
+        return jsonResponse({error: 'Route inconnue'}, 404, origin); //
     },
 };
