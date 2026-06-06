@@ -285,6 +285,14 @@ class DatabaseService {
         "UPDATE character_sheets SET last_modified_at = created_at WHERE last_modified_at = ''",
       );
     }
+    // 🎰 AJOUT : Migration à la volée de la table sessions pour la colonne share_code
+    try {
+      await db.execute(
+        "ALTER TABLE sessions ADD COLUMN share_code TEXT NOT NULL DEFAULT ''",
+      );
+    } catch (_) {
+      // Si la colonne existe déjà (nouvelle installation), SQLite va lever une erreur qu'on intercepte ici sagement.
+    }
   }
 
   Future<void> _createTables(Database db) async {
@@ -292,6 +300,7 @@ class DatabaseService {
       CREATE TABLE sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        share_code TEXT NOT NULL DEFAULT '', -- 💡 AJOUT : Requis pour stocker le code à 6 caractères
         created_at TEXT NOT NULL,
         turn_count INTEGER NOT NULL DEFAULT 0
       )

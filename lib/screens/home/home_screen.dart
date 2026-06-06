@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 import '../../providers/session_provider.dart';
+import '../combat/spectator_screen.dart'; // 💡 AJOUTE CET IMPORT
 import '../session/session_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,6 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Tracker de Combat'),
         centerTitle: true,
+        // 📺 AJOUT DU BOUTON SPECTATEUR DANS L'APPBAR
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tv_rounded, color: Colors.purpleAccent),
+            tooltip: 'Rejoindre une table (Spectateur)',
+            onPressed: () => _showJoinSpectatorDialog(context),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDialog(context),
@@ -127,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Supprimer la session ?'),
         content:
-            const Text('Cette action est irréversible. Tous les participants seront supprimés.'),
+        const Text('Cette action est irréversible. Tous les participants seront supprimés.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -172,6 +183,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (result != null && result.isNotEmpty && context.mounted) {
       await context.read<SessionProvider>().createSession(result);
+    }
+  }
+
+  // 📺 DIALOGUE POUR ENTRER LE CODE SPECTATEUR
+  Future<void> _showJoinSpectatorDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.tv_rounded, color: Colors.purpleAccent),
+            SizedBox(width: 10),
+            Text('Rejoindre une table'),
+          ],
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 6, // Bloque à 6 caractères max pour correspondre à ton code court
+          textCapitalization: TextCapitalization.characters, // Force les majuscules sur le clavier
+          decoration: const InputDecoration(
+            hintText: 'Code à 6 lettres (ex: A8F2C4)',
+            counterText: '', // Masque le compteur numérique par esthétisme
+          ),
+          onSubmitted: (v) => Navigator.pop(ctx, v.trim().toUpperCase()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim().toUpperCase()),
+            child: const Text('Rejoindre'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SpectatorScreen(initialShortCode: result),
+        ),
+      );
     }
   }
 

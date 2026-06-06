@@ -36,10 +36,32 @@ class _SessionScreenState extends State<SessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Dans session_screen.dart, pour l'affichage :
+    final int sessionId = widget.session.id ?? 0;
+    // On utilise les premières lettres du nom de la session + l'ID pour créer un code unique par défaut
+    final String prefix = widget.session.name.length >= 3
+        ? widget.session.name.substring(0, 3).toUpperCase()
+        : 'TAB';
+    final String shortCode = widget.session.shareCode.toUpperCase();
+
     return Scaffold(
       endDrawer: const DiceRollerDrawer(),
       appBar: AppBar(
-        title: Text(widget.session.name),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(widget.session.name),
+            Text(
+              'Code Table : $shortCode',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.purpleAccent, // Corrigé avec une couleur standard de Flutter
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ],
+        ),
         centerTitle: true,
         actions: [
           Builder(
@@ -65,9 +87,9 @@ class _SessionScreenState extends State<SessionScreen> {
           }
 
           final allies =
-              participants.where((p) => p.isAlly).toList();
+          participants.where((p) => p.isAlly).toList();
           final enemies =
-              participants.where((p) => !p.isAlly).toList();
+          participants.where((p) => !p.isAlly).toList();
 
           return Column(
             children: [
@@ -75,6 +97,40 @@ class _SessionScreenState extends State<SessionScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                   children: [
+                    // 📢 BANDEAU DE PARTAGE RAPIDE POUR LE MJ
+                    Card(
+                      color: Colors.purple.withValues(alpha: 0.12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: Colors.purple.withValues(alpha: 0.3)),
+                      ),
+                      child: ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.share_rounded, color: Colors.purpleAccent),
+                        title: const Text(
+                          'Partage d\'écran spectateur actif',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          'Donnez ce code à vos joueurs : $shortCode',
+                          style: const TextStyle(fontSize: 11, color: Colors.white70),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.copy_rounded, size: 18, color: Colors.purpleAccent),
+                          tooltip: 'Copier le code',
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: shortCode));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('📋 Code $shortCode copié dans le presse-papiers !'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     if (allies.isNotEmpty) ...[
                       _sectionHeader(context, 'Aventuriers',
                           AppColors.allyPrimary, Icons.person),

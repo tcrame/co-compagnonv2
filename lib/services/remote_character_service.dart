@@ -322,6 +322,43 @@ class RemoteCharacterService {
     }
   }
 
+  Future<Map<String, dynamic>?> getSpectatorSession(String shortCode) async {
+    if (!isConfigured) return null;
+    try {
+      final response = await _client.post(
+        _uri('/session/spectate'),
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonEncode({'short_code': shortCode}), // Envoi du code court épuré
+      );
+      if (response.statusCode != 200) return null;
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> pushCombatSession({
+    required String sessionCode, // 💡 Changé int en String pour le code aléatoire
+    required String sessionName,
+    required Map<String, dynamic> combatBlob,
+  }) async {
+    if (!isConfigured) return false;
+    try {
+      final response = await _client.post(
+        _uri('/session/push'),
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonEncode({
+          'session_id': sessionCode,
+          'session_name': sessionName,
+          'combat_blob': combatBlob,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _ensureSuccess(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) return;
     throw StateError(

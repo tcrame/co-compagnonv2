@@ -1,6 +1,6 @@
 import {neon} from '@neondatabase/serverless';
 import {createRemoteJWKSet, jwtVerify} from 'jose';
-import { gameIconsBank } from './game_icons_bank.js';
+import {gameIconsBank} from './game_icons_bank.js';
 
 function corsHeaders(origin = '*') {
     return {
@@ -158,6 +158,17 @@ async function ensureSchema(sql) {
     await sql`
         CREATE INDEX IF NOT EXISTS idx_character_shares_permission_type
             ON character_shares (permission_type)
+    `;
+
+    // ⚔️ NOUVELLE TABLE POUR LES TRACKERS DE COMBAT
+    await sql`
+        CREATE TABLE IF NOT EXISTS combat_sessions
+        (
+            session_id       TEXT PRIMARY KEY, -- 💡 Reçoit désormais le code aléatoire (ex: "X9R2A4")
+            session_name     TEXT NOT NULL,
+            combat_blob      JSONB NOT NULL,
+            updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
     `;
 }
 
@@ -498,7 +509,7 @@ async function handleIconSearch(payload, origin) {
 
     if (!query) {
         // Si la recherche est vide, on renvoie les 30 premières icônes par défaut
-        return jsonResponse({ ok: true, icons: gameIconsBank.slice(0, 30) }, 200, origin);
+        return jsonResponse({ok: true, icons: gameIconsBank.slice(0, 30)}, 200, origin);
     }
 
     // Filtrage intelligent : on cherche dans le nom (n) OU dans les tags/catégories (t)
@@ -509,60 +520,166 @@ async function handleIconSearch(payload, origin) {
     });
 
     // On limite à 50 résultats pour que la réponse reste ultra-rapide et légère
-    return jsonResponse({ ok: true, icons: filtered.slice(0, 50) }, 200, origin);
+    return jsonResponse({ok: true, icons: filtered.slice(0, 50)}, 200, origin);
+}
+
+async function handleSessionPush(payload, sql, origin) {
+    const { session_id, session_name, combat_blob } = payload; // session_id est une String
+
+    if (!session_id || !session_name || !combat_blob) {
+        return jsonResponse({ error: 'Données de session incomplètes' }, 400, origin);
+    }
+
+    await sql`
+        INSERT INTO combat_sessions (session_id, session_name, combat_blob, updated_at)
+        VALUES (${session_id}, ${session_name}, ${JSON.stringify(combat_blob)}::jsonb, now())
+        ON CONFLICT (session_id)
+            DO UPDATE SET
+                          session_name = EXCLUDED.session_name,
+                          combat_blob = EXCLUDED.combat_blob,
+                          updated_at = now()
+    `;
+
+    return jsonResponse({ ok: true, message: 'Session synchronisée' }, 200, origin);
+}
+
+async function handleSpectate(payload, sql, origin) {
+    const shortCode = (payload.short_code || '').toUpperCase().trim();
+
+    if (!shortCode) {
+        return jsonResponse({ error: 'Code de session requis' }, 400, origin);
+    }
+
+    // 🎯 Recherche par correspondance exacte du code unique à 6 lettres
+    const rows = await sql`
+        SELECT session_name, combat_blob
+        FROM combat_sessions
+        WHERE session_id = ${shortCode}
+        LIMIT 1
+    `;
+
+    if (rows.length === 0) {
+        return jsonResponse({ error: 'Session de combat introuvable. Le MJ doit activer le partage.' }, 404, origin);
+    }
+
+    const sessionData = rows[0].character_blob || rows[0].combat_blob;
+
+    // 🛡️ SÉCURISATION DES DONNÉES (Brouillard de guerre inchangé)
+    if (sessionData && sessionData.participants) {
+        sessionData.participants = sessionData.participants.map(p => {
+            // Extraction adaptative (gère le camelCase ET le snake_case envoyé par Flutter)
+            const currentHp = Number(p.currentHp !== undefined ? p.currentHp : (p.current_hp !== undefined ? p.current_hp : 0));
+            const maxHp = Number(p.maxHp !== undefined ? p.maxHp : (p.max_hp !== undefined ? p.max_hp : 1));
+            const rolledInitiative = Number(p.rolledInitiative !== undefined ? p.rolledInitiative : (p.rolled_initiative !== undefined ? p.rolled_initiative : 0));
+            const isAlly = p.isAlly !== undefined ? p.isAlly : (p.is_ally !== undefined ? p.is_ally : false);
+            const def = p.def !== undefined ? p.def : (p.def_val !== undefined ? p.def_val : 10);
+            const imageUrl = p.imageUrl !== undefined ? p.imageUrl : (p.image_url !== undefined ? p.image_url : null);
+
+            const isAlive = currentHp > 0;
+            const hpPercent = maxHp > 0 ? Math.max(0, Math.min(1, currentHp / maxHp)) : 0;
+
+            if (!isAlly) {
+                // Pour un ENNEMI : Brouillard de guerre (Données masquées)
+                return {
+                    id: p.id,
+                    name: p.name,
+                    isAlly: false,
+                    rolledInitiative: rolledInitiative,
+                    hpPercent: hpPercent,
+                    isAlive: isAlive,
+                    imageUrl: imageUrl,
+                    statusEffects: p.statusEffects || p.status_effects || []
+                };
+            } else {
+                // Pour un AVENTURIER : Données complètes transparentes pour l'équipe
+                return {
+                    id: p.id,
+                    name: p.name,
+                    isAlly: true,
+                    rolledInitiative: rolledInitiative,
+                    currentHp: currentHp,
+                    maxHp: maxHp,
+                    hpPercent: hpPercent,
+                    isAlive: isAlive,
+                    def: def,
+                    imageUrl: imageUrl,
+                    statusEffects: p.statusEffects || p.status_effects || []
+                };
+            }
+        });
+    }
+
+    return jsonResponse({
+        ok: true,
+        session: {
+            name: rows[0].session_name,
+            combatStarted: sessionData.combatStarted ?? false,
+            turnCount: sessionData.turnCount ?? 1,
+            activeIndex: sessionData.activeIndex !== undefined ? sessionData.activeIndex : null, // 💡 AJOUT DE L'INDEX ACTIF
+            participants: sessionData.participants ?? []
+        }
+    }, 200, origin);
 }
 
 export default {
     async fetch(request, env) {
-        const origin = parseOrigin(request, env); //
+        const origin = parseOrigin(request, env);
 
-        if (request.method === 'OPTIONS') { //
-            return new Response(null, {status: 204, headers: corsHeaders(origin)}); //
+        if (request.method === 'OPTIONS') {
+            return new Response(null, {status: 204, headers: corsHeaders(origin)});
         }
-        if (request.method !== 'POST') { //
-            return jsonResponse({error: 'Méthode non autorisée'}, 405, origin); //
-        }
-
-        if (!env.DATABASE_URL || !env.GOOGLE_CLIENT_ID) { //
-            return jsonResponse({error: 'Variables environnement manquantes'}, 500, origin); //
+        if (request.method !== 'POST') {
+            return jsonResponse({error: 'Méthode non autorisée'}, 405, origin);
         }
 
-        let payload; //
+        if (!env.DATABASE_URL || !env.GOOGLE_CLIENT_ID) {
+            return jsonResponse({error: 'Variables environnement manquantes'}, 500, origin);
+        }
+
+        let payload;
         try {
-            payload = await request.json(); //
+            payload = await request.json();
         } catch (_) {
-            return jsonResponse({error: 'JSON invalide'}, 400, origin); //
+            return jsonResponse({error: 'JSON invalide'}, 400, origin);
         }
 
-        // 🔓 EXTRACTION DU PATH EN AMONT POUR LES ROUTES PUBLIQUES
         const path = new URL(request.url).pathname;
 
-        // 🔍 ROUTE PUBLIQUE : Recherche d'icônes accessible sans authentification Google
-        if (path === '/icons/search') return handleIconSearch(payload, origin);
+        // 1. Instanciation du driver SQL
+        const sql = neon(env.DATABASE_URL);
 
-        // 🔐 BARRIÈRE DE SÉCURITÉ : Tout ce qui est en dessous nécessite un compte Google valide
-        let googleUser; //
+        // ⚙️ FIX : On force la vérification/création des tables ICI, pour TOUTES les requêtes !
         try {
-            googleUser = await verifyGoogleToken(request, env); //
-        } catch (e) {
-            return jsonResponse({error: 'Non autorisé: ' + e.message}, 401, origin); //
+            await ensureSchema(sql);
+        } catch (schemaError) {
+            return jsonResponse({error: 'Erreur d\'initialisation de la base de données: ' + schemaError.message}, 500, origin);
         }
 
-        // Connexion à la base de données et initialisation des schémas (uniquement pour les routes privées)
-        const sql = neon(env.DATABASE_URL); //
-        await ensureSchema(sql); //
+        // 🔍 ROUTES PUBLIQUES (Accessibles sans Token Google - Maintenant la table existe !)
+        if (path === '/icons/search') return handleIconSearch(payload, origin);
+        if (path === '/session/spectate') return handleSpectate(payload, sql, origin);
+        if (path === '/session/push') return handleSessionPush(payload, sql, origin);
 
-        const role = await upsertUserAndGetRole(googleUser, sql); //
+        // 🔐 BARRIÈRE DE SÉCURITÉ : Tout ce qui est en dessous nécessite un compte Google valide
+        let googleUser;
+        try {
+            googleUser = await verifyGoogleToken(request, env);
+        } catch (e) {
+            return jsonResponse({error: 'Non autorisé: ' + e.message}, 401, origin);
+        }
+
+        // Récupération du rôle utilisateur (uniquement pour les fonctionnalités synchronisées privées)
+        const role = await upsertUserAndGetRole(googleUser, sql);
 
         // Aiguillage des routes protégées
-        if (path === '/sync/push') return handlePush(payload, googleUser, role, sql, origin); //
-        if (path === '/sync/pull') return handlePull(payload, googleUser, sql, origin); //
-        if (path === '/sync/list') return handleList(googleUser, role, sql, origin); //
-        if (path === '/sync/share') return handleShare(payload, googleUser, sql, origin); //
-        if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin); //
-        if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin); //
-        if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin); //
+        if (path === '/sync/push') return handlePush(payload, googleUser, role, sql, origin);
+        if (path === '/sync/pull') return handlePull(payload, googleUser, sql, origin);
+        if (path === '/sync/list') return handleList(googleUser, role, sql, origin);
+        if (path === '/sync/share') return handleShare(payload, googleUser, sql, origin);
+        if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin);
+        if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin);
+        if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin);
 
-        return jsonResponse({error: 'Route inconnue'}, 404, origin); //
+        return jsonResponse({error: 'Route inconnue'}, 404, origin);
     },
 };
