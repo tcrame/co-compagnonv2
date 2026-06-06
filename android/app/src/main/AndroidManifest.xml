@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:label="co_compagnon_v2"
+        android:label="CO compagnon"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../app_theme.dart';
 import '../backup/backup_screen.dart';
@@ -11,6 +12,9 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 💡 Définition d'une couleur grise de secours si onSurfaceMuted est introuvable
+    final Color mutedColor = Colors.grey.shade500;
+
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -18,10 +22,8 @@ class LandingScreen extends StatelessWidget {
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: ConstrainedBox(
-                // On force le contenu à prendre au moins toute la hauteur disponible
-                // pour que le design reste bien espacé sur les grands écrans.
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48, // 48 correspond au padding vertical total
+                  minHeight: constraints.maxHeight - 48,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
@@ -30,7 +32,6 @@ class LandingScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       _buildHeader(context),
 
-                      // Remplacement des Spacers par des espacements flexibles ou fixes
                       const SizedBox(height: 32),
 
                       _buildNavCard(
@@ -69,22 +70,41 @@ class LandingScreen extends StatelessWidget {
                         ),
                       ),
 
-                      // Ce Spacer va pousser le bloc de sauvegarde vers le bas
-                      // uniquement s'il y a de la place à l'écran.
                       const Spacer(),
                       const SizedBox(height: 24),
 
                       Text(
-                        'Chronique Oublié V2',
+                        'Pour Chroniques Oubliées Fantasy 2e édition',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.onSurfaceMuted,
+                          color: mutedColor, // 🛠️ FIX : Utilisation de la couleur sécurisée
                           letterSpacing: 1.5,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
+
+                      // 📢 EXTRACTEUR ASYNCHRONE DE LA VERSION
+                      FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (context, snapshot) {
+                          final versionText = snapshot.hasData
+                              ? 'v${snapshot.data!.version}'
+                              : '...';
+                          return Text(
+                            versionText,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: mutedColor.withOpacity(0.5), // 🛠️ FIX : Syntaxe universelle Flutter pour l'opacité
+                              letterSpacing: 0.8,
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 12),
                       IconButton(
                         icon: Icon(Icons.backup_outlined,
-                            color: AppColors.onSurfaceMuted, size: 20),
+                            color: mutedColor, size: 20),
                         tooltip: 'Sauvegarde & Restauration',
                         onPressed: () => Navigator.push(
                           context,
@@ -112,7 +132,7 @@ class LandingScreen extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFCF6679).withValues(alpha: 0.4),
+                color: const Color(0xFFCF6679).withOpacity(0.4), // 🛠️ FIX : Changé de withValues à withOpacity
                 blurRadius: 28,
                 spreadRadius: 4,
               ),
@@ -168,7 +188,7 @@ class LandingScreen extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.last.withValues(alpha: 0.3),
+                color: gradientColors.last.withOpacity(0.3), // 🛠️ FIX : Changé de withValues à withOpacity
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
@@ -181,7 +201,7 @@ class LandingScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: Colors.white.withOpacity(0.15), // 🛠️ FIX : Changé de withValues à withOpacity
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, size: 32, color: Colors.white),
@@ -203,7 +223,7 @@ class LandingScreen extends StatelessWidget {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withOpacity(0.8), // 🛠️ FIX : Changé de withValues à withOpacity
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -213,7 +233,7 @@ class LandingScreen extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withOpacity(0.7), // 🛠️ FIX : Changé de withValues à withOpacity
                   size: 18,
                 ),
               ],

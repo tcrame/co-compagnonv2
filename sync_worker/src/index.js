@@ -562,41 +562,49 @@ async function handleSpectate(payload, sql, origin) {
         return jsonResponse({ error: 'Session de combat introuvable. Le MJ doit activer le partage.' }, 404, origin);
     }
 
-    const sessionData = rows[0].character_blob || rows[0].combat_blob;
+    // 🛠️ FIX 1 : On cible STRICTEMENT combat_blob pour le tracker de combat
+    const sessionData = rows[0].combat_blob || {};
+    let participantsParsed = [];
 
-    // 🛡️ SÉCURISATION DES DONNÉES (Brouillard de guerre inchangé)
+    // 🛡️ SÉCURISATION DES DONNÉES (Brouillard de guerre)
     if (sessionData && sessionData.participants) {
-        sessionData.participants = sessionData.participants.map(p => {
-            // Extraction adaptative (gère le camelCase ET le snake_case envoyé par Flutter)
+        participantsParsed = sessionData.participants.map(p => {
+            // Extraction adaptative robuste des forces et PV
             const currentHp = Number(p.currentHp !== undefined ? p.currentHp : (p.current_hp !== undefined ? p.current_hp : 0));
             const maxHp = Number(p.maxHp !== undefined ? p.maxHp : (p.max_hp !== undefined ? p.max_hp : 1));
-            const rolledInitiative = Number(p.rolledInitiative !== undefined ? p.rolledInitiative : (p.rolled_initiative !== undefined ? p.rolled_initiative : 0));
             const isAlly = p.isAlly !== undefined ? p.isAlly : (p.is_ally !== undefined ? p.is_ally : false);
             const def = p.def !== undefined ? p.def : (p.def_val !== undefined ? p.def_val : 10);
             const imageUrl = p.imageUrl !== undefined ? p.imageUrl : (p.image_url !== undefined ? p.image_url : null);
+
+            // 🎲 FIX 2 : Détection ultra-blindée de l'initiative (gère TOUS les formats d'envoi possibles)
+            let rolledInitiative = 0;
+            if (p.rolledInitiative !== undefined) rolledInitiative = Number(p.rolledInitiative);
+            else if (p.rolled_initiative !== undefined) rolledInitiative = Number(p.rolled_initiative);
+            else if (p.baseInitiative !== undefined) rolledInitiative = Number(p.baseInitiative);
+            else if (p.base_initiative !== undefined) rolledInitiative = Number(p.base_initiative);
 
             const isAlive = currentHp > 0;
             const hpPercent = maxHp > 0 ? Math.max(0, Math.min(1, currentHp / maxHp)) : 0;
 
             if (!isAlly) {
-                // Pour un ENNEMI : Brouillard de guerre (Données masquées)
+                // Pour un ENNEMI : Brouillard de guerre (PV masqués, mais initiative publique !)
                 return {
                     id: p.id,
                     name: p.name,
                     isAlly: false,
-                    rolledInitiative: rolledInitiative,
+                    rolledInitiative: rolledInitiative, // Transmis explicitement
                     hpPercent: hpPercent,
                     isAlive: isAlive,
                     imageUrl: imageUrl,
                     statusEffects: p.statusEffects || p.status_effects || []
                 };
             } else {
-                // Pour un AVENTURIER : Données complètes transparentes pour l'équipe
+                // Pour un AVENTURIER : Données complètes transparentes
                 return {
                     id: p.id,
                     name: p.name,
                     isAlly: true,
-                    rolledInitiative: rolledInitiative,
+                    rolledInitiative: rolledInitiative, // Transmis explicitement
                     currentHp: currentHp,
                     maxHp: maxHp,
                     hpPercent: hpPercent,
@@ -615,8 +623,8 @@ async function handleSpectate(payload, sql, origin) {
             name: rows[0].session_name,
             combatStarted: sessionData.combatStarted ?? false,
             turnCount: sessionData.turnCount ?? 1,
-            activeIndex: sessionData.activeIndex !== undefined ? sessionData.activeIndex : null, // 💡 AJOUT DE L'INDEX ACTIF
-            participants: sessionData.participants ?? []
+            activeIndex: sessionData.activeIndex !== undefined ? sessionData.activeIndex : null,
+            participants: participantsParsed // 💡 On injecte notre tableau nettoyé et harmonisé
         }
     }, 200, origin);
 }

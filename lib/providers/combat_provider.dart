@@ -24,7 +24,9 @@ class CombatProvider extends ChangeNotifier {
 
   List<Participant> get participants => _participants;
   List<Participant> get turnOrder => _turnOrder;
+  String get sessionCode => _sessionCode;
   bool get combatStarted => _combatStarted;
+
   int? get sessionId => _sessionId;
   int get turnCount => _turnCount;
   int? get activeIndex => _activeIndex;
@@ -39,14 +41,13 @@ class CombatProvider extends ChangeNotifier {
 
   /// 🛰️ MÉTHODE INTERNE MODIFIÉE : Envoie la session via son code unique à 6 lettres
   void _syncToCloud() {
-    // 💡 Sécurité : Si aucun code n'est défini, on ne pousse rien
     if (_sessionId == null || _sessionCode.isEmpty) return;
 
-    final listToSync =
-    (_combatStarted && _turnOrder.isNotEmpty) ? _turnOrder : _participants;
+    // On sélectionne la bonne liste source
+    final listToSync = (_combatStarted && _turnOrder.isNotEmpty) ? _turnOrder : _participants;
 
     _remoteService.pushCombatSession(
-      sessionCode: _sessionCode, // 💡 CHANGEMENT : On envoie le code alphanumérique unique
+      sessionCode: _sessionCode,
       sessionName: _sessionName,
       combatBlob: {
         'combatStarted': _combatStarted,
@@ -54,6 +55,18 @@ class CombatProvider extends ChangeNotifier {
         'activeIndex': _activeIndex,
         'participants': listToSync.map((p) {
           final map = p.toMap();
+
+          // 🎲 FIX : Si le combat est lancé, on injecte de force la valeur calculée (avec le dé)
+          // pour que le Cloud reçoive le score final affiché à l'écran du MJ !
+          if (_combatStarted) {
+            map['rolled_initiative'] = p.rolledInitiative;
+            map['rolledInitiative'] = p.rolledInitiative;
+          } else {
+            // Si le combat n'a pas commencé, le score temporaire est égal à l'initiative de base
+            map['rolled_initiative'] = p.baseInitiative;
+            map['rolledInitiative'] = p.baseInitiative;
+          }
+
           final effects = _statusEffects[p.id!] ?? [];
           map['statusEffects'] = effects
               .map((e) => {
@@ -183,6 +196,22 @@ class CombatProvider extends ChangeNotifier {
     _activeIndex = null;
     notifyListeners();
     _syncToCloud();
+  }
+
+  /// ⏪ AJOUT : Permet de revenir au tour de jeu précédent en cas d'erreur
+  Future<void> decrementTurnCount() async {
+    if (_turnCount <= 1) return; // Sécurité : on ne descend pas en dessous du tour 1
+
+    _turnCount--;
+    if (_sessionId != null) {
+      await _db.updateTurnCount(_sessionId!, _turnCount);
+    }
+
+    // Note : On ne relance pas les dés automatiquement pour ne pas écraser
+    // les initiatives actuelles du combat si le MJ voulait juste corriger le numéro du tour.
+
+    notifyListeners();
+    _syncToCloud(); // 🔄 Synchronisation immédiate pour les spectateurs
   }
 
   void startActiveTurn() {

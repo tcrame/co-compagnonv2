@@ -60,29 +60,76 @@ class _CombatScreenState extends State<CombatScreen> {
           builder: (_, provider, __) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(widget.sessionName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              if (provider.combatStarted)
-                Text(
-                  'Tour ${provider.turnCount}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.amber.shade300,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+              Text(
+                widget.sessionName,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (provider.combatStarted) ...[
+                    Text(
+                      'Tour ${provider.turnCount}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.amber.shade300,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '•',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  // 📢 LE CODE DE PARTAGE EN DIRECT
+                  if (provider.sessionCode.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.purple.withOpacity(0.5), width: 0.8),
+                      ),
+                      child: Text(
+                        'Code : ${provider.sessionCode}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.purpleAccent,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
         actions: [
-          Builder(
-            builder: (ctx) => IconButton(
-              icon: const Text('🎲', style: TextStyle(fontSize: 20)),
-              tooltip: 'Lancer des dés',
-              onPressed: () => showDiceRollerSheet(ctx),
-            ),
+          // 🎲 Le bouton de dés utilise désormais le contexte direct de l'AppBar de manière isolée
+          IconButton(
+            icon: const Text('🎲', style: TextStyle(fontSize: 20)),
+            tooltip: 'Lancer des dés',
+            onPressed: () => showDiceRollerSheet(context), // 🛠️ Utilise le contexte sain du build parent
           ),
+
+          // ⏪ Bouton retour en arrière sur le tour
+          Consumer<CombatProvider>(
+            builder: (ctx, provider, _) { // 💡 Renommé en "ctx" pour éviter tout conflit de nom avec "context"
+              return provider.combatStarted && provider.turnCount > 1
+                  ? IconButton(
+                icon: const Icon(Icons.undo_rounded, color: Colors.orangeAccent),
+                tooltip: 'Revenir au tour précédent',
+                onPressed: () => _backOneTurn(context),
+              )
+                  : const SizedBox.shrink();
+            },
+          ),
+
           IconButton(
             icon: const Icon(Icons.restart_alt),
             tooltip: 'Nouveau tour',
@@ -166,6 +213,17 @@ class _CombatScreenState extends State<CombatScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Future<void> _backOneTurn(BuildContext context) async {
+    await context.read<CombatProvider>().decrementTurnCount();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('⏪ Retour au tour précédent effectué.'),
+        duration: Duration(seconds: 2),
       ),
     );
   }

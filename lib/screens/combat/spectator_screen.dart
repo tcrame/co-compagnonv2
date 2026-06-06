@@ -32,7 +32,7 @@ class _SpectatorScreenState extends State<SpectatorScreen> {
   void initState() {
     super.initState();
     _fetchSessionData();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       _fetchSessionData();
     });
   }
@@ -373,13 +373,68 @@ class _SpectatorScreenState extends State<SpectatorScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // 📢 AJOUT : LIGNE DES ALTÉRATIONS D'ÉTAT POUR LE SPECTATEUR
+                  if (p['statusEffects'] != null && (p['statusEffects'] as List).isNotEmpty) ...[
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: (p['statusEffects'] as List).map((effect) {
+                        // On essaie de récupérer la configuration (couleur/icône) par rapport au nom de l'état
+                        // Si ton spectator_screen n'a pas accès à definitionFor, on applique des valeurs par défaut élégantes
+                        final String effectName = effect['name'] ?? 'État';
+                        final int turns = effect['remainingTurns'] ?? 1;
+
+                        // Palette de couleurs générique et propre par défaut (Orange/Ambre pour les altérations)
+                        final Color stateColor = Colors.amber.shade600;
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: stateColor.withAlpha(30),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: stateColor.withAlpha(120)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.warning_amber_rounded, size: 12, color: stateColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                effectName,
+                                style: TextStyle(
+                                    color: stateColor,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
+                                decoration: BoxDecoration(
+                                  color: stateColor.withAlpha(50),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${turns}t',
+                                  style: TextStyle(
+                                      color: stateColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 10), // Espacement entre les états et la barre de PV
+                  ],
+
+                  // 💚 BARRE DE PV (Inchangée, elle se retrouve juste en dessous)
                   Row(
                     children: [
-                      Icon(
-                        isAlive ? Icons.favorite : Icons.heart_broken,
-                        size: 14,
-                        color: hpColor,
-                      ),
+                      Icon(isAlive ? Icons.favorite : Icons.heart_broken, size: 14, color: hpColor),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ClipRRect(
@@ -397,11 +452,7 @@ class _SpectatorScreenState extends State<SpectatorScreen> {
                         isAlly && p['maxHp'] != null
                             ? '${p['currentHp']} / ${p['maxHp']}'
                             : _getHpLabel(hpPercent, isAlive),
-                        style: TextStyle(
-                          color: hpColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: hpColor, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
