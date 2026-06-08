@@ -1,42 +1,37 @@
-import 'package:flutter/foundation.dart'; // 💡 AJOUT : Requis pour utiliser kIsWeb
+import 'package:flutter/foundation.dart'; // Pour kIsWeb
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // 💡 Pense à vérifier que tu as shared_preferences dans ton pubspec.yaml
 
 class AuthService {
-  // ⚠️ TRÈS IMPORTANT : Ton Client ID WEB de la console Google
   static const String _webClientId = '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com';
 
-  // 🛠️ FIX CONSTRUCTION : On bascule sur le paramètre universel clientId
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email'],
-    // Le clientId est obligatoire sur le Web. Sur Android, on laisse null car il utilise le fichier google-services.json
     clientId: kIsWeb ? _webClientId : null,
   );
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // 💡 FIX WEB : Force le package à utiliser le stockage local classique du navigateur
-    // s'il n'arrive pas à initialiser le chiffrement lourd (évite le crash "Uncaught Error")
-    webOptions: WebOptions(
-      dbName: 'co_compagnon_auth',
-      publicKey: 'co_compagnon_key',
-    ),
-  );
+  // Le stockage sécurisé pour Android / iOS
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
 
   // 1. Déclencher la connexion
   Future<String?> signIn() async {
     try {
-      // Ouvre la modale Google
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
-      if (account == null) return null; // L'utilisateur a annulé
+      if (account == null) return null;
 
-      // Récupère les jetons
       final GoogleSignInAuthentication auth = await account.authentication;
       final String? idToken = auth.idToken;
 
       if (idToken != null) {
-        // Sauvegarde le token de manière sécurisée sur le téléphone
-        await _storage.write(key: _tokenKey, value: idToken);
+        // 💾 SAUVEGARDE HYBRIDE SANS CRASH
+        if (kIsWeb) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_tokenKey, idToken);
+        } else {
+          await _secureStorage.write(key: _tokenKey, value: idToken);
+        }
         return idToken;
       }
     } catch (e) {
@@ -48,15 +43,25 @@ class AuthService {
   // 2. Se déconnecter
   Future<void> signOut() async {
     await _googleSignIn.signOut();
-    await _storage.delete(key: _tokenKey); // On efface le token local
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_tokenKey);
+    } else {
+      await _secureStorage.delete(key: _tokenKey);
+    }
   }
 
-  // 3. Récupérer le token (à utiliser avant chaque requête vers votre Worker)
+  // 3. Récupérer le token
   Future<String?> getToken() async {
-    return await _storage.read(key: _tokenKey);
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_tokenKey);
+    } else {
+      return await _secureStorage.read(key: _tokenKey);
+    }
   }
 
-  // 4. Vérifier si l'utilisateur est déjà connecté au lancement de l'app
+  // 4. Vérifier si l'utilisateur est déjà connecté
   Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null;
