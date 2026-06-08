@@ -34,7 +34,7 @@ jobs:
         run: dart run sqflite_common_ffi_web:setup
 
       - name: Build web
-        run: flutter build web --release --base-href "/co-compagnonv2/"
+        run: flutter build web --release --base-href "/co-compagnonv2/" --dart-define=SYNC_API_BASE_URL=https://co-compagnon-sync.crame-teddy.workers.dev
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
