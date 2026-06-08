@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart'; // Pour kIsWeb
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // 💡 Pense à vérifier que tu as shared_preferences dans ton pubspec.yaml
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String _webClientId = '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com';
@@ -11,8 +11,9 @@ class AuthService {
     clientId: kIsWeb ? _webClientId : null,
   );
 
-  // Le stockage sécurisé pour Android / iOS
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  // 💡 FIX DESIGN : On rend l'instance nullable et on ne l'initialise PAS sur le Web
+  // pour empêcher le package de charger ses scripts JS de chiffrement natifs défectueux.
+  final FlutterSecureStorage? _secureStorage = kIsWeb ? null : const FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
 
   // 1. Déclencher la connexion
@@ -25,12 +26,11 @@ class AuthService {
       final String? idToken = auth.idToken;
 
       if (idToken != null) {
-        // 💾 SAUVEGARDE HYBRIDE SANS CRASH
         if (kIsWeb) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_tokenKey, idToken);
         } else {
-          await _secureStorage.write(key: _tokenKey, value: idToken);
+          await _secureStorage!.write(key: _tokenKey, value: idToken);
         }
         return idToken;
       }
@@ -42,12 +42,15 @@ class AuthService {
 
   // 2. Se déconnecter
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
+
     if (kIsWeb) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_tokenKey);
     } else {
-      await _secureStorage.delete(key: _tokenKey);
+      await _secureStorage!.delete(key: _tokenKey);
     }
   }
 
@@ -57,7 +60,7 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_tokenKey);
     } else {
-      return await _secureStorage.read(key: _tokenKey);
+      return await _secureStorage!.read(key: _tokenKey);
     }
   }
 
