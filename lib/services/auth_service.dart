@@ -41,15 +41,16 @@ class AuthService {
         }
       }
 
+      // Si le JWT est récupéré, on le stocke
       if (tokenToSave != null) {
-        // Sauvegarde adaptée à la plateforme
         if (kIsWeb) {
           final prefs = await SharedPreferences.getInstance();
+          // 💡 AJOUT DU AWAIT ICI : On force le navigateur à attendre la fin de l'écriture
           await prefs.setString(_tokenKey, tokenToSave);
+          print("✅ Token écrit avec succès dans SharedPreferences");
         } else {
           await _secureStorage!.write(key: _tokenKey, value: tokenToSave);
         }
-        print("✅ Token (JWT) sauvegardé avec succès pour l'email : ${account.email}");
         return tokenToSave;
       } else {
         print("⚠️ Impossible de récupérer l'idToken de Google.");
