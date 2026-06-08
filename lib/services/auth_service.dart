@@ -13,7 +13,14 @@ class AuthService {
     clientId: kIsWeb ? _webClientId : null,
   );
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    // 💡 FIX WEB : Force le package à utiliser le stockage local classique du navigateur
+    // s'il n'arrive pas à initialiser le chiffrement lourd (évite le crash "Uncaught Error")
+    webOptions: WebOptions(
+      dbName: 'co_compagnon_auth',
+      publicKey: 'co_compagnon_key',
+    ),
+  );
   static const String _tokenKey = 'jwt_token';
 
   // 1. Déclencher la connexion
