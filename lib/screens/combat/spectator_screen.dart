@@ -198,15 +198,10 @@ class _SpectatorScreenState extends State<SpectatorScreen> {
           hpPercent = (p['currentHp'] ?? 0) / p['maxHp'];
         }
 
-        Color hpColor = Colors.green;
-        try {
-          hpColor = AppColors.hpColor((hpPercent * 100).toInt());
-        } catch (_) {
-          hpColor =
-              hpPercent > 0.5
-                  ? Colors.green
-                  : (hpPercent > 0.2 ? Colors.orange : Colors.red);
-        }
+        // 🛠️ FIX WEB : Calcul direct et universel de la couleur pour éviter le crash JS
+        final Color hpColor = hpPercent > 0.5
+            ? Colors.green
+            : (hpPercent > 0.25 ? Colors.orange : Colors.red.shade600);
 
         return Opacity(
           opacity: isAlive ? 1.0 : 0.4,
