@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart'; // 💡 AJOUT : Requis pour utiliser kIsWeb
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  // ⚠️ TRÈS IMPORTANT : Mettez ici votre Client ID WEB (le même que dans Cloudflare)
+  // ⚠️ TRÈS IMPORTANT : Ton Client ID WEB de la console Google
   static const String _webClientId = '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com';
 
+  // 🛠️ FIX CONSTRUCTION : On bascule sur le paramètre universel clientId
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email'],
-    serverClientId: _webClientId,
+    // Le clientId est obligatoire sur le Web. Sur Android, on laisse null car il utilise le fichier google-services.json
+    clientId: kIsWeb ? _webClientId : null,
   );
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
