@@ -23,37 +23,49 @@ class AuthService {
   // 1. Déclencher la connexion
   Future<String?> signIn() async {
     try {
+      // 🌐 SÉCURITÉ PRODUCTION : Si une session fantôme bloque le plugin sur le Web,
+      // on force un nettoyage rapide pour réinitialiser le canal de communication.
+      if (kIsWeb) {
+        try {
+          await _googleSignIn.signOut();
+        } catch (_) {}
+      }
+
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
       if (account == null) return null;
 
       String? tokenToSave;
 
-      // Récupération de l'authentification
-      final GoogleSignInAuthentication auth = await account.authentication;
-      tokenToSave = auth.idToken;
+      if (kIsWeb) {
+        // Extraction de l'authentification
+        final GoogleSignInAuthentication auth = await account.authentication;
+        tokenToSave = auth.idToken;
 
-      // Secours si le premier jet est null sur le web
-      if (kIsWeb && tokenToSave == null) {
-        final silentAccount = await _googleSignIn.signInSilently();
-        if (silentAccount != null) {
-          final silentAuth = await silentAccount.authentication;
-          tokenToSave = silentAuth.idToken;
-        }
+        // 🔄 Si le idToken est null, on utilise l'accessToken (ya29.)
+        // Notre Worker mis à jour sait maintenant lire les deux à 100% !
+        tokenToSave ??= auth.accessToken;
+
+        print("Utilisateur connecté sur le Web : ${account.email}");
+      } else {
+        final GoogleSignInAuthentication auth = await account.authentication;
+        tokenToSave = auth.idToken;
       }
 
-      // Si le JWT est récupéré, on le stocke
       if (tokenToSave != null) {
         if (kIsWeb) {
           final prefs = await SharedPreferences.getInstance();
-          // 💡 AJOUT DU AWAIT ICI : On force le navigateur à attendre la fin de l'écriture
+          // 💡 CRUCIAL : On force l'écriture synchrone complète avant de retourner le token
           await prefs.setString(_tokenKey, tokenToSave);
-          print("✅ Token écrit avec succès dans SharedPreferences");
+
+          // Double vérification instantanée pour confirmer l'écriture au navigateur
+          final check = prefs.getString(_tokenKey);
+          print("[AuthService] Validation immédiate du stockage Web : ${check != null ? 'Succès (JWT/Access)' : 'ÉCHEC D\'ÉCRITURE'}");
         } else {
           await _secureStorage!.write(key: _tokenKey, value: tokenToSave);
         }
         return tokenToSave;
       } else {
-        print("⚠️ Impossible de récupérer l'idToken de Google.");
+        print("⚠️ Impossible de récupérer un jeton (idToken et accessToken sont tous les deux null)");
       }
     } catch (e) {
       print('Erreur lors de la connexion Google : $e');
