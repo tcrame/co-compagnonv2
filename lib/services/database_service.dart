@@ -32,8 +32,7 @@ class DatabaseService {
 
   Future<Database> _initDb() async {
     if (kIsWeb) {
-      // Use IndexedDB-backed SQLite for web
-      databaseFactory = databaseFactoryFfiWeb;
+      // 💡 Nettoyage : databaseFactory est déjà défini globalement dans le main.dart désormais !
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
