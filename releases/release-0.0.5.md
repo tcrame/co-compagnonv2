@@ -1,33 +1,50 @@
-📜 Notes de mise à jour — CO Compagnon v2 (v0.0.5)
+# 📜 Notes de mise à jour — CO Compagnon V2 `v0.0.5`
 
-Une mise à jour majeure axée sur le partage en temps réel, la sécurité des salons et le confort de jeu du MJ. Vos tables de Chroniques Oubliées V2 n'ont jamais été aussi connectées !
+![Flutter](https://img.shields.io/badge/Flutter-3.29.3-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Database](https://img.shields.io/badge/SQLite-Neon_Cloud-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Legacy-orange?style=for-the-badge)
 
-❌❌❌
+Une mise à jour majeure axée sur le **partage en temps réel**, la **sécurité des salons** et le **confort de jeu du MJ**. Vos tables de *Chroniques Oubliées V2* n'ont jamais été aussi connectées et immersives !
 
-🚀 NOUVELLES FONCTIONNALITÉS
+---
 
-📺 Mode Spectateur en Temps Réel
-* Pour les joueurs : Suivez le combat en direct depuis votre appareil. Plus besoin de demander "C'est à qui ?" ou "Il lui reste combien de PV ?".
-* Brouillard de Guerre Intelligent : Vous voyez la santé précise de vos alliés, mais celle des monstres s'affiche sous forme narrative (Indemne, Blessé, Agonisant...).
+## 🚀 Nouvelles Fonctionnalités
 
-🎰 Sécurisation par Codes Uniques
-* Chaque session de combat génère désormais un code unique à 6 caractères (ex: X9R2A4).
-* Le code est affiché en permanence en haut de l'écran du MJ pour être dicté en un clin d'œil en cas d'arrivée en cours de route.
+### 📺 1. Mode Spectateur & Brouillard de Guerre en Temps Réel
+Les joueurs peuvent désormais suivre le déroulement tactique du combat en direct depuis leur propre écran. Plus besoin de couper le rythme de la partie pour demander *"C'est à qui ?"* ou *"Le gobelin est bientôt mort ?"*.
 
-⏪ Bouton "Undo" pour le MJ
-* Un clic de trop sur "Nouveau tour" ? Un bouton Undo (Retour) apparaît pour revenir au tour précédent, réajuster les PV et synchroniser immédiatement l'affichage des joueurs.
+#### 👁️ Gestion adaptative de l'affichage (Fog of War)
 
-❌❌❌
+| Type de Participant | Informations visibles par les Joueurs | Impact sur la table |
+| :--- | :--- | :--- |
+| **🛡️ Aventuriers (Alliés)** | Santé précise (PV exacts), Classe d'Armure (DEF) et Altérations d'état. | Transparence totale et stratégie d'équipe facilitée. |
+| **👹 Créatures (Ennemis)** | Santé narrative uniquement (*Indemne, Égratigné, Blessé, Agonisant...*). | Préservation du mystère et de la tension du combat. |
 
-🎨 AMÉLIORATIONS DE L'INTERFACE
+---
 
-* Version de l'app : Le numéro de version officiel s'affiche désormais discrètement en bas de l'écran d'accueil.
-* États sur l'écran Spectateur : Les altérations d'état infligées par le MJ (Paralysé, Aveuglé, Béni...) et leurs compteurs de tours s'affichent en temps réel sur les écrans des joueurs.
-* Look épuré : Nettoyage des noms de l'application (adieu les vilains "_" informatiques) sur le téléphone.
+### 🎰 2. Sécurisation des Salons par Codes Uniques
+Oubliez les configurations réseau complexes. Le système de salon a été simplifié à l'extrême pour garantir un accès rapide et sécurisé.
+* **Génération à la volée :** Chaque session de combat génère instantanément un code d'accès unique et sécurisé à 6 caractères alphanumeric (ex: `X9R2A4`).
+* **Visibilité MJ :** Le code reste affiché en permanence en haut de l'écran du Maître de Jeu, prêt à être dicté en un clin d'œil à un joueur qui rejoint la table en cours de route.
 
-❌❌❌
+---
 
-🔧 COULISSES & CORRECTIONS
+### ⏪ 3. Système d'Analyse Temporelle : Le Bouton "Undo"
+Une erreur de manipulation est vite arrivée derrière l'écran du MJ.
+* **Retour dans le passé :** En cas de clic accidentel sur *"Nouveau tour"*, un bouton **Undo** (Retour) apparaît dynamiquement.
+* **Restauration d'état :** Il permet de revenir instantanément au tour précédent, de réajuster l'index actif ainsi que les PV modifiés par erreur, tout en synchronisant immédiatement l'affichage de tous les joueurs connectés.
 
-* Fix de l'Initiative : Correction du bug où le mode spectateur affichait l'initiative de base au lieu du score final modifié par le dé (1d6 + base).
-* Mise à niveau : Optimisation de la base de données locale et du moteur pour garantir la compatibilité avec les prochaines versions.
+---
+
+## 🎨 Améliorations de l'Interface (UI/UX)
+
+* **Intégration des États :** Les altérations d'état infligées par le MJ (*Paralysé, Aveuglé, Béni...*) ainsi que leurs compteurs de tours restants s'affichent désormais en temps réel sur l'interface des spectateurs.
+* **Suivi des Versions :** Le numéro de version officiel de l'application est maintenant visible discrètement en bas de l'écran d'accueil pour faciliter les retours de bugs.
+* **Polissage Cosmétique :** Nettoyage global des labels système de l'application sur le lanceur du téléphone (adieu les vilains "_" informatiques pour un rendu épuré).
+
+---
+
+## 🔧 Coulisses & Corrections de Bugs
+
+* **Fix de l'Initiative Réelle :** Correction d'un bug critique où le mode spectateur affichait l'initiative de base statique des participants au lieu du score final calculé et modifié par le jet de dé au lancement du combat (`1d6 + base`).
+* **Optimisation de la structure SQL :** Consolidation des scripts de migration de la base de données SQLite locale pour garantir la rétrocompatibilité des fiches de personnages avec les architectures cloud des versions suivantes.
