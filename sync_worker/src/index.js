@@ -101,6 +101,29 @@ async function verifyGoogleToken(request, env) {
     }
 
     const token = authHeader.split(' ')[1];
+
+    // 🌐 DIRECTION LE WEB : Si le jeton est un accessToken Google (commence par ya29.)
+    if (token.startsWith('ya29.')) {
+        try {
+            // On demande directement au serveur de validation de Google à qui appartient ce jeton
+            const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${token}`);
+            if (!response.ok) {
+                throw new Error('Jeton d\'accès Google invalide ou expiré');
+            }
+
+            const tokenInfo = await response.json();
+
+            // On re-formate la réponse pour que le reste du Worker (sub, email) ne change pas d'un iota !
+            return {
+                sub: tokenInfo.user_id || tokenInfo.sub,
+                email: tokenInfo.email,
+            };
+        } catch (e) {
+            throw new Error('Échec de la validation du jeton Web Google: ' + e.message);
+        }
+    }
+
+    // 📱 DIRECTION LE MOBILE : Flux classique par clé publique JWT (idToken)
     const JWKS = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
     const {payload} = await jwtVerify(token, JWKS, {

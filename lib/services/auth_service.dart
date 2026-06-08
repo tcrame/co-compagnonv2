@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart'; // Pour kIsWeb
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// 💡 AJOUT : Import indispensable pour débloquer les propriétés Web de Google Sign-In
-import 'package:google_sign_in_web/google_sign_in_web.dart';
 
 class AuthService {
+  // 💡 FIX SINGLETON : Garantit qu'une seule et unique instance d'AuthService
+  // existe dans toute l'application et partage le stockage.
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal();
   static const String _webClientId = '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -13,6 +16,7 @@ class AuthService {
     clientId: kIsWeb ? _webClientId : null,
   );
 
+  // On n'instancie SecureStorage que si on n'est PAS sur le web pour éviter les crashs/blocages
   final FlutterSecureStorage? _secureStorage = kIsWeb ? null : const FlutterSecureStorage();
   static const String _tokenKey = 'jwt_token';
 
@@ -22,40 +26,33 @@ class AuthService {
       final GoogleSignInAccount? account = await _googleSignIn.signIn();
       if (account == null) return null;
 
-      String? idToken;
+      String? tokenToSave;
 
-      if (kIsWeb) {
-        // 🌐 FIX WEB EXCLUSIF : On extrait le token directement via la plateforme Web
-        // Cela évite d'appeler 'account.authentication' qui freeze sur le navigateur.
-        final webAuthentication = await account.authentication;
-        idToken = webAuthentication.idToken;
+      // Récupération de l'authentification
+      final GoogleSignInAuthentication auth = await account.authentication;
+      tokenToSave = auth.idToken;
 
-        // Si jamais le SDK web standard est récalcitrant, voici la méthode de secours moderne :
-        if (idToken == null) {
-          // On tente de récupérer le token d'identité IDP s'il est exposé
-          final response = await _googleSignIn.signInSilently();
-          if (response != null) {
-            final authData = await response.authentication;
-            idToken = authData.idToken;
-          }
+      // Secours si le premier jet est null sur le web
+      if (kIsWeb && tokenToSave == null) {
+        final silentAccount = await _googleSignIn.signInSilently();
+        if (silentAccount != null) {
+          final silentAuth = await silentAccount.authentication;
+          tokenToSave = silentAuth.idToken;
         }
-      } else {
-        // 📱 Flux classique et fonctionnel pour Android / iOS
-        final GoogleSignInAuthentication auth = await account.authentication;
-        idToken = auth.idToken;
       }
 
-      // Si on a récupéré le token, on sauvegarde et on continue !
-      if (idToken != null) {
+      if (tokenToSave != null) {
+        // Sauvegarde adaptée à la plateforme
         if (kIsWeb) {
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_tokenKey, idToken);
+          await prefs.setString(_tokenKey, tokenToSave);
         } else {
-          await _secureStorage!.write(key: _tokenKey, value: idToken);
+          await _secureStorage!.write(key: _tokenKey, value: tokenToSave);
         }
-        return idToken;
+        print("✅ Token (JWT) sauvegardé avec succès pour l'email : ${account.email}");
+        return tokenToSave;
       } else {
-        print("⚠️ Impossible de récupérer l'idToken de Google");
+        print("⚠️ Impossible de récupérer l'idToken de Google.");
       }
     } catch (e) {
       print('Erreur lors de la connexion Google : $e');
@@ -77,17 +74,19 @@ class AuthService {
     }
   }
 
-  // 3. Récupérer le token
+  // 3. Récupérer le token (C'est cette méthode que ton service de Sync doit appeler !)
   Future<String?> getToken() async {
     if (kIsWeb) {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_tokenKey);
+      final token = prefs.getString(_tokenKey);
+      print("[AuthService] Token récupéré sur le Web : ${token != null ? 'Présent (JWT)' : 'NULL'}");
+      return token;
     } else {
       return await _secureStorage!.read(key: _tokenKey);
     }
   }
 
-  // 4. Vérifier si l'utilisateur est déjà connecté
+  // 4. Vérifier si l'utilisateur est connecté
   Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null;

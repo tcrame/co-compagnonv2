@@ -147,10 +147,21 @@ class RemoteCharacterService {
   }
 
   Future<Map<String, String>> _getSecureHeaders() async {
+    // 1. Récupération du token depuis l'instance unique
     final token = await _authService.getToken();
-    if (token == null) {
-      throw StateError('Utilisateur non connecté. Impossible de synchroniser.');
+
+    // 🔍 LOG DE CONTRÔLE SÉCURISÉ : On affiche juste les 15 premiers caractères du jeton s'il existe
+    if (token != null && token.isNotEmpty) {
+      final preview = token.length > 15 ? '${token.substring(0, 15)}...' : token;
+      print("[RemoteService] Jeton envoyé au Worker : Présent ($preview)");
+    } else {
+      print("[RemoteService] Jeton envoyé au Worker : NULL ou Vide");
     }
+
+    if (token == null || token.isEmpty || token == "null") {
+      throw StateError('Utilisateur non connecté ou session corrompue. Impossible de synchroniser.');
+    }
+
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
