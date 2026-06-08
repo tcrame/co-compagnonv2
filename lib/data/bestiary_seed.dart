@@ -1774,6 +1774,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 2,
+    superiorStats: {
+      'agi',
+      'per',
+    },
     attacks: [
       TemplateAttack(name: 'Épée courte', bonusAtk: 7, dm: '1d6+3'),
     ],

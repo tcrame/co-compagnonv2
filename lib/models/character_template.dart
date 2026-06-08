@@ -216,7 +216,7 @@ class CharacterTemplate {
         'attacks_json': jsonEncode(attacks.map((a) => a.toJson()).toList()),
         'capacities_json':
             jsonEncode(capacities.map((c) => c.toJson()).toList()),
-        'legendary_stats_json': jsonEncode(superiorStats.toList()),
+        'superior_stats_json': jsonEncode(superiorStats.toList()),
       };
 
   factory CharacterTemplate.fromMap(Map<String, dynamic> map) {
@@ -240,7 +240,7 @@ class CharacterTemplate {
       }
     } catch (_) {}
     try {
-      final supRaw = map['legendary_stats_json'] as String?;
+      final supRaw = map['superior_stats_json'] as String?;
       if (supRaw != null && supRaw.isNotEmpty) {
         superiorStats =
             Set<String>.from((jsonDecode(supRaw) as List).cast<String>());

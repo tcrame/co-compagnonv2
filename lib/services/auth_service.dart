@@ -11,9 +11,14 @@ class AuthService {
   AuthService._internal();
   static const String _webClientId = '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com';
 
+// 💡 CONFIGURATION HYBRIDE SÉCURISÉE :
+  // On sépare strictement les besoins du Web et du Mobile lors de l'instanciation
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email'],
+    // Le Web a impérativement besoin du clientId
     clientId: kIsWeb ? _webClientId : null,
+    // Le Mobile a besoin du serverClientId, mais le Web NE DOIT PAS l'avoir (surtout sur localhost)
+    serverClientId: kIsWeb ? null : '716969252582-urc5abg454hiv1rt2pjcc61aonbgan9f.apps.googleusercontent.com',
   );
 
   // On n'instancie SecureStorage que si on n'est PAS sur le web pour éviter les crashs/blocages
@@ -23,8 +28,7 @@ class AuthService {
   // 1. Déclencher la connexion
   Future<String?> signIn() async {
     try {
-      // 🌐 SÉCURITÉ PRODUCTION : Si une session fantôme bloque le plugin sur le Web,
-      // on force un nettoyage rapide pour réinitialiser le canal de communication.
+      // 🌐 SÉCURITÉ WEB UNIQUEMENT : On ne nettoie la session fantôme que sur le Web
       if (kIsWeb) {
         try {
           await _googleSignIn.signOut();
@@ -37,31 +41,34 @@ class AuthService {
       String? tokenToSave;
 
       if (kIsWeb) {
-        // Extraction de l'authentification
+        // 🌐 FLUX WEB : Récupération de l'authentification Web
         final GoogleSignInAuthentication auth = await account.authentication;
         tokenToSave = auth.idToken;
 
-        // 🔄 Si le idToken est null, on utilise l'accessToken (ya29.)
-        // Notre Worker mis à jour sait maintenant lire les deux à 100% !
+        // Secours Web vers l'accessToken (ya29.) si l'idToken fait de la résistance
         tokenToSave ??= auth.accessToken;
 
         print("Utilisateur connecté sur le Web : ${account.email}");
       } else {
+        // 📱 FLUX MOBILE (Android/iOS) : On extrait STRICTEMENT l'idToken (JWT)
         final GoogleSignInAuthentication auth = await account.authentication;
         tokenToSave = auth.idToken;
+
+        print("Utilisateur connecté sur Mobile : ${account.email}");
       }
 
       if (tokenToSave != null) {
         if (kIsWeb) {
           final prefs = await SharedPreferences.getInstance();
-          // 💡 CRUCIAL : On force l'écriture synchrone complète avant de retourner le token
           await prefs.setString(_tokenKey, tokenToSave);
 
-          // Double vérification instantanée pour confirmer l'écriture au navigateur
+          // Double vérification Web
           final check = prefs.getString(_tokenKey);
-          print("[AuthService] Validation immédiate du stockage Web : ${check != null ? 'Succès (JWT/Access)' : 'ÉCHEC D\'ÉCRITURE'}");
+          print("[AuthService] Validation immédiate du stockage Web : ${check != null ? 'Succès' : 'ÉCHEC'}");
         } else {
+          // 📱 Stockage sécurisé natif Mobile
           await _secureStorage!.write(key: _tokenKey, value: tokenToSave);
+          print("[AuthService] Validation immédiate du stockage Mobile : Sauvegardé dans SecureStorage");
         }
         return tokenToSave;
       } else {
