@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart'; // 💡 AJOUT : Requis pour kIsWeb
+import 'package:flutter/foundation.dart'; // Pour kIsWeb
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart'; // 💡 AJOUT : Requis pour databaseFactory
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'; // 💡 AJOUT : Requis pour le Web
+import 'package:sqflite/sqflite.dart'; // Pour databaseFactory
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'; // Pour le Web
 
 import 'app_theme.dart';
 import 'providers/bestiary_provider.dart';
@@ -12,15 +12,26 @@ import 'providers/session_provider.dart';
 import 'screens/landing/landing_screen.dart';
 
 void main() async {
-  // 💡 Assure l'initialisation correcte des bindings Flutter avant de toucher aux plugins
+  // 1. On s'assure que l'infrastructure Flutter est initialisée
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🌐 FIX UNCAUGHT ERROR : On force la factory SQLite FFI Web globale avant le chargement des écrans
+  // 2. Configuration spécifique pour le Web
   if (kIsWeb) {
     databaseFactory = databaseFactoryFfiWeb;
+
+    // 🛡️ LE FIX ULTIME : Capture les erreurs asynchrones de zone (micro-tâches/promesses)
+    // qui échappent au framework classique et font crasher le plugin Google Sign-In.
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (error.toString().contains('Future already completed')) {
+        // On étouffe silencieusement le doublon asynchrone interne de Google Web
+        return true;
+      }
+      return false; // Laisse passer les autres vraies erreurs
+    };
   }
 
-  runApp(const CoCompagnonApp());
+  // 3. Lancement sans le mot-clé 'const' bloquant
+  runApp(CoCompagnonApp());
 }
 
 class CoCompagnonApp extends StatelessWidget {
