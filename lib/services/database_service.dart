@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'dart:convert';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../constants/voies_data.dart';
@@ -343,7 +344,7 @@ class DatabaseService {
         vol_val INTEGER NOT NULL DEFAULT 0,
         attacks_json TEXT NOT NULL DEFAULT '[]',
         capacities_json TEXT NOT NULL DEFAULT '[]',
-        legendary_stats_json TEXT NOT NULL DEFAULT '[]',
+        superior_stats_json TEXT NOT NULL DEFAULT '[]', 
         is_predefined INTEGER NOT NULL DEFAULT 0
       )
     ''');
@@ -549,11 +550,26 @@ class DatabaseService {
     return template.copyWith(id: id);
   }
 
-  Future<void> updateTemplate(CharacterTemplate template) async {
+  Future<int> updateTemplate(CharacterTemplate template) async {
     final db = await database;
-    await db.update(
+
+    final Map<String, dynamic> data = template.toMap();
+    data.remove('id');
+
+    // Blindage des chaînes JSON pour SQLite
+    if (data['attacks_json'] != null && data['attacks_json'] is! String) {
+      data['attacks_json'] = jsonEncode(data['attacks_json']);
+    }
+    if (data['capacities_json'] != null && data['capacities_json'] is! String) {
+      data['capacities_json'] = jsonEncode(data['capacities_json']);
+    }
+    if (data['superior_stats_json'] != null && data['superior_stats_json'] is! String) {
+      data['superior_stats_json'] = jsonEncode(data['superior_stats_json']);
+    }
+
+    return await db.update(
       'character_templates',
-      template.toMap(),
+      data,
       where: 'id = ?',
       whereArgs: [template.id],
     );

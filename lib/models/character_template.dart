@@ -17,6 +17,8 @@ enum CreatureType {
 }
 
 enum CreatureTaille {
+  minuscule('Minuscule'),
+  tresPetite('Très Petite'),
   petite('Petite'),
   moyenne('Moyenne'),
   grande('Grande'),
@@ -51,10 +53,13 @@ enum CreatureArchetype {
 }
 
 /// An attack entry for a creature template.
+/// An attack entry for a creature template.
 class TemplateAttack {
   final String name;
   final int bonusAtk;
   final int nbAttacks;
+  final String additionalEffect;
+  final String description;
   final String dm;
 
   const TemplateAttack({
@@ -62,33 +67,46 @@ class TemplateAttack {
     this.bonusAtk = 0,
     this.nbAttacks = 1,
     this.dm = '',
+    this.additionalEffect = '',
+    this.description = '',
   });
 
+  // 💡 IMPACT FIX : On ajoute les nouveaux champs dans le JSON pour la DB
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'bonusAtk': bonusAtk,
-        'nbAttacks': nbAttacks,
-        'dm': dm,
-      };
+    'name': name,
+    'bonusAtk': bonusAtk,
+    'nbAttacks': nbAttacks,
+    'dm': dm,
+    'additionalEffect': additionalEffect,
+    'description': description,
+  };
 
+  // 💡 IMPACT FIX : On récupère les valeurs au décodage avec sécurité par défaut
   factory TemplateAttack.fromJson(Map<String, dynamic> j) => TemplateAttack(
-        name: j['name'] as String? ?? '',
-        bonusAtk: j['bonusAtk'] as int? ?? 0,
-        nbAttacks: j['nbAttacks'] as int? ?? 1,
-        dm: j['dm'] as String? ?? '',
-      );
+    name: j['name'] as String? ?? '',
+    bonusAtk: j['bonusAtk'] as int? ?? 0,
+    nbAttacks: j['nbAttacks'] as int? ?? 1,
+    dm: j['dm'] as String? ?? '',
+    additionalEffect: j['additionalEffect'] as String? ?? '',
+    description: j['description'] as String? ?? '',
+  );
 
+  // 💡 IMPACT FIX : On met à jour le copyWith pour l'éditeur d'attaques
   TemplateAttack copyWith({
     String? name,
     int? bonusAtk,
     int? nbAttacks,
     String? dm,
+    String? additionalEffect,
+    String? description,
   }) =>
       TemplateAttack(
         name: name ?? this.name,
         bonusAtk: bonusAtk ?? this.bonusAtk,
         nbAttacks: nbAttacks ?? this.nbAttacks,
         dm: dm ?? this.dm,
+        additionalEffect: additionalEffect ?? this.additionalEffect,
+        description: description ?? this.description,
       );
 }
 
@@ -138,15 +156,17 @@ class TemplateCapacity {
 class CharacterTemplate {
   final int? id;
   final String name;
+  final String? description;
   final bool isAlly;
   final int baseInitiative;
   final int maxHp;
+  final int rd;
   final int def;
   final String vitesse;
   final String? imageUrl;
 
   // Extended creature fields
-  final int? nc;
+  final double? nc;
   final CreatureType creatureType;
   final CreatureTaille taille;
   final CreatureArchetype archetype;
@@ -171,9 +191,11 @@ class CharacterTemplate {
   const CharacterTemplate({
     this.id,
     required this.name,
+    this.description,
     required this.isAlly,
     required this.baseInitiative,
     required this.maxHp,
+    this.rd = 0,
     this.def = 10,
     this.vitesse = '9m',
     this.imageUrl,
@@ -194,30 +216,33 @@ class CharacterTemplate {
   });
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'name': name,
-        'is_ally': isAlly ? 1 : 0,
-        'base_initiative': baseInitiative,
-        'max_hp': maxHp,
-        'def': def,
-        'vitesse': vitesse,
-        'image_url': imageUrl,
-        'nc': nc,
-        'creature_type': creatureType.name,
-        'taille': taille.name,
-        'archetype': archetype.name,
-        'for_val': forVal,
-        'agi_val': agiVal,
-        'con_val': conVal,
-        'int_val': intVal,
-        'per_val': perVal,
-        'cha_val': chaVal,
-        'vol_val': volVal,
-        'attacks_json': jsonEncode(attacks.map((a) => a.toJson()).toList()),
-        'capacities_json':
-            jsonEncode(capacities.map((c) => c.toJson()).toList()),
-        'superior_stats_json': jsonEncode(superiorStats.toList()),
-      };
+    if (id != null) 'id': id,
+    'name': name,
+    'is_ally': isAlly ? 1 : 0,
+    'base_initiative': baseInitiative,
+    'max_hp': maxHp,
+    'def': def,
+    'vitesse': vitesse,
+    'image_url': imageUrl,
+    // 💡 FIX DOUBLE/SQLITE : On force le stockage d'un num générique ou null.
+    // Si c'est un entier (ex: 5.0), on peut éventuellement le laisser couler,
+    // mais pour SQLite, s'assurer que ce n'est pas un objet bizarre.
+    'nc': nc,
+    'creature_type': creatureType.name,
+    'taille': taille.name,
+    'archetype': archetype.name,
+    'for_val': forVal,
+    'agi_val': agiVal,
+    'con_val': conVal,
+    'int_val': intVal,
+    'per_val': perVal,
+    'cha_val': chaVal,
+    'vol_val': volVal,
+    'attacks_json': jsonEncode(attacks.map((a) => a.toJson()).toList()),
+    'capacities_json':
+    jsonEncode(capacities.map((c) => c.toJson()).toList()),
+    'superior_stats_json': jsonEncode(superiorStats.toList()),
+  };
 
   factory CharacterTemplate.fromMap(Map<String, dynamic> map) {
     List<TemplateAttack> attacks = [];
@@ -256,7 +281,14 @@ class CharacterTemplate {
       def: (map['def'] as int?) ?? 10,
       vitesse: (map['vitesse'] as String?) ?? '9m',
       imageUrl: map['image_url'] as String?,
-      nc: map['nc'] as int?,
+      // 💡 CODE CORRIGÉ : Conversion adaptative int -> double
+      nc: () {
+        final rawNc = map['nc'];
+        if (rawNc == null) return null;
+        if (rawNc is num) return rawNc.toDouble(); // Gère les int et les double
+        if (rawNc is String) return double.tryParse(rawNc);
+        return null;
+      }(),
       creatureType: CreatureType.fromString(map['creature_type'] as String?),
       taille: CreatureTaille.fromString(map['taille'] as String?),
       archetype: CreatureArchetype.fromString(map['archetype'] as String?),
@@ -307,7 +339,7 @@ class CharacterTemplate {
         def: def ?? this.def,
         vitesse: vitesse ?? this.vitesse,
         imageUrl: clearImageUrl ? null : (imageUrl ?? this.imageUrl),
-        nc: nc == _sentinel ? this.nc : nc as int?,
+        nc: nc == _sentinel ? this.nc : nc as double?,
         creatureType: creatureType ?? this.creatureType,
         taille: taille ?? this.taille,
         archetype: archetype ?? this.archetype,

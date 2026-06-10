@@ -10,7 +10,7 @@ import '../../providers/bestiary_provider.dart';
 int _modToScore(int mod) => 10 + mod * 2;
 
 class _ArchEntry {
-  final int ncMini;
+  final double ncMini;
   final bool ncMiniIsHalf;
   final int agiMod;
   final int conMod;
@@ -96,10 +96,10 @@ class _NcEntry {
 
   const _NcEntry(
       {required this.nc,
-      required this.def,
-      required this.pv,
-      required this.att,
-      required this.dm});
+        required this.def,
+        required this.pv,
+        required this.att,
+        required this.dm});
 }
 
 const List<_NcEntry> _ncTable = [
@@ -193,7 +193,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   CreatureArchetype _archetype = CreatureArchetype.standard;
 
   // Step: NC
-  int _nc = 5;
+  double _nc = 5;
 
   // Step: other stats (indices into qualifier lists)
   int _perIdx = 2; // ordinaire
@@ -221,7 +221,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   int get _totalSteps => _allSteps.length;
 
   /// NC minimum imposed by the current taille + archétype.
-  int get _ncMin {
+  double get _ncMin {
     final entry = _archetypeTable[_taille]?[_archetype];
     if (entry == null) return 0;
     return entry.ncMiniIsHalf ? 0 : entry.ncMini;
@@ -252,7 +252,8 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     final init = 10 + perMod;
 
     final archEntry = _archetypeTable[_taille]![_archetype]!;
-    final ncEntry = _ncTable.firstWhere((e) => e.nc == _nc, orElse: () => _ncTable.last);
+    // 💡 FIX : Conversion explicite en int via round() pour la recherche dans _ncTable
+    final ncEntry = _ncTable.firstWhere((e) => e.nc == _nc.round(), orElse: () => _ncTable.last);
     final superior = archEntry.forSuperior ? const {'for'} : const <String>{};
 
     return CharacterTemplate(
@@ -487,7 +488,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     );
   }
 
-  int _computeNcMin(CreatureTaille taille, CreatureArchetype archetype) {
+  double _computeNcMin(CreatureTaille taille, CreatureArchetype archetype) {
     final entry = _archetypeTable[taille]?[archetype];
     if (entry == null) return 0;
     return entry.ncMiniIsHalf ? 0 : entry.ncMini;
@@ -498,11 +499,11 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
     const descriptions = {
       CreatureArchetype.inferieur:
-          'Herbivore, peu armé, combat seulement pour se défendre ou à la limite inférieure de sa catégorie.',
+      'Herbivore, peu armé, combat seulement pour se défendre ou à la limite inférieure de sa catégorie.',
       CreatureArchetype.standard:
-          'Créature ordinaire, moyens d\'attaque efficaces mais pas particulièrement agressive.',
+      'Créature ordinaire, moyens d\'attaque efficaces mais pas particulièrement agressive.',
       CreatureArchetype.puissant:
-          'Très agressif ou à la limite haute de sa catégorie, combat au-dessus de son gabarit.',
+      'Très agressif ou à la limite haute de sa catégorie, combat au-dessus de son gabarit.',
     };
     return GestureDetector(
       onTap: () {
@@ -559,7 +560,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   Widget _gabaritPreview(BuildContext context) {
     final entry = _archetypeTable[_taille]?[_archetype];
     if (entry == null) return const SizedBox.shrink();
-    final ncLabel = entry.ncMiniIsHalf ? '½' : '${entry.ncMini}';
+    final ncLabel = entry.ncMiniIsHalf ? '½' : '${entry.ncMini.toStringAsFixed(0)}';
     final forStr =
         '${entry.forMod >= 0 ? '+' : ''}${entry.forMod}${entry.forSuperior ? '⭐' : ''}';
     final agiStr = '${entry.agiMod >= 0 ? '+' : ''}${entry.agiMod}';
@@ -601,10 +602,11 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   // ── Step: NC ─────────────────────────────────────────────────────────────────
 
   Widget _buildNcStep(BuildContext context) {
-    final entry = _ncTable.firstWhere((e) => e.nc == _nc, orElse: () => _ncTable.first);
+    // 💡 FIX : Utilisation de _nc.round() pour correspondre aux entiers du tableau de profil de combat
+    final entry = _ncTable.firstWhere((e) => e.nc == _nc.round(), orElse: () => _ncTable.first);
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
     final archEntry = _archetypeTable[_taille]?[_archetype];
-    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '$_ncMin';
+    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '${_ncMin.toStringAsFixed(0)}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,11 +659,12 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
                 border: Border.all(color: color.withValues(alpha: 0.5)),
               ),
               child: Text(
-                'NC $_nc',
+                // 💡 Affichage joli : Supprime le .0 si c'est un entier
+                'NC ${_nc % 1 == 0 ? _nc.toStringAsFixed(0) : _nc.toString()}',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -672,12 +675,13 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           ],
         ),
         Slider(
-          value: _nc.toDouble(),
-          min: _ncMin.toDouble(),
-          max: 20,
-          divisions: 20 - _ncMin,
-          label: 'NC $_nc',
-          onChanged: (v) => setState(() => _nc = v.round()),
+          value: _nc,
+          min: _ncMin,
+          max: 20.0,
+          // 💡 FIX : Conversion explicite en int pour les divisions du Slider afin d'éviter l'erreur d'opération sur les doubles
+          divisions: (20.0 - _ncMin).round(),
+          label: 'NC ${_nc % 1 == 0 ? _nc.toStringAsFixed(0) : _nc.toString()}',
+          onChanged: (v) => setState(() => _nc = v),
           activeColor: color,
         ),
         const SizedBox(height: 16),
@@ -692,9 +696,9 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Stats de combat pour NC $_nc',
+              Text('Stats de combat pour NC ${_nc % 1 == 0 ? _nc.toStringAsFixed(0) : _nc.toString()}',
                   style:
-                      TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                  TextStyle(color: Colors.grey.shade400, fontSize: 12)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -730,13 +734,13 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         ),
         const SizedBox(height: 24),
         _qualifierRow(context, 'PER', '👁',  _perQuals, _perIdx,
-            (i) => setState(() => _perIdx = i)),
+                (i) => setState(() => _perIdx = i)),
         _qualifierRow(context, 'CHA', '✨', _chaQuals, _chaIdx,
-            (i) => setState(() => _chaIdx = i)),
+                (i) => setState(() => _chaIdx = i)),
         _qualifierRow(context, 'INT', '🧠', _intQuals, _intIdx,
-            (i) => setState(() => _intIdx = i)),
+                (i) => setState(() => _intIdx = i)),
         _qualifierRow(context, 'VOL', '🔥', _volQuals, _volIdx,
-            (i) => setState(() => _volIdx = i)),
+                (i) => setState(() => _volIdx = i)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
@@ -763,13 +767,13 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   }
 
   Widget _qualifierRow(
-    BuildContext context,
-    String statName,
-    String emoji,
-    List<_Qualifier> quals,
-    int selectedIdx,
-    ValueChanged<int> onChanged,
-  ) {
+      BuildContext context,
+      String statName,
+      String emoji,
+      List<_Qualifier> quals,
+      int selectedIdx,
+      ValueChanged<int> onChanged,
+      ) {
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
     final mod = quals[selectedIdx].mod;
     final modStr = mod >= 0 ? '+$mod' : '$mod';
@@ -843,7 +847,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
     final template = _buildTemplate();
     final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
     final archEntry = _archetypeTable[_taille]?[_archetype];
-    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '$_ncMin';
+    final ncMinLabel = archEntry?.ncMiniIsHalf == true ? '½' : '${_ncMin.toStringAsFixed(0)}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -886,7 +890,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
                       template.creatureType.label,
                       template.taille.label,
                       template.archetype.label,
-                      'NC $_nc (mini $ncMinLabel)',
+                      'NC ${_nc % 1 == 0 ? _nc.toStringAsFixed(0) : _nc.toString()} (mini $ncMinLabel)',
                     ].join('  •  '),
                     style: TextStyle(color: color, fontSize: 12),
                   ),
@@ -920,7 +924,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           const SizedBox(height: 8),
           Container(
             padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(10),
@@ -953,10 +957,10 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
             onPressed: _saving ? null : _confirm,
             icon: _saving
                 ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white))
                 : const Icon(Icons.add, color: Colors.white),
             label: Text(_saving ? 'Ajout en cours…' : 'Ajouter au bestiaire'),
             style: FilledButton.styleFrom(
@@ -973,27 +977,27 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   // ── Shared helpers ────────────────────────────────────────────────────────────
 
   Widget _stepTitle(BuildContext context, String title) => Text(
-        title,
-        style: Theme.of(context).textTheme.titleLarge,
-      );
+    title,
+    style: Theme.of(context).textTheme.titleLarge,
+  );
 
   Widget _sectionLabel(BuildContext context, String label) => Text(
-        label,
-        style: TextStyle(
-          color: Colors.grey.shade400,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
-      );
+    label,
+    style: TextStyle(
+      color: Colors.grey.shade400,
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+    ),
+  );
 
   Widget _reviewSection(BuildContext context, String label) => Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.grey.shade400,
-              letterSpacing: 0.8,
-            ),
-      );
+    label,
+    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+      color: Colors.grey.shade400,
+      letterSpacing: 0.8,
+    ),
+  );
 
   Widget _typeBtn(
       BuildContext context, String label, IconData icon, bool ally) {
@@ -1045,7 +1049,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
                   ? color.withValues(alpha: 0.15)
@@ -1061,7 +1065,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
               style: TextStyle(
                 color: isSelected ? color : Colors.grey.shade300,
                 fontWeight:
-                    isSelected ? FontWeight.bold : FontWeight.normal,
+                isSelected ? FontWeight.bold : FontWeight.normal,
                 fontSize: 13,
               ),
             ),
@@ -1072,32 +1076,32 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
   }
 
   Widget _previewBadge(String label, String value) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white12),
-        ),
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: '$label ',
-                style:
-                    TextStyle(color: Colors.grey.shade500, fontSize: 11),
-              ),
-              TextSpan(
-                text: value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-            ],
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.white12),
+    ),
+    child: RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label ',
+            style:
+            TextStyle(color: Colors.grey.shade500, fontSize: 11),
           ),
-        ),
-      );
+          TextSpan(
+            text: value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _statBadge(
       BuildContext context, String label, String value, Color color) {
@@ -1113,7 +1117,7 @@ class _CreatureWizardSheetState extends State<CreatureWizardSheet> {
         children: [
           Text(label,
               style:
-                  TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+              TextStyle(color: Colors.grey.shade400, fontSize: 12)),
           const SizedBox(width: 6),
           Text(value,
               style: TextStyle(

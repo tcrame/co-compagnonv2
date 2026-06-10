@@ -146,27 +146,28 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      Text(
                         'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  • ',
                         style: Theme.of(context).textTheme.bodySmall,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Icon(Icons.shield, color: Colors.grey.shade500, size: 13),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${t.def}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (t.nc != null)
+                      Icon(Icons.shield, color: Colors.grey.shade500, size: 13),
+                      const SizedBox(width: 2),
                       Text(
-                        '  •  NC ${t.nc}',
+                        '${t.def}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
-                  ],
+                      if (t.nc != null)
+                        Text(
+                          '  •  NC ${t.nc! % 1 == 0 ? t.nc!.toStringAsFixed(0) : t.nc!}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
                 ),
                 Text(
                   '${t.creatureType.label}  •  ${t.taille.label}  •  ${t.archetype.label}',
@@ -1106,11 +1107,12 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
 
   Widget _attackEditor(BuildContext context, int index, TemplateAttack a) {
     final nameCtrl = TextEditingController(text: a.name);
-    final bonusCtrl =
-        TextEditingController(text: a.bonusAtk.toString());
-    final nbCtrl =
-        TextEditingController(text: a.nbAttacks.toString());
+    final bonusCtrl = TextEditingController(text: a.bonusAtk.toString());
+    final nbCtrl = TextEditingController(text: a.nbAttacks.toString());
     final dmCtrl = TextEditingController(text: a.dm);
+    // 💡 NOUVEAU : Contrôleurs pour tes nouveaux champs
+    final effectCtrl = TextEditingController(text: a.additionalEffect);
+    final descCtrl = TextEditingController(text: a.description);
 
     void update() {
       _attacks[index] = a.copyWith(
@@ -1118,6 +1120,8 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
         bonusAtk: int.tryParse(bonusCtrl.text) ?? 0,
         nbAttacks: int.tryParse(nbCtrl.text) ?? 1,
         dm: dmCtrl.text,
+        additionalEffect: effectCtrl.text,
+        description: descCtrl.text,
       );
     }
 
@@ -1125,9 +1129,11 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
     bonusCtrl.addListener(update);
     nbCtrl.addListener(update);
     dmCtrl.addListener(update);
+    effectCtrl.addListener(update);
+    descCtrl.addListener(update);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
@@ -1141,16 +1147,14 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
                 child: TextField(
                   controller: nameCtrl,
                   decoration: const InputDecoration(
-                    labelText: 'Nom (ex: Épée courte)',
+                    labelText: 'Nom (ex: Morsure, Épée longue)',
                     isDense: true,
                   ),
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: Colors.red, size: 20),
-                onPressed: () =>
-                    setState(() => _attacks.removeAt(index)),
+                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                onPressed: () => setState(() => _attacks.removeAt(index)),
               ),
             ],
           ),
@@ -1160,12 +1164,8 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
               Expanded(
                 child: TextField(
                   controller: bonusCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(
-                      signed: true),
-                  decoration: const InputDecoration(
-                    labelText: 'Bonus atk (+7)',
-                    isDense: true,
-                  ),
+                  keyboardType: const TextInputType.numberWithOptions(signed: true),
+                  decoration: const InputDecoration(labelText: 'Atk (+7)', isDense: true),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1173,26 +1173,38 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
                 child: TextField(
                   controller: nbCtrl,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
-                  decoration: const InputDecoration(
-                    labelText: 'Nb attaques',
-                    isDense: true,
-                  ),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(labelText: 'Nb Att.', isDense: true),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
                   controller: dmCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'DM (1d6+3)',
-                    isDense: true,
-                  ),
+                  decoration: const InputDecoration(labelText: 'DM (1d6+3)', isDense: true),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          // 💡 AJOUT DES DEUX CHAMPS DANS L'INTERFACE DE SAISIE
+          TextField(
+            controller: effectCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Effet secondaire (ex: Paralysie, Poison mortel 1d6)',
+              isDense: true,
+              prefixIcon: Icon(Icons.star_border, size: 16, color: Colors.amber),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: descCtrl,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Description / Portée / Conditions',
+              isDense: true,
+              alignLabelWithHint: true,
+            ),
           ),
         ],
       ),
@@ -1416,7 +1428,7 @@ class _TemplateFormSheetState extends State<TemplateFormSheet>
       maxHp: int.tryParse(_hpCtrl.text) ?? 1,
       def: int.tryParse(_defCtrl.text) ?? 10,
       imageUrl: _imageUrl,
-      nc: _ncCtrl.text.trim().isEmpty ? null : int.tryParse(_ncCtrl.text),
+      nc: _ncCtrl.text.trim().isEmpty ? null : double.tryParse(_ncCtrl.text),
       creatureType: _creatureType,
       taille: _taille,
       archetype: _archetype,
