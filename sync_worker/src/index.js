@@ -193,6 +193,17 @@ async function ensureSchema(sql) {
             updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
         )
     `;
+
+    await sql`
+        CREATE TABLE IF NOT EXISTS shared_collections (
+          sync_uuid VARCHAR(255) PRIMARY KEY,
+          owner_email VARCHAR(255) NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          data_blob TEXT NOT NULL, -- Contiendra tous les monstres au format JSON
+          last_modified_at TIMESTAMP NOT NULL
+        )
+    `;
+
 }
 
 async function upsertUserAndGetRole(googleUser, sql) {
@@ -652,6 +663,73 @@ async function handleSpectate(payload, sql, origin) {
     }, 200, origin);
 }
 
+// ⚡ POST /sync/collection/share
+async function handleCollectionShare(payload, googleUser, sql, origin) {
+    const { sync_uuid, name, templates } = payload;
+    const userEmail = googleUser.email;
+
+    if (!sync_uuid || !name || !templates) {
+        return jsonResponse({ error: 'Données de collection incomplètes' }, 400, origin);
+    }
+
+    // On sauvegarde ou met à jour la collection partagée dans PostgreSQL
+    // On convertit le tableau de monstres (templates) en chaîne JSON pour le stocker dans un champ TEXT/JSONB
+    await sql`
+        INSERT INTO shared_collections (sync_uuid, owner_email, name, data_blob, last_modified_at)
+        VALUES (${sync_uuid}, ${userEmail}, ${name}, ${JSON.stringify(templates)}, NOW())
+        ON CONFLICT (sync_uuid) 
+        DO UPDATE SET name = ${name}, data_blob = ${JSON.stringify(templates)}, last_modified_at = NOW();
+    `;
+
+    return jsonResponse({ success: true, message: 'Collection synchronisée et prête au partage !' }, 200, origin);
+}
+
+// ⚡ POST /sync/collection/unshare
+async function handleCollectionUnshare(payload, googleUser, sql, origin) {
+    const { sync_uuid } = payload;
+    const userEmail = googleUser.email; // On récupère l'email sécurisé via le token Google
+
+    if (!sync_uuid) {
+        return jsonResponse({ error: 'UUID manquant' }, 400, origin);
+    }
+
+    // On supprime uniquement si le sync_uuid correspond ET que c'est le bon propriétaire
+    const deleted = await sql`
+        DELETE FROM shared_collections 
+        WHERE sync_uuid = ${sync_uuid} AND owner_email = ${userEmail}
+        RETURNING sync_uuid
+    `;
+
+    if (deleted.length === 0) {
+        return jsonResponse({ error: 'Collection introuvable sur le cloud ou accès refusé (vous n\'êtes pas le propriétaire).' }, 403, origin);
+    }
+
+    return jsonResponse({ success: true, message: 'Collection retirée du cloud avec succès !' }, 200, origin);
+}
+
+// ⚡ POST /sync/collection/get
+async function handleCollectionGet(payload, sql, origin) {
+    const { sync_uuid } = payload;
+
+    if (!sync_uuid) {
+        return jsonResponse({ error: 'UUID manquant' }, 400, origin);
+    }
+
+    const rows = await sql`
+        SELECT name, data_blob FROM shared_collections 
+        WHERE sync_uuid = ${sync_uuid}
+    `;
+
+    if (rows.length === 0) {
+        return jsonResponse({ error: 'Collection introuvable ou expirée' }, 404, origin);
+    }
+
+    return jsonResponse({
+        name: rows[0].name,
+        templates: JSON.parse(rows[0].data_blob) // On renvoie la liste des monstres
+    }, 200, origin);
+}
+
 export default {
     async fetch(request, env) {
         const origin = parseOrigin(request, env);
@@ -691,6 +769,9 @@ export default {
         if (path === '/session/spectate') return handleSpectate(payload, sql, origin);
         if (path === '/session/push') return handleSessionPush(payload, sql, origin);
 
+
+        if (path === '/sync/collection/get') return handleCollectionGet(payload, sql, origin); // Pas besoin d'être connecté pour télécharger via un lien !
+
         // 🔐 BARRIÈRE DE SÉCURITÉ : Tout ce qui est en dessous nécessite un compte Google valide
         let googleUser;
         try {
@@ -710,6 +791,8 @@ export default {
         if (path === '/sync/revoke') return handleRevoke(payload, googleUser, sql, origin);
         if (path === '/sync/shares') return handleShares(payload, googleUser, sql, origin);
         if (path === '/sync/delete') return handleDelete(payload, googleUser, sql, origin);
+        if (path === '/sync/collection/share') return handleCollectionShare(payload, googleUser, sql, origin); // 💡 Gardée ici, nettoyée du reste !
+        if (path === '/sync/collection/unshare') return handleCollectionUnshare(payload, googleUser, sql, origin);
 
         return jsonResponse({error: 'Route inconnue'}, 404, origin);
     },

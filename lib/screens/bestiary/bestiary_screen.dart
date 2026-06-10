@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart'; // 💡 INDISPENSABLE POUR LE PRESSE-PAPIERS (Clipboard)
 import 'package:provider/provider.dart';
 
-import '../../app_theme.dart';
 import '../../models/character_template.dart';
+import '../../models/creature_collection.dart';
 import '../../providers/bestiary_provider.dart';
-import '../../widgets/image_picker_field.dart';
-import '../../widgets/participant_avatar.dart';
-import 'creature_wizard_sheet.dart';
+import '../../providers/collection_provider.dart';
+import '../../services/auth_service.dart';
+import 'widgets/creature_detail_sheet.dart';
+import 'creature_form_screen.dart'; // Import nécessaire pour l'édition de créature
 
 class BestiaryScreen extends StatefulWidget {
   const BestiaryScreen({super.key});
@@ -17,1437 +18,536 @@ class BestiaryScreen extends StatefulWidget {
 }
 
 class _BestiaryScreenState extends State<BestiaryScreen> {
+  String _searchQuery = '';
+  String _selectedType = 'Tous';
+  String _selectedNc = 'Tous';
+  String _selectedFaction = 'Tous';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BestiaryProvider>().loadTemplates();
+      context.read<CollectionProvider>().loadCollections();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bestiaire'),
-        centerTitle: true,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Bestiaire & Collections'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.download_outlined),
+              tooltip: 'Importer une collection',
+              onPressed: () => _showImportCollectionDialog(context),
+            ),
+          ],
+          bottom: const TabBar(
+            tabs: [
+              Tab(icon: Icon(Icons.pets), text: 'Tous les monstres'),
+              Tab(icon: Icon(Icons.folder_special), text: 'Mes Collections'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildAllMonstersTab(),
+            _buildCollectionsTab(),
+          ],
+        ),
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton(
+              onPressed: () {
+                final tabIndex = DefaultTabController.of(context).index;
+                if (tabIndex == 0) {
+                  // Ouvre le formulaire de création
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CreatureFormScreen()),
+                  );
+                } else {
+                  _showCreateCollectionDialog(context);
+                }
+              },
+              child: const Icon(Icons.add),
+            );
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddMenu(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Nouveau'),
-      ),
-      body: Consumer<BestiaryProvider>(
-        builder: (context, provider, _) {
-          if (provider.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    );
+  }
 
-          if (provider.templates.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.auto_fix_high,
-                      size: 72, color: Colors.grey.shade700),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Bestiaire vide',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: Colors.grey.shade500),
+  // ── 🌐 Onglet 1 : Tout le Bestiaire Filtrable ─────────────────────────────
+
+  Widget _buildAllMonstersTab() {
+    return Consumer<BestiaryProvider>(
+      builder: (context, provider, child) {
+        if (provider.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final allTypes = {
+          'Tous',
+          ...provider.templates
+              .map((t) => t.creatureType.label)
+              .where((text) => text.trim().isNotEmpty)
+        };
+
+        final sortedTypes = ['Tous', ...allTypes.where((t) => t != 'Tous').toList()..sort()];
+        final allNcs = {'Tous', ...provider.templates.map((t) => t.nc?.toString() ?? '0')};
+
+        final cleanNumbers = allNcs
+            .where((nc) => nc != 'Tous')
+            .map((nc) => int.tryParse(nc) ?? 0)
+            .toList()
+          ..sort();
+
+        final sortedNcs = ['Tous', ...cleanNumbers.map((nc) => nc.toString())];
+
+        final filtered = provider.templates.where((t) {
+          final matchesSearch = t.name.toLowerCase().contains(_searchQuery.toLowerCase());
+          final matchesType = _selectedType == 'Tous' || t.creatureType.label == _selectedType;
+          final matchesNc = _selectedNc == 'Tous' || (t.nc?.toString() ?? '0') == _selectedNc;
+          final matchesFaction = _selectedFaction == 'Tous' ||
+              (_selectedFaction == 'Alliés' && t.isAlly) ||
+              (_selectedFaction == 'Ennemis' && !t.isAlly);
+          return matchesSearch && matchesType && matchesNc && matchesFaction;
+        }).toList();
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Rechercher une créature...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => setState(() => _searchQuery = ''),
+                  )
+                      : null,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onChanged: (value) => setState(() => _searchQuery = value),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterDropdown('Type', _selectedType, sortedTypes, (v) => setState(() => _selectedType = v!)),
+                    const SizedBox(width: 8),
+                    _buildFilterDropdown('NC', _selectedNc, sortedNcs, (v) => setState(() => _selectedNc = v!)),
+                    const SizedBox(width: 8),
+                    _buildFilterDropdown('Camp', _selectedFaction, ['Tous', 'Alliés', 'Ennemis'], (v) => setState(() => _selectedFaction = v!)),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: filtered.isEmpty
+                  ? const Center(child: Text('Aucune créature trouvée.'))
+                  : ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 1),
+                itemBuilder: (context, index) {
+                  final template = filtered[index];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    leading: CircleAvatar(
+                      backgroundColor: template.isAlly ? Colors.green.shade800 : Colors.red.shade800,
+                      child: Icon(template.isAlly ? Icons.shield : Icons.gavel, color: Colors.white, size: 20),
+                    ),
+                    title: Text(template.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('NC ${template.nc ?? 0} • PV Max: ${template.maxHp} • Type: ${template.creatureType.label}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.create_new_folder_outlined, color: Colors.amber),
+                          tooltip: 'Ranger dans un dossier',
+                          onPressed: () => _showAddToCollectionDialog(context, template),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => provider.deleteTemplate(template.id!),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (context) => CreatureDetailSheet(template: template),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade900,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade800),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: items.contains(value) ? value : 'Tous',
+          items: items.map((item) => DropdownMenuItem(value: item, child: Text(item == 'Tous' ? '$label : Tout' : item, style: const TextStyle(fontSize: 13)))).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  // ── 📂 Onglet 2 : Liste des Collections (Dossiers) ───────────────────────
+
+  Widget _buildCollectionsTab() {
+    return Consumer<CollectionProvider>(
+      builder: (context, colProd, child) {
+        if (colProd.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (colProd.collections.isEmpty) {
+          return const Center(child: Text('Créez votre première collection avec le bouton +'));
+        }
+
+        return ListView.builder(
+          itemCount: colProd.collections.length,
+          itemBuilder: (context, index) {
+            final collection = colProd.collections[index];
+            return ExpansionTile(
+              leading: const Icon(Icons.folder, color: Colors.amber),
+              title: Text(collection.name),
+              subtitle: Text('${collection.templates.length} créature(s)'),
+              trailing: PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                tooltip: 'Options de collection',
+                color: const Color(0xFF2A2A2A), // Fond sombre assorti à ton thème
+                onSelected: (value) {
+                  switch (value) {
+                    case 'copy':
+                      Clipboard.setData(ClipboardData(text: collection.syncUuid));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('📋 Code de la collection copié !')),
+                      );
+                      break;
+                    case 'share':
+                      _handleShareCollection(context, collection);
+                      break;
+                    case 'unshare':
+                      _handleUnshareCollection(context, collection);
+                      break;
+                    case 'delete':
+                      colProd.deleteCollection(collection.id!);
+                      break;
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'copy',
+                    child: Row(
+                      children: [
+                        Icon(Icons.copy, color: Colors.grey, size: 20),
+                        SizedBox(width: 12),
+                        Text('Copier le code', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Ajoutez des monstres et personnages',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const PopupMenuItem<String>(
+                    value: 'share',
+                    child: Row(
+                      children: [
+                        Icon(Icons.cloud_upload, color: Colors.blue, size: 20),
+                        SizedBox(width: 12),
+                        Text('Mettre à jour le cloud', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'unshare',
+                    child: Row(
+                      children: [
+                        Icon(Icons.cloud_off, color: Colors.orange, size: 20),
+                        SizedBox(width: 12),
+                        Text('Retirer du cloud', style: TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(height: 1),
+                  const PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                        SizedBox(width: 12),
+                        Text('Supprimer', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            );
-          }
-
-          final allies =
-              provider.templates.where((t) => t.isAlly).toList();
-          final enemies =
-              provider.templates.where((t) => !t.isAlly).toList();
-
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            children: [
-              if (allies.isNotEmpty) ...[
-                _sectionHeader(context, 'Aventuriers',
-                    AppColors.allyPrimary, Icons.person),
-                const SizedBox(height: 8),
-                ...allies.map((t) => _templateTile(context, t, provider)),
-                const SizedBox(height: 16),
-              ],
-              if (enemies.isNotEmpty) ...[
-                _sectionHeader(context, 'Monstres & Ennemis',
-                    AppColors.enemyPrimary, Icons.dangerous),
-                const SizedBox(height: 8),
-                ...enemies.map((t) => _templateTile(context, t, provider)),
-              ],
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _sectionHeader(
-      BuildContext context, String label, Color color, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: color, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _templateTile(
-      BuildContext context, CharacterTemplate t, BestiaryProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Dismissible(
-        key: ValueKey(t.id),
-        direction: DismissDirection.endToStart,
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          decoration: BoxDecoration(
-            color: Colors.red.shade800,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.delete, color: Colors.white),
-        ),
-        confirmDismiss: (_) => _confirmDelete(context),
-        onDismissed: (_) => provider.deleteTemplate(t.id!),
-        child: Card(
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            leading: ParticipantAvatar(
-              name: t.name,
-              isAlly: t.isAlly,
-              imageUrl: t.imageUrl,
-              radius: 20,
-            ),
-            title: Text(t.name,
-                style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      Text(
-                        'Init: ${t.baseInitiative}  •  PV: ${t.maxHp}  • ',
-                        style: Theme.of(context).textTheme.bodySmall,
+              children: collection.templates.map((template) {
+                return ListTile(
+                  contentPadding: const EdgeInsets.only(left: 32, right: 16),
+                  leading: const Icon(Icons.pets, size: 18),
+                  title: Text(template.name),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                       ),
-                      Icon(Icons.shield, color: Colors.grey.shade500, size: 13),
-                      const SizedBox(width: 2),
-                      Text(
-                        '${t.def}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (t.nc != null)
-                        Text(
-                          '  •  NC ${t.nc! % 1 == 0 ? t.nc!.toStringAsFixed(0) : t.nc!}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                    ],
+                      builder: (context) => CreatureDetailSheet(template: template),
+                    );
+                  },
+                  trailing: IconButton(
+                    icon: const Icon(Icons.layers_clear, size: 18, color: Colors.grey),
+                    tooltip: 'Retirer du dossier',
+                    onPressed: () => colProd.removeMonsterFromCollection(collection, template.id!),
                   ),
-                ),
-                Text(
-                  '${t.creatureType.label}  •  ${t.taille.label}  •  ${t.archetype.label}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey.shade500,
-                      ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.info_outline,
-                      color: Colors.grey.shade500, size: 20),
-                  onPressed: () => _showDetailSheet(context, t),
-                ),
-                IconButton(
-                  icon: Icon(Icons.edit_outlined,
-                      color: Colors.grey.shade500, size: 20),
-                  onPressed: () => _showTemplateSheet(context, t),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
     );
   }
 
-  Future<bool?> _confirmDelete(BuildContext context) {
-    return showDialog<bool>(
+  // ── 💬 Boîtes de dialogue ───────────────────────────
+
+  void _showCreateCollectionDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer ?'),
-        content: const Text('Ce personnage sera retiré du bestiaire.'),
+      builder: (context) => AlertDialog(
+        title: const Text('Nouvelle Collection'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Nom du dossier (ex: Scénario 1)'),
+          autofocus: true,
+        ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Annuler')),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                context.read<CollectionProvider>().createCollection(controller.text.trim());
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Créer'),
           ),
         ],
       ),
     );
   }
 
-  void _showTemplateSheet(BuildContext context, CharacterTemplate? existing) {
-    showModalBottomSheet(
+  void _showAddToCollectionDialog(BuildContext context, CharacterTemplate template) {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => TemplateFormSheet(existing: existing),
+      builder: (context) {
+        final collections = context.watch<CollectionProvider>().collections;
+        return AlertDialog(
+          title: Text('Ajouter "${template.name}" à :'),
+          content: collections.isEmpty
+              ? const Text('Aucune collection existante. Créez-en une d\'abord.')
+              : SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: collections.length,
+              itemBuilder: (context, index) {
+                final col = collections[index];
+                final alreadyIn = col.templates.any((t) => t.id == template.id);
+
+                return ListTile(
+                  leading: Icon(Icons.folder, color: alreadyIn ? Colors.grey : Colors.amber),
+                  title: Text(col.name),
+                  trailing: alreadyIn ? const Icon(Icons.check, color: Colors.green) : null,
+                  enabled: !alreadyIn,
+                  onTap: () {
+                    context.read<CollectionProvider>().addMonsterToCollection(col, template);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Ajouté à la collection ${col.name}')),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer')),
+          ],
+        );
+      },
     );
   }
 
-  void _showDetailSheet(BuildContext context, CharacterTemplate t) {
-    showModalBottomSheet(
+  void _showImportCollectionDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      builder: (context) => AlertDialog(
+        title: const Text('Importer une Collection'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Coller l\'UUID de partage'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () async {
+              final uuid = controller.text.trim();
+              if (uuid.isNotEmpty) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Téléchargement...')));
+                final success = await context.read<CollectionProvider>().importCollectionFromShare(uuid);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(success ? 'Importé avec succès ! 🎉' : 'Erreur d\'importation.')),
+                );
+              }
+            },
+            child: const Text('Télécharger'),
+          ),
+        ],
       ),
-      builder: (_) => CreatureDetailSheet(template: t),
     );
   }
 
-  void _showAddMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-          child: Column(
+  Future<void> _handleShareCollection(BuildContext context, CreatureCollection collection) async {
+    final AuthService authService = AuthService();
+    final String? token = await authService.getToken();
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter avec votre compte Cloud/Google pour partager.')),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mise à jour sur le Cloud...')));
+    final uuidResult = await context.read<CollectionProvider>().shareCollection(collection, token);
+
+    if (uuidResult != null && !uuidResult.contains('Erreur')) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Collection partagée ! 🚀'),
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Text('Ajouter une créature',
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.enemyPrimary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.auto_fix_high,
-                      color: AppColors.enemyPrimary),
-                ),
-                title: const Text('Créature sur le pouce',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(
-                  'Assistant guidé : questions → stats auto-calculées',
-                  style:
-                      TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showWizard(context);
-                },
-              ),
-              const Divider(height: 20),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child:
-                      Icon(Icons.edit_note, color: Colors.grey.shade400),
-                ),
-                title: const Text('Saisie manuelle'),
-                subtitle: Text(
-                  'Remplir toutes les stats à la main',
-                  style:
-                      TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showTemplateSheet(context, null);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showWizard(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => const CreatureWizardSheet(),
-    );
-  }
-}
-
-// ── Creature Detail Sheet ─────────────────────────────────────────────────────
-
-class CreatureDetailSheet extends StatelessWidget {
-  final CharacterTemplate template;
-  const CreatureDetailSheet({super.key, required this.template});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = template;
-    final color = t.isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
-
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.75,
-      maxChildSize: 0.95,
-      minChildSize: 0.4,
-      builder: (_, ctrl) => SingleChildScrollView(
-        controller: ctrl,
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
+              const Text('Transmettez cet identifiant. Un autre MJ pourra l\'importer en un clic :'),
+              const SizedBox(height: 12),
+              // 💡 AJOUT : Conteneur propre avec Bouton de copie
+              Container(
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade800),
                 ),
-              ),
-            ),
-            // Header
-            Row(
-              children: [
-                ParticipantAvatar(
-                    name: t.name,
-                    isAlly: t.isAlly,
-                    imageUrl: t.imageUrl,
-                    radius: 26),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(t.name,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      Text(
-                        [
-                          t.creatureType.label,
-                          t.taille.label,
-                          t.archetype.label,
-                          if (t.nc != null) 'NC ${t.nc}',
-                        ].join('  •  '),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: color),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        uuidResult,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 13),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Combat stats
-            _sectionTitle(context, 'Statistiques de combat'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                _statBadge(context, '⚡ Init', '${t.baseInitiative}', color),
-                _statBadge(context, '❤️ PV', '${t.maxHp}', color),
-                _statBadge(context, '🛡 DEF', '${t.def}', color),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Characteristics
-            _sectionTitle(context, 'Caractéristiques'),
-            const SizedBox(height: 8),
-            _statsGrid(context, t),
-            // Attacks
-            if (t.attacks.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _sectionTitle(context, 'Attaques'),
-              const SizedBox(height: 8),
-              ...t.attacks.map((a) => _attackRow(context, a)),
-            ],
-            // Capacities
-            if (t.capacities.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _sectionTitle(context, 'Capacités'),
-              const SizedBox(height: 8),
-              ...t.capacities.map((c) => _capacityRow(context, c)),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionTitle(BuildContext context, String title) => Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Colors.grey.shade400,
-              letterSpacing: 0.8,
-            ),
-      );
-
-  Widget _statBadge(
-      BuildContext context, String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label,
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
-          const SizedBox(width: 6),
-          Text(value,
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.bold, fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  Widget _statsGrid(BuildContext context, CharacterTemplate t) {
-    final stats = [
-      ('FOR', 'for', t.forVal),
-      ('AGI', 'agi', t.agiVal),
-      ('CON', 'con', t.conVal),
-      ('INT', 'int', t.intVal),
-      ('PER', 'per', t.perVal),
-      ('CHA', 'cha', t.chaVal),
-      ('VOL', 'vol', t.volVal),
-    ];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: stats.map((s) {
-        final isSuperior = t.superiorStats.contains(s.$2);
-        final mod = ((s.$3 - 10) / 2).floor();
-        final modStr = mod >= 0 ? '+$mod' : '$mod';
-        return Container(
-          width: 76,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSuperior
-                ? Colors.amber.withValues(alpha: 0.08)
-                : AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSuperior
-                  ? Colors.amber.withValues(alpha: 0.5)
-                  : Colors.transparent,
-            ),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(s.$1,
-                      style: TextStyle(
-                          color: isSuperior
-                              ? Colors.amber
-                              : Colors.grey.shade400,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
-                  if (isSuperior)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 2),
-                      child: Text('⭐', style: TextStyle(fontSize: 9)),
                     ),
-                ],
-              ),
-              Text('${s.$3}',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
-              Text(modStr,
-                  style: TextStyle(
-                      color: Colors.grey.shade500, fontSize: 11)),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _attackRow(BuildContext context, TemplateAttack a) {
-    final bonusStr = a.bonusAtk >= 0 ? '+${a.bonusAtk}' : '${a.bonusAtk}';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                a.name +
-                    (a.nbAttacks > 1 ? ' (×${a.nbAttacks})' : ''),
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-            Text(
-              bonusStr,
-              style: const TextStyle(
-                  color: Colors.amber, fontWeight: FontWeight.bold),
-            ),
-            if (a.dm.isNotEmpty) ...[
-              const SizedBox(width: 10),
-              Text(
-                'DM ${a.dm}',
-                style: TextStyle(
-                    color: Colors.red.shade300, fontSize: 13),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _capacityRow(BuildContext context, TemplateCapacity c) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (c.actionType.isNotEmpty) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    margin: const EdgeInsets.only(right: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                          color: Colors.purple.withValues(alpha: 0.5)),
-                    ),
-                    child: Text(c.actionType,
-                        style: const TextStyle(
-                            color: Colors.purple,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ],
-                Expanded(
-                  child: Text(c.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
-                ),
-                if (c.dm.isNotEmpty)
-                  Text('DM ${c.dm}',
-                      style: TextStyle(
-                          color: Colors.red.shade300, fontSize: 12)),
-              ],
-            ),
-            if (c.description.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(c.description,
-                  style: TextStyle(
-                      color: Colors.grey.shade400,
-                      fontSize: 12,
-                      height: 1.4)),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Template Form Sheet ───────────────────────────────────────────────────────
-
-class TemplateFormSheet extends StatefulWidget {
-  final CharacterTemplate? existing;
-  const TemplateFormSheet({super.key, this.existing});
-
-  @override
-  State<TemplateFormSheet> createState() => _TemplateFormSheetState();
-}
-
-class _TemplateFormSheetState extends State<TemplateFormSheet>
-    with SingleTickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _initCtrl;
-  late final TextEditingController _hpCtrl;
-  late final TextEditingController _defCtrl;
-  late final TextEditingController _ncCtrl;
-  // Stats controllers
-  late final TextEditingController _forCtrl;
-  late final TextEditingController _agiCtrl;
-  late final TextEditingController _conCtrl;
-  late final TextEditingController _intCtrl;
-  late final TextEditingController _perCtrl;
-  late final TextEditingController _chaCtrl;
-  late final TextEditingController _volCtrl;
-
-  late bool _isAlly;
-  late CreatureType _creatureType;
-  late CreatureTaille _taille;
-  late CreatureArchetype _archetype;
-  String? _imageUrl;
-  late Set<String> _superiorStats;
-  late List<TemplateAttack> _attacks;
-  late List<TemplateCapacity> _capacities;
-
-  late TabController _tabController;
-
-  bool get _isEdit => widget.existing != null;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    final t = widget.existing;
-    _nameCtrl = TextEditingController(text: t?.name ?? '');
-    _initCtrl =
-        TextEditingController(text: t != null ? '${t.baseInitiative}' : '');
-    _hpCtrl = TextEditingController(text: t != null ? '${t.maxHp}' : '');
-    _defCtrl = TextEditingController(text: t != null ? '${t.def}' : '10');
-    _ncCtrl = TextEditingController(text: t?.nc != null ? '${t!.nc}' : '');
-    _forCtrl = TextEditingController(text: '${t?.forVal ?? 10}');
-    _agiCtrl = TextEditingController(text: '${t?.agiVal ?? 10}');
-    _conCtrl = TextEditingController(text: '${t?.conVal ?? 10}');
-    _intCtrl = TextEditingController(text: '${t?.intVal ?? 10}');
-    _perCtrl = TextEditingController(text: '${t?.perVal ?? 10}');
-    _chaCtrl = TextEditingController(text: '${t?.chaVal ?? 10}');
-    _volCtrl = TextEditingController(text: '${t?.volVal ?? 10}');
-    _isAlly = t?.isAlly ?? true;
-    _creatureType = t?.creatureType ?? CreatureType.vivant;
-    _taille = t?.taille ?? CreatureTaille.moyenne;
-    _archetype = t?.archetype ?? CreatureArchetype.standard;
-    _imageUrl = t?.imageUrl;
-    _superiorStats = Set.from(t?.superiorStats ?? {});
-    _attacks = List.from(t?.attacks ?? []);
-    _capacities = List.from(t?.capacities ?? []);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _nameCtrl.dispose();
-    _initCtrl.dispose();
-    _hpCtrl.dispose();
-    _defCtrl.dispose();
-    _ncCtrl.dispose();
-    _forCtrl.dispose();
-    _agiCtrl.dispose();
-    _conCtrl.dispose();
-    _intCtrl.dispose();
-    _perCtrl.dispose();
-    _chaCtrl.dispose();
-    _volCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _isAlly ? AppColors.allyPrimary : AppColors.enemyPrimary;
-
-    return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.85,
-      maxChildSize: 0.95,
-      minChildSize: 0.5,
-      builder: (_, ctrl) => Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Handle
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 8, bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _isEdit ? 'Modifier la créature' : 'Nouvelle créature',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            // Tabs
-            TabBar(
-              controller: _tabController,
-              labelColor: color,
-              unselectedLabelColor: Colors.grey.shade500,
-              indicatorColor: color,
-              tabs: const [
-                Tab(text: 'Général'),
-                Tab(text: 'Stats'),
-                Tab(text: 'Attaques'),
-                Tab(text: 'Capacités'),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildGeneralTab(context, ctrl),
-                  _buildStatsTab(context, ctrl),
-                  _buildAttacksTab(context, ctrl),
-                  _buildCapacitiesTab(context, ctrl),
-                ],
-              ),
-            ),
-            // Save button
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                  20, 8, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _submit,
-                  icon: Icon(_isEdit ? Icons.save : Icons.add,
-                      color: Colors.white),
-                  label:
-                      Text(_isEdit ? 'Enregistrer' : 'Ajouter au bestiaire'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: color,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Tab 1: General ──────────────────────────────────────────────────────────
-  Widget _buildGeneralTab(BuildContext context, ScrollController ctrl) {
-    return SingleChildScrollView(
-      controller: ctrl,
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Ally / Enemy toggle
-          Row(
-            children: [
-              Expanded(child: _typeBtn('Aventurier', Icons.person, true)),
-              const SizedBox(width: 10),
-              Expanded(child: _typeBtn('Ennemi', Icons.dangerous, false)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _nameCtrl,
-            autofocus: !_isEdit,
-            decoration: const InputDecoration(
-              labelText: 'Nom',
-              prefixIcon: Icon(Icons.badge),
-            ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Requis' : null,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _initCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    labelText: 'Initiative',
-                    prefixIcon: Icon(Icons.bolt),
-                  ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Requis' : null,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextFormField(
-                  controller: _hpCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    labelText: 'PV max',
-                    prefixIcon: Icon(Icons.favorite),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Requis';
-                    if ((int.tryParse(v) ?? 0) <= 0) return '> 0';
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextFormField(
-                  controller: _defCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(
-                    labelText: 'DEF',
-                    prefixIcon: Icon(Icons.shield_outlined),
-                  ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Requis' : null,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _ncCtrl,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'NC (Niveau de Danger) — optionnel',
-              prefixIcon: Icon(Icons.star_border),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Type
-          _dropdownRow<CreatureType>(
-            label: 'Type',
-            value: _creatureType,
-            items: CreatureType.values,
-            labelOf: (e) => e.label,
-            onChanged: (v) => setState(() => _creatureType = v!),
-          ),
-          const SizedBox(height: 12),
-          // Taille
-          _dropdownRow<CreatureTaille>(
-            label: 'Taille',
-            value: _taille,
-            items: CreatureTaille.values,
-            labelOf: (e) => e.label,
-            onChanged: (v) => setState(() => _taille = v!),
-          ),
-          const SizedBox(height: 12),
-          // Archétype
-          _dropdownRow<CreatureArchetype>(
-            label: 'Archétype',
-            value: _archetype,
-            items: CreatureArchetype.values,
-            labelOf: (e) => e.label,
-            onChanged: (v) => setState(() => _archetype = v!),
-          ),
-          const SizedBox(height: 16),
-          ImagePickerField(
-            initialUrl: _imageUrl,
-            participantName:
-                _nameCtrl.text.isNotEmpty ? _nameCtrl.text : (_isAlly ? 'A' : 'E'),
-            isAlly: _isAlly,
-            onChanged: (url) => setState(() => _imageUrl = url),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Tab 2: Stats ────────────────────────────────────────────────────────────
-  Widget _buildStatsTab(BuildContext context, ScrollController ctrl) {
-    final stats = [
-      ('FOR', 'for', _forCtrl),
-      ('AGI', 'agi', _agiCtrl),
-      ('CON', 'con', _conCtrl),
-      ('INT', 'int', _intCtrl),
-      ('PER', 'per', _perCtrl),
-      ('CHA', 'cha', _chaCtrl),
-      ('VOL', 'vol', _volCtrl),
-    ];
-    return SingleChildScrollView(
-      controller: ctrl,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Valeur de base  •  ⭐ = Supérieure (dé bonus, garde le meilleur)',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: Colors.grey.shade400),
-          ),
-          const SizedBox(height: 16),
-          ...stats.map((s) => _statRow(context, s.$1, s.$2, s.$3)),
-        ],
-      ),
-    );
-  }
-
-  Widget _statRow(BuildContext context, String label, String key,
-      TextEditingController ctrl) {
-    final isSuperior = _superiorStats.contains(key);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          // Label
-          SizedBox(
-            width: 44,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: isSuperior ? Colors.amber : Colors.grey.shade400,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          // Value field
-          SizedBox(
-            width: 72,
-            child: TextFormField(
-              controller: ctrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                filled: true,
-                fillColor: isSuperior
-                    ? Colors.amber.withValues(alpha: 0.08)
-                    : AppColors.surfaceVariant,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color: isSuperior
-                        ? Colors.amber.withValues(alpha: 0.6)
-                        : Colors.transparent,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color: isSuperior
-                        ? Colors.amber.withValues(alpha: 0.6)
-                        : Colors.grey.shade700,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          // Legendary toggle
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                if (isSuperior) {
-                  _superiorStats.remove(key);
-                } else {
-                  _superiorStats.add(key);
-                }
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSuperior
-                    ? Colors.amber.withValues(alpha: 0.15)
-                    : AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isSuperior
-                      ? Colors.amber.withValues(alpha: 0.7)
-                      : Colors.grey.shade700,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '⭐',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isSuperior ? Colors.amber : Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Supérieure',
-                    style: TextStyle(
-                      color:
-                          isSuperior ? Colors.amber : Colors.grey.shade500,
-                      fontSize: 12,
-                      fontWeight: isSuperior
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Tab 3: Attacks ──────────────────────────────────────────────────────────
-  Widget _buildAttacksTab(BuildContext context, ScrollController ctrl) {
-    return SingleChildScrollView(
-      controller: ctrl,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        children: [
-          if (_attacks.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text('Aucune attaque',
-                  style: TextStyle(color: Colors.grey.shade500)),
-            ),
-          ..._attacks.asMap().entries.map((e) =>
-              _attackEditor(context, e.key, e.value)),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => setState(() => _attacks
-                .add(const TemplateAttack(name: '', bonusAtk: 0, nbAttacks: 1, dm: ''))),
-            icon: const Icon(Icons.add),
-            label: const Text('Ajouter une attaque'),
-            style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 44)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _attackEditor(BuildContext context, int index, TemplateAttack a) {
-    final nameCtrl = TextEditingController(text: a.name);
-    final bonusCtrl = TextEditingController(text: a.bonusAtk.toString());
-    final nbCtrl = TextEditingController(text: a.nbAttacks.toString());
-    final dmCtrl = TextEditingController(text: a.dm);
-    // 💡 NOUVEAU : Contrôleurs pour tes nouveaux champs
-    final effectCtrl = TextEditingController(text: a.additionalEffect);
-    final descCtrl = TextEditingController(text: a.description);
-
-    void update() {
-      _attacks[index] = a.copyWith(
-        name: nameCtrl.text,
-        bonusAtk: int.tryParse(bonusCtrl.text) ?? 0,
-        nbAttacks: int.tryParse(nbCtrl.text) ?? 1,
-        dm: dmCtrl.text,
-        additionalEffect: effectCtrl.text,
-        description: descCtrl.text,
-      );
-    }
-
-    nameCtrl.addListener(update);
-    bonusCtrl.addListener(update);
-    nbCtrl.addListener(update);
-    dmCtrl.addListener(update);
-    effectCtrl.addListener(update);
-    descCtrl.addListener(update);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Nom (ex: Morsure, Épée longue)',
-                    isDense: true,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                onPressed: () => setState(() => _attacks.removeAt(index)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: bonusCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(signed: true),
-                  decoration: const InputDecoration(labelText: 'Atk (+7)', isDense: true),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: nbCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(labelText: 'Nb Att.', isDense: true),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: dmCtrl,
-                  decoration: const InputDecoration(labelText: 'DM (1d6+3)', isDense: true),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // 💡 AJOUT DES DEUX CHAMPS DANS L'INTERFACE DE SAISIE
-          TextField(
-            controller: effectCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Effet secondaire (ex: Paralysie, Poison mortel 1d6)',
-              isDense: true,
-              prefixIcon: Icon(Icons.star_border, size: 16, color: Colors.amber),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: descCtrl,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Description / Portée / Conditions',
-              isDense: true,
-              alignLabelWithHint: true,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Tab 4: Capacities ───────────────────────────────────────────────────────
-  Widget _buildCapacitiesTab(BuildContext context, ScrollController ctrl) {
-    return SingleChildScrollView(
-      controller: ctrl,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        children: [
-          if (_capacities.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text('Aucune capacité',
-                  style: TextStyle(color: Colors.grey.shade500)),
-            ),
-          ..._capacities.asMap().entries.map((e) =>
-              _capacityEditor(context, e.key, e.value)),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => setState(() => _capacities.add(
-                const TemplateCapacity(name: '', description: ''))),
-            icon: const Icon(Icons.add),
-            label: const Text('Ajouter une capacité'),
-            style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 44)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _capacityEditor(
-      BuildContext context, int index, TemplateCapacity c) {
-    final nameCtrl = TextEditingController(text: c.name);
-    final descCtrl = TextEditingController(text: c.description);
-    final dmCtrl = TextEditingController(text: c.dm);
-    String actionType = c.actionType;
-
-    void update() {
-      _capacities[index] = c.copyWith(
-        name: nameCtrl.text,
-        description: descCtrl.text,
-        actionType: actionType,
-        dm: dmCtrl.text,
-      );
-    }
-
-    nameCtrl.addListener(update);
-    descCtrl.addListener(update);
-    dmCtrl.addListener(update);
-
-    return StatefulBuilder(builder: (context, setLocal) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Nom',
-                      isDense: true,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.red, size: 20),
-                  onPressed: () =>
-                      setState(() => _capacities.removeAt(index)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Action type chips
-            Row(
-              children: [
-                Text('Type : ',
-                    style: TextStyle(
-                        color: Colors.grey.shade400, fontSize: 13)),
-                ...['', 'A', 'M', 'L', '*'].map((type) {
-                  final selected = actionType == type;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: GestureDetector(
-                      onTap: () {
-                        setLocal(() => actionType = type);
-                        update();
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.white),
+                      tooltip: 'Copier',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: uuidResult));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('📋 Code copié dans le presse-papiers !')),
+                        );
                       },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? Colors.purple.withValues(alpha: 0.2)
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: selected
-                                ? Colors.purple
-                                : Colors.grey.shade700,
-                          ),
-                        ),
-                        child: Text(
-                          type.isEmpty ? '—' : type,
-                          style: TextStyle(
-                            color: selected
-                                ? Colors.purple
-                                : Colors.grey.shade400,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
                     ),
-                  );
-                }),
-              ],
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: descCtrl,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                isDense: true,
-                alignLabelWithHint: true,
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: dmCtrl,
-              decoration: const InputDecoration(
-                labelText: 'DM (optionnel)',
-                isDense: true,
-              ),
-            ),
-          ],
+            ],
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ok'))],
         ),
       );
-    });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(uuidResult ?? 'Échec du partage.')));
+    }
   }
 
-  Widget _typeBtn(String label, IconData icon, bool ally) {
-    final selected = _isAlly == ally;
-    final color = ally ? AppColors.allyPrimary : AppColors.enemyPrimary;
-    return GestureDetector(
-      onTap: () => setState(() => _isAlly = ally),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.2)
-              : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? color : Colors.transparent,
-            width: 1.5,
+  Future<void> _handleUnshareCollection(BuildContext context, CreatureCollection collection) async {
+    // 1. Petite sécurité : demander confirmation pour éviter les clics accidentels
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Retirer du Cloud ?'),
+        content: const Text('Cette collection ne sera plus accessible pour les autres MJ. Elle restera intacte sur ton téléphone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Retirer'),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: selected ? color : Colors.grey, size: 18),
-            const SizedBox(width: 8),
-            Text(label,
-                style: TextStyle(
-                  color: selected ? color : Colors.grey,
-                  fontWeight: FontWeight.w600,
-                )),
-          ],
-        ),
+        ],
       ),
     );
-  }
 
-  Widget _dropdownRow<T>({
-    required String label,
-    required T value,
-    required List<T> items,
-    required String Function(T) labelOf,
-    required ValueChanged<T?> onChanged,
-  }) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      decoration: InputDecoration(labelText: label),
-      items: items
-          .map((e) => DropdownMenuItem<T>(
-                value: e,
-                child: Text(labelOf(e)),
-              ))
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
+    if (confirm != true) return;
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    // 2. Authentification et envoi de l'ordre
+    final AuthService authService = AuthService();
+    final String? token = await authService.getToken();
 
-    // Sync text controller values into attacks/capacities lists
-    // (already done via listeners, but call update anyway)
-    final provider = context.read<BestiaryProvider>();
-    final template = CharacterTemplate(
-      id: widget.existing?.id,
-      name: _nameCtrl.text.trim(),
-      isAlly: _isAlly,
-      baseInitiative: int.tryParse(_initCtrl.text) ?? 0,
-      maxHp: int.tryParse(_hpCtrl.text) ?? 1,
-      def: int.tryParse(_defCtrl.text) ?? 10,
-      imageUrl: _imageUrl,
-      nc: _ncCtrl.text.trim().isEmpty ? null : double.tryParse(_ncCtrl.text),
-      creatureType: _creatureType,
-      taille: _taille,
-      archetype: _archetype,
-      forVal: int.tryParse(_forCtrl.text) ?? 10,
-      agiVal: int.tryParse(_agiCtrl.text) ?? 10,
-      conVal: int.tryParse(_conCtrl.text) ?? 10,
-      intVal: int.tryParse(_intCtrl.text) ?? 10,
-      perVal: int.tryParse(_perCtrl.text) ?? 10,
-      chaVal: int.tryParse(_chaCtrl.text) ?? 10,
-      volVal: int.tryParse(_volCtrl.text) ?? 10,
-      superiorStats: Set.from(_superiorStats),
-      attacks: List.from(_attacks),
-      capacities: List.from(_capacities),
-    );
-    if (_isEdit) {
-      provider.updateTemplate(template);
-    } else {
-      provider.addTemplate(template);
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez vous connecter pour gérer le cloud.')),
+      );
+      return;
     }
-    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Suppression du cloud en cours...')));
+
+    final errorResult = await context.read<CollectionProvider>().unshareCollection(collection.syncUuid, token);
+
+    // 3. Résultat
+    if (errorResult == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('☁️❌ Collection retirée du cloud avec succès !')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorResult)),
+      );
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../providers/collection_provider.dart';
 import '../../app_theme.dart';
 import '../../models/character_sheet.dart';
 import '../../models/character_template.dart';
@@ -13,7 +14,7 @@ import '../../providers/combat_provider.dart';
 import '../../widgets/dice_roller_sheet.dart';
 import '../../widgets/image_picker_field.dart';
 import '../../widgets/participant_avatar.dart';
-import '../bestiary/bestiary_screen.dart' show CreatureDetailSheet;
+import '../bestiary/widgets/creature_detail_sheet.dart';
 import '../combat/combat_screen.dart';
 
 class SessionScreen extends StatefulWidget {
@@ -659,7 +660,6 @@ class _AddParticipantSheetState extends State<AddParticipantSheet> {
     }
   }
 }
-
 class _BestiaryPickerSheet extends StatefulWidget {
   final List<CharacterTemplate> templates;
   const _BestiaryPickerSheet({required this.templates});
@@ -670,38 +670,67 @@ class _BestiaryPickerSheet extends StatefulWidget {
 
 class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
   String _search = '';
+  int? _selectedCollectionId; // 💡 Stocke la collection sélectionnée (null = Tout le bestiaire)
 
   @override
   Widget build(BuildContext context) {
-    final filtered = widget.templates
-        .where((t) =>
-        t.name.toLowerCase().contains(_search.toLowerCase()))
+    // 1. Récupération des dossiers/collections disponibles
+    final collections = context.watch<CollectionProvider>().collections;
+
+    // 2. Filtrage : On prend soit tous les monstres, soit uniquement ceux de la collection sélectionnée
+    List<CharacterTemplate> poolSource = widget.templates;
+    if (_selectedCollectionId != null) {
+      final activeCol = collections.firstWhere((c) => c.id == _selectedCollectionId);
+      poolSource = activeCol.templates;
+    }
+
+    // 3. Application de la barre de recherche textuelle
+    final filtered = poolSource
+        .where((t) => t.name.toLowerCase().contains(_search.toLowerCase()))
         .toList();
 
-    // 💡 Détection de la hauteur prise par le clavier
     final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      child: SingleChildScrollView( // 🔗 1. Ajout du ScrollView global pour encaisser le clavier
+      child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Choisir dans le bestiaire',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text('Choisir dans le bestiaire', style: Theme.of(context).textTheme.titleLarge),
                 IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close)),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
               ],
             ),
             const SizedBox(height: 8),
+
+            // 📂 AJOUT : Menu déroulant pour filtrer par dossier / collection
+            DropdownButtonFormField<int?>(
+              value: _selectedCollectionId,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.folder, color: Colors.amber),
+                labelText: 'Filtrer par Collection / Dossier',
+              ),
+              items: [
+                const DropdownMenuItem<int?>(value: null, child: Text('🌐 Tout le Bestiaire global')),
+                ...collections.map((col) => DropdownMenuItem<int?>(
+                  value: col.id,
+                  child: Text('📂 ${col.name} (${col.templates.length})'),
+                )),
+              ],
+              onChanged: (id) => setState(() => _selectedCollectionId = id),
+            ),
+            const SizedBox(height: 10),
+
             TextField(
               autofocus: false,
               decoration: const InputDecoration(
-                hintText: 'Rechercher…',
+                hintText: 'Rechercher un monstre…',
                 prefixIcon: Icon(Icons.search),
               ),
               onChanged: (v) => setState(() => _search = v),
@@ -709,14 +738,13 @@ class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
             const SizedBox(height: 8),
             ConstrainedBox(
               constraints: BoxConstraints(
-                // 🔗 2. Hauteur dynamique : 30% si le clavier est sorti, 45% s'il est caché
-                maxHeight: MediaQuery.of(context).size.height * (keyboardOpen ? 0.30 : 0.45),
+                maxHeight: MediaQuery.of(context).size.height * (keyboardOpen ? 0.25 : 0.40),
               ),
               child: filtered.isEmpty
                   ? const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: Text('Aucun résultat'),
+                  child: Text('Aucune créature trouvée dans ce dossier'),
                 ),
               )
                   : ListView.separated(
@@ -733,33 +761,27 @@ class _BestiaryPickerSheetState extends State<_BestiaryPickerSheet> {
                         imageUrl: t.imageUrl,
                         radius: 20,
                       ),
-                      title: Text(t.name,
-                          style: Theme.of(context).textTheme.titleMedium),
+                      title: Text(t.name, style: Theme.of(context).textTheme.titleMedium),
                       subtitle: Text(
                         [
                           'Init: ${t.baseInitiative}',
                           'PV: ${t.maxHp}',
                           'DEF: ${t.def}',
                           if (t.nc != null) 'NC ${t.nc}',
-                          t.isAlly ? 'Aventurier' : 'Ennemi',
                         ].join('  •  '),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       trailing: IconButton(
-                        icon: Icon(Icons.info_outline,
-                            color: Colors.grey.shade500, size: 20),
-                        tooltip: 'Détails',
+                        icon: Icon(Icons.info_outline, color: Colors.grey.shade500, size: 20),
                         onPressed: () {
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
                             backgroundColor: AppColors.surface,
                             shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                             ),
-                            builder: (_) =>
-                                CreatureDetailSheet(template: t),
+                            builder: (_) => CreatureDetailSheet(template: t),
                           );
                         },
                       ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart'; // Pour databaseFactory
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart'; // Pour le Web
 
+import 'providers/collection_provider.dart';
 import 'app_theme.dart';
 import 'providers/bestiary_provider.dart';
 import 'providers/character_sheet_provider.dart';
@@ -45,6 +46,7 @@ class CoCompagnonApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CombatProvider()),
         ChangeNotifierProvider(create: (_) => BestiaryProvider()),
         ChangeNotifierProvider(create: (_) => CharacterSheetProvider()),
+        ChangeNotifierProvider(create: (_) => CollectionProvider()),
       ],
       child: MaterialApp(
         title: 'CO Compagnon V2',

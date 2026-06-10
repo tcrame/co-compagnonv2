@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'dart:convert';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import '../constants/voies_data.dart';
 import '../data/bestiary_seed.dart';
@@ -18,6 +16,7 @@ import '../models/inventory_item.dart';
 import '../models/item_effect.dart';
 import '../models/participant.dart';
 import '../models/status_effect.dart';
+import '../models/creature_collection.dart'; // 💡 AJOUTE CETTE LIGNE !
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -33,11 +32,10 @@ class DatabaseService {
 
   Future<Database> _initDb() async {
     if (kIsWeb) {
-      // 💡 Nettoyage : databaseFactory est déjà défini globalement dans le main.dart désormais !
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-          version: 23,
+          version: 24, // 💡 CHANGE ICI ! Passer de 23 à 24
           onCreate: (db, version) async {
             await _createTables(db);
             await _seedBestiary(db);
@@ -52,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 23,
+      version: 24, // 💡 CHANGE ICI ! Passer de 23 à 24
       onCreate: (db, version) async {
         await _createTables(db);
         await _seedBestiary(db);
@@ -60,7 +58,6 @@ class DatabaseService {
       onUpgrade: _onUpgrade,
     );
   }
-
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''
@@ -285,6 +282,29 @@ class DatabaseService {
         "UPDATE character_sheets SET last_modified_at = created_at WHERE last_modified_at = ''",
       );
     }
+
+    if (oldVersion < 24) {
+      await db.execute('''
+          CREATE TABLE collections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            sync_uuid TEXT NOT NULL DEFAULT '', -- Requis pour le partage Cloudflare
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+      await db.execute('''
+          CREATE TABLE collection_templates (
+            collection_id INTEGER NOT NULL,
+            template_id INTEGER NOT NULL,
+            PRIMARY KEY (collection_id, template_id),
+            FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+            FOREIGN KEY (template_id) REFERENCES character_templates(id) ON DELETE CASCADE
+          )
+        ''');
+    }
+
+
     // 🎰 AJOUT : Migration à la volée de la table sessions pour la colonne share_code
     try {
       await db.execute(
@@ -364,6 +384,27 @@ class DatabaseService {
     await _createCombatCapacitiesTable(db);
     await _createItemEffectsTable(db);
     await _createCharacterVoieRangsTable(db);
+
+    await db.execute('''
+          CREATE TABLE collections (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            sync_uuid TEXT NOT NULL DEFAULT '', -- Requis pour le partage Cloudflare
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+    await db.execute('''
+          CREATE TABLE collection_templates (
+            collection_id INTEGER NOT NULL,
+            template_id INTEGER NOT NULL,
+            PRIMARY KEY (collection_id, template_id),
+            FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+            FOREIGN KEY (template_id) REFERENCES character_templates(id) ON DELETE CASCADE
+          )
+        ''');
+
+
   }
 
   Future<void> _createCharacterSheetsTable(Database db) async {
@@ -551,28 +592,28 @@ class DatabaseService {
   }
 
   Future<int> updateTemplate(CharacterTemplate template) async {
-    final db = await database;
+    final db = await database; //
 
-    final Map<String, dynamic> data = template.toMap();
-    data.remove('id');
+    final Map<String, dynamic> data = template.toMap(); //
+    data.remove('id'); //
 
-    // Blindage des chaînes JSON pour SQLite
-    if (data['attacks_json'] != null && data['attacks_json'] is! String) {
-      data['attacks_json'] = jsonEncode(data['attacks_json']);
-    }
-    if (data['capacities_json'] != null && data['capacities_json'] is! String) {
-      data['capacities_json'] = jsonEncode(data['capacities_json']);
-    }
+    // Blindage strict des chaînes JSON pour SQLite
+    if (data['attacks_json'] != null && data['attacks_json'] is! String) { //
+      data['attacks_json'] = jsonEncode(data['attacks_json']); //
+    } //
+    if (data['capacities_json'] != null && data['capacities_json'] is! String) { //
+      data['capacities_json'] = jsonEncode(data['capacities_json']); //
+    } //
     if (data['superior_stats_json'] != null && data['superior_stats_json'] is! String) {
       data['superior_stats_json'] = jsonEncode(data['superior_stats_json']);
     }
 
     return await db.update(
-      'character_templates',
-      data,
-      where: 'id = ?',
-      whereArgs: [template.id],
-    );
+      'character_templates', //
+      data, //
+      where: 'id = ?', //
+      whereArgs: [template.id], //
+    ); //
   }
 
   Future<void> deleteTemplate(int id) async {
@@ -1371,5 +1412,83 @@ class DatabaseService {
       limit: 1,
     );
     return rows.isNotEmpty;
+  }
+
+  // ── Collections CRUD ────────────────────────────────────────────────────────
+
+  /// Récupère toutes les collections avec leurs monstres associés
+  Future<List<CreatureCollection>> getCollections() async {
+    final db = await database;
+    final List<Map<String, dynamic>> collectionRows = await db.query('collections', orderBy: 'name ASC');
+
+    final List<CreatureCollection> collections = [];
+
+    for (final row in collectionRows) {
+      final collectionId = row['id'] as int;
+
+      // Récupérer les monstres liés à cette collection via la table pivot
+      final List<Map<String, dynamic>> templateRows = await db.rawQuery('''
+        SELECT ct.* FROM character_templates ct
+        INNER JOIN collection_templates cmt ON ct.id = cmt.template_id
+        WHERE cmt.collection_id = ?
+        ORDER BY ct.name ASC
+      ''', [collectionId]);
+
+      final templates = templateRows.map(CharacterTemplate.fromMap).toList();
+      collections.add(CreatureCollection.fromMap(row, templates: templates));
+    }
+
+    return collections;
+  }
+
+  /// Insère une nouvelle collection
+  Future<CreatureCollection> insertCollection(String name, {String syncUuid = ''}) async {
+    final db = await database;
+    final collection = CreatureCollection(
+      name: name,
+      syncUuid: syncUuid,
+      createdAt: DateTime.now(),
+    );
+    final id = await db.insert('collections', collection.toMap());
+    return collection.copyWith(id: id);
+  }
+
+  /// Met à jour le nom ou l'UUID de synchronisation d'une collection
+  Future<void> updateCollection(CreatureCollection collection) async {
+    final db = await database;
+    await db.update(
+      'collections',
+      collection.toMap(),
+      where: 'id = ?',
+      whereArgs: [collection.id],
+    );
+  }
+
+  /// Supprime une collection (la table pivot se nettoie automatiquement grâce au ON DELETE CASCADE)
+  Future<void> deleteCollection(int id) async {
+    final db = await database;
+    await db.delete('collections', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ── Liaisons Collection <-> Monstres ────────────────────────────────────────
+
+  /// Ajoute un monstre dans une collection
+  Future<void> addTemplateToCollection(int collectionId, int templateId) async {
+    final db = await database;
+    await db.insert(
+      'collection_templates',
+      {'collection_id': collectionId, 'template_id': templateId},
+      conflictAlgorithm: ConflictAlgorithm.ignore, // Évite les crashs si déjà présent
+    );
+  }
+
+  /// Retire un monstre d'une collection spécifique
+  Future<void> removeTemplateFromCollection(int collectionId, int templateId) async {
+    final db = await database;
+    await db.delete(
+      'collection_templates',
+      where: 'collection_id = ? AND template_id = ?',
+      whereArgs: [collectionId, templateId],
+    );
   }
 }
