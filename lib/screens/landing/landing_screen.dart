@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../app_theme.dart';
 import '../backup/backup_screen.dart';
 import '../bestiary/bestiary_screen.dart';
 import '../characters/character_list_screen.dart';
 import '../home/home_screen.dart';
+import '../grimoire/grimoire_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -67,6 +67,18 @@ class LandingScreen extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const CharacterListScreen()),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildNavCard(
+                        context,
+                        title: 'Grimoire',
+                        subtitle: 'Consultez les capacités\ndes voies et des peuples',
+                        icon: Icons.menu_book,
+                        gradientColors: const [Color(0xFFE65100), Color(0xFFFF9800)], // Un beau dégradé orange
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const GrimoireScreen()),
                         ),
                       ),
 
