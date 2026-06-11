@@ -4,6 +4,9 @@
 
 import '../models/character_template.dart';
 
+// 💡 Fonction utilitaire pour générer l'URL de l'icône proprement
+String _icon(String slug) => 'https://api.iconify.design/game-icons/$slug.svg?color=%23ffffff';
+
 List<CharacterTemplate> buildBestiarySeeds() => [
   CharacterTemplate(
     name: 'Aigle commun',
@@ -16,6 +19,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0.5,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('eagle-head'),
     forVal: -3,
     agiVal: 3,
     conVal: 2,
@@ -23,10 +27,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 4,
     chaVal: 0,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Serres', bonusAtk: 3, dm: '1d4'),
     ],
@@ -46,6 +47,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.minuscule,
+    imageUrl: _icon('rat'),
     forVal: -4,
     agiVal: 3,
     conVal: -4,
@@ -53,10 +55,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: -2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 1, dm: '0'),
     ],
@@ -76,6 +75,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('sitting-dog'),
     forVal: -2,
     agiVal: 2,
     conVal: -2,
@@ -83,10 +83,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 3, dm: '1d6'),
     ],
@@ -102,6 +99,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.tresPetite,
+    imageUrl: _icon('cat'),
     forVal: -3,
     agiVal: 3,
     conVal: -3,
@@ -109,10 +107,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 2, dm: '1'),
     ],
@@ -131,6 +126,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('bull-horns'),
     forVal: 6,
     agiVal: 0,
     conVal: 6,
@@ -138,9 +134,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Cornes', bonusAtk: 8, dm: '2d6+6'),
     ],
@@ -159,6 +153,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 2,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('buffalo-head'),
     forVal: 4,
     agiVal: 0,
     conVal: 4,
@@ -166,9 +161,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: -2,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Cornes', bonusAtk: 5, dm: '1d6+4'),
     ],
@@ -186,6 +179,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 1,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('horse-head'),
     forVal: 5,
     agiVal: 0,
     conVal: 4,
@@ -193,9 +187,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -1,
     volVal: 0,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Ruade', bonusAtk: 4, dm: '1d4+5'),
     ],
@@ -214,6 +206,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 1,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('horse-head'),
     forVal: 4,
     agiVal: 0,
     conVal: 4,
@@ -221,14 +214,12 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -1,
     volVal: -2,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Ruade', bonusAtk: 2, dm: '1d4+4'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Monture', actionType: '', description: 'La créature double sa FOR pour porter une charge. 3 OPPOSITION 0 INTRO'),
+      TemplateCapacity(name: 'Monture', actionType: '', description: 'La créature double sa FOR pour porter une charge.'),
     ],
   ),
   CharacterTemplate(
@@ -241,6 +232,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m, nage 9m',
     nc: 2,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('croc-jaws'),
     forVal: 4,
     agiVal: 0,
     conVal: 3,
@@ -248,10 +240,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'for',
-      'per'
-    },
+    superiorStats: {'for', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 4, dm: '1d6+3'),
     ],
@@ -271,6 +260,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 6,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.enorme,
+    imageUrl: _icon('elephant-head'),
     forVal: 10,
     agiVal: 0,
     conVal: 10,
@@ -278,12 +268,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 1,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
-      TemplateAttack(name: 'Trompe et défenses +12 · DM 2d10', bonusAtk: 12, dm: '2d10+12'),
+      TemplateAttack(name: 'Trompe et défenses', bonusAtk: 12, dm: '2d10+12'),
     ],
     capacities: [
       TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 20 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.'),
@@ -293,7 +280,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
   ),
   CharacterTemplate(
     name: 'Gorille',
-    description: 'Le gorille est habituellement un animal placide si on ne le dérange pas, toutefois rien ne vous empêche de décider que la version fantastique de cet animal est plus agressive. Un gorille mâle pèse environ 250 kg et possède une envergure de bras impressionnante de 2,50 m',
+    description: 'Le gorille est habituellement un animal placide si on ne le dérange pas, toutefois rien ne vous empêche de décider que la version fantastique de cet animal est plus agressive.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 30,
@@ -302,6 +289,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('gorilla'),
     forVal: 5,
     agiVal: 4,
     conVal: 5,
@@ -309,11 +297,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'con',
-      'for'
-    },
+    superiorStats: {'agi', 'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Poings et morsure', bonusAtk: 7, dm: '2d6+5'),
     ],
@@ -324,7 +308,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
   ),
   CharacterTemplate(
     name: 'Grand mâle (lion)',
-    description: 'Un lion mâle peut peser jusqu’à 300 kg, le tigre du Bengale n’est pas beaucoup plus gros qu’un lion. Le tigre de Sibérie, la plus grande espèce, peut peser jusqu’à plus de 350 kg pour 1,20 m au garrot.',
+    description: 'Un lion mâle peut peser jusqu’à 300 kg.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 50,
@@ -333,6 +317,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('lion'),
     forVal: 6,
     agiVal: 4,
     conVal: 6,
@@ -340,15 +325,12 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
-      TemplateAttack(name: 'Morsure et griffes +8 · DM 2d6', bonusAtk: 8, dm: '2d6+8'),
+      TemplateAttack(name: 'Morsure et griffes', bonusAtk: 8, dm: '2d6+8'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 aux DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
+      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise.'),
       TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie entre ses crocs ou ses griffes et lui inflige immédiatement une attaque gratuite supplémentaire.'),
     ],
   ),
@@ -363,6 +345,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('lion'),
     forVal: 5,
     agiVal: 4,
     conVal: 5,
@@ -370,21 +353,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 6, dm: '2d6+5'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 aux DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
+      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise.'),
       TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie entre ses crocs ou ses griffes et lui inflige immédiatement une attaque gratuite supplémentaire.'),
     ],
   ),
   CharacterTemplate(
     name: 'Mâle alpha (loup)',
-    description: 'Chaque meute de loups possède un mâle dominant plus gros que ses congénères (jusqu’à 80 kg). Si les personnages rencontrent un loup solitaire, il sera souvent basé sur ce profil. Un chef de meute accompagné de sa bande de 6 loups est une rencontre ordinaire de niveau 5',
+    description: 'Chaque meute de loups possède un mâle dominant plus gros que ses congénères (jusqu’à 80 kg).',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 15,
@@ -392,6 +372,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('wolf-howl'),
     forVal: 3,
     agiVal: 1,
     conVal: 3,
@@ -399,16 +380,12 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'con',
-      'per'
-    },
+    superiorStats: {'agi', 'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 4, dm: '1d6+3'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Chef De Meute', actionType: '', description: 'Le chef de meute donne un bonus de +2 en initiative, en attaque et aux DM, à tous les loups de sa meute à portée de vue. De plus, s\'il attaque en même temps qu\'un autre loup, il réalise une attaque avec un dé bonus et +2d4 DM.'),
+      TemplateCapacity(name: 'Chef De Meute', actionType: '', description: 'Le chef de meute donne un bonus de +2 en initiative, en attaque et aux DM, à tous les loups de sa meute à portée de vue.'),
     ],
   ),
   CharacterTemplate(
@@ -421,6 +398,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('wolf-head'),
     forVal: 1,
     agiVal: 1,
     conVal: 1,
@@ -428,21 +406,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'con',
-      'per'
-    },
+    superiorStats: {'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 3, dm: '1d6+1'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Interchangeables', actionType: '', description: 'Tant que la créature et ses alliées sont plus nombreuses que la cible, elles se relaient pour esquiver ses attaques et elles obtiennent un bonus de +3 en DEF. Si plusieurs créatures semblables sont au contact du PJ, le MJ a toute latitude pour infliger les DM d\'une attaque sur une créature au hasard, le personnage ne sait jamais laquelle il blesse. Seul, le loup n\'a pas usage de la capacité interchangeable et son NC passe à ½.'),
-      TemplateCapacity(name: 'Chien', actionType: '', description: 'Vous pouvez aussi utiliser le profil du loup pour les gros chiens en retirant de 2 à 4 PV. PAGE 270  PARTIE III'),
+      TemplateCapacity(name: 'Interchangeables', actionType: '', description: 'Tant que la créature et ses alliées sont plus nombreuses que la cible, elles se relaient pour esquiver ses attaques et elles obtiennent un bonus de +3 en DEF.'),
     ],
   ),
   CharacterTemplate(
     name: 'Ours brun',
-    description: 'L’ours brun mesure environ 1,50 m au garrot et jusqu’à 2,50 m lorsqu’il se dresse sur ses pattes postérieures pour un poids d’environ 300 kg. On peut aussi trouver des spécimens d’ours noir particulièrement massifs (jusqu’à 400 kg) qui cor- respondent à ce profil.',
+    description: 'L’ours brun mesure environ 1,50 m au garrot et jusqu’à 2,50 m lorsqu’il se dresse sur ses pattes postérieures.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 50,
@@ -451,6 +425,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('bear-head'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -458,20 +433,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 1,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 10, dm: '2d6+6'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d\'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV.'),
+      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus.'),
+      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée.'),
     ],
   ),
   CharacterTemplate(
     name: 'Ours noir',
-    description: 'Ce profil correspond aux espèces d’ours de petite taille ne dépassant pas 150 kg. Plus agile et plus rapide que son cousin l’ours brun, il est tout à fait capable de grimper aux arbres.',
+    description: 'Ce profil correspond aux espèces d’ours de petite taille ne dépassant pas 150 kg.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 35,
@@ -479,6 +452,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m, escalade 9m',
     nc: 2,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('bear-head'),
     forVal: 3,
     agiVal: 2,
     conVal: 3,
@@ -486,17 +460,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'for'
-    },
+    superiorStats: {'agi', 'for'},
     attacks: [
-      TemplateAttack(name: 'griffes', bonusAtk: 6, dm: '2d6+3'),
+      TemplateAttack(name: 'Griffes', bonusAtk: 6, dm: '2d6+3'),
     ],
   ),
   CharacterTemplate(
     name: 'Ours polaire',
-    description: 'Avec des mensurations moyennes de 500 kg pour 3 m le grand ours polaire mâle est le plus gros prédateur terrestre avec l’ours Kodiak (encore un peu plus gros).',
+    description: 'Avec des mensurations moyennes de 500 kg pour 3 m le grand ours polaire mâle est le plus gros prédateur terrestre.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 80,
@@ -505,6 +476,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 6,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('bear-head'),
     forVal: 8,
     agiVal: 0,
     conVal: 8,
@@ -512,17 +484,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 1,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 12, dm: '2d8+10'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine (ou embroche) sa victime et les DM sont doublés.'),
-      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie entre ses crocs ou ses griffes et lui inflige immédiatement une attaque gratuite supplémentaire.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d\'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV.'),
+      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus.'),
+      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie.'),
+      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée.'),
     ],
   ),
   CharacterTemplate(
@@ -535,6 +504,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m, escalade 9m',
     nc: 2,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('feline'),
     forVal: 2,
     agiVal: 4,
     conVal: 2,
@@ -542,16 +512,13 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 1,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure et Griffes', bonusAtk: 5, dm: '1d6+2'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
-      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie entre ses crocs ou ses griffes et lui inflige immédiatement une attaque gratuite supplémentaire. PAGE 272  PARTIE III'),
+      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 ou être surprise.'),
+      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 15-20 au d20, elle saisit sa proie.'),
     ],
   ),
   CharacterTemplate(
@@ -564,6 +531,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('shark-jaws'),
     forVal: 5,
     agiVal: 3,
     conVal: 5,
@@ -575,13 +543,13 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Morsure', bonusAtk: 10, dm: '2d8+5'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque le requin réussit une attaque avec un résultat de 15-20 au d20, il saisit sa proie entre ses crocs et lui inflige immédiatement une attaque gratuite supplémentaire. Si la FOR de la cible est inférieure ou égale au prédateur, elle est de plus immobilisée. Pour se libérer, la victime doit réussir un test de FOR difficulté 15 lors de son tour et cela lui demande une action de mouvement.'),
+      TemplateCapacity(name: 'Dévorer', actionType: '', description: 'Lorsque le requin réussit une attaque avec un résultat de 15-20 au d20, il saisit sa proie entre ses crocs et lui inflige immédiatement une attaque gratuite supplémentaire.'),
       TemplateCapacity(name: 'Créature aquatique', actionType: '', description: 'Le requin ne subit aucune pénalité pour attaquer et se déplacer sous l’eau et il bénéficie d’un bonus de +3 en initiative.')
     ],
   ),
   CharacterTemplate(
     name: 'Rhinocéros',
-    description: 'Selon les espèces, le rhinocéros peut mesurer de 3 à 4 m de long pour un poids de 800 kg à 2 t. Les grands rhinocéros blancs pèsent parfois plus de 3 t et vous pourrez leur ajouter un rang de Boss (+1 NC, +2 en DEF et en Att, +2 DM et +2 PV).',
+    description: 'Selon les espèces, le rhinocéros peut mesurer de 3 à 4 m de long pour un poids de 800 kg à 2 t.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 50,
@@ -590,6 +558,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('rhinoceros-horn'),
     forVal: 8,
     agiVal: 0,
     conVal: 8,
@@ -597,16 +566,13 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
-      TemplateAttack(name: 'Corne +8 · DM 2d6', bonusAtk: 8, dm: '2d6+8'),
+      TemplateAttack(name: 'Corne', bonusAtk: 8, dm: '2d6+8'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus de subir les DM normaux, une victime de taille inférieure ou égale à la créature doit faire un test de FOR difficulté 18 ou être renversée. Dans ce cas, la créature piétine sa victime et les DM sont doublés.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d\'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV. 3 OPPOSITION 0 INTRO Sanglier 1 Les sangliers mâles pèsent généralement PERSO autour de 150 kg, mais on peut rencontrer des 2 spécimens de 200 à 300 kg. RÈGLES'),
+      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus.'),
+      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée.'),
     ],
   ),
   CharacterTemplate(
@@ -619,6 +585,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 3,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('boar-tusks'),
     forVal: 3,
     agiVal: 0,
     conVal: 3,
@@ -626,22 +593,19 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 1,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Défenses', bonusAtk: 6, dm: '2d4+3'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus de subir les DM normaux, une victime de taille inférieure ou égale à la créature, doit faire un test de FOR difficulté 13 ou être renversée. Dans ce cas, la créature éventre sa victime et les DM sont doublés.'),
-      TemplateCapacity(name: 'Tape Dur', actionType: '', description: 'Si la créature obtient 15 à 20 au dé du test d\'attaque, l\'attaque est automatiquement réussie. De surcroît, la victime doit réussir un test de CON difficulté 13 ou être étourdie pendant 1 round.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d\'attaque au contact et ses DM de +1d4. Elle peut encore agir un tour complet après avoir atteint 0 PV. PARTIE III  PAGE 273'),
+      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus.'),
+      TemplateCapacity(name: 'Tape Dur', actionType: '', description: 'Si la créature obtient 15 à 20 au dé du test d\'attaque, l\'attaque est automatiquement réussie.'),
+      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée.'),
     ],
   ),
   CharacterTemplate(
     name: 'Serpent constricteur',
-    description: 'Ce profil correspond au boa ou au python. Toutefois, cette famille de serpents comprend de grandes disparités de taille et de poids, allant de 2 m pour une quinzaine de kilos à plus de 6 m pour 150 kg et au‑delà. Les caractéristiques présentées ici correspondent à un spécimen d’environ 4 m pour 80 kg.',
+    description: 'Ce profil correspond au boa ou au python.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 30,
@@ -649,6 +613,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m, nage 9m',
     nc: 3,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('snake'),
     forVal: 4,
     agiVal: 0,
     conVal: 4,
@@ -656,16 +621,13 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'for',
-      'per'
-    },
+    superiorStats: {'for', 'per'},
     attacks: [
-      TemplateAttack(name: 'Morsure +4 · DM 1d6', bonusAtk: 4, dm: '1d6+4'),
+      TemplateAttack(name: 'Morsure', bonusAtk: 4, dm: '1d6+4'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 15 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
-      TemplateCapacity(name: 'Étreinte', actionType: '', description: 'Chaque fois que le serpent réussit une attaque, la cible doit réussir un test de FOR (ou d\'AGI au choix) difficulté 10. En cas d\'échec, le serpent s\'enroule autour d\'elle et commence à l\'étouffer, infligeant automatiquement 1d4 DM supplémentaires par round. La victime est immobilisée. Elle peut tenter de se libérer au prix d\'une action de mouvement à son tour, en réussissant un test de FOR difficulté 14. PAGE 274  PARTIE III'),
+      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 15 ou être surprise.'),
+      TemplateCapacity(name: 'Étreinte', actionType: '', description: 'Chaque fois que le serpent réussit une attaque, la cible doit réussir un test de FOR (ou d\'AGI au choix) difficulté 10. En cas d\'échec, le serpent s\'enroule autour d\'elle et commence à l\'étouffer.'),
     ],
   ),
   CharacterTemplate(
@@ -679,6 +641,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 1,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.tresPetite,
+    imageUrl: _icon('snake-bite'),
     forVal: -3,
     agiVal: 3,
     conVal: 0,
@@ -686,22 +649,19 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: -2,
-    superiorStats: {
-      'agi',
-      'con'
-    },
+    superiorStats: {'agi', 'con'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 3, dm: '1'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 15 ou être surprise. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
-      TemplateCapacity(name: 'Venin', actionType: '', description: 'La victime d\'une morsure de serpent venimeux doit faire un test de CON difficulté 15 à chaque morsure. En cas d\'échec la victime subit 1 DM supplémentaire par round pendant 1d6 rounds. De plus, la victime est affaiblie pour une durée similaire exprimée en heures. Chaque nouvelle morsure augmente la durée (mais pas les DM par round).'),
-      TemplateCapacity(name: 'Crachat', actionType: 'A', description: 'Certains serpents crachent leur venin dans les yeux de leur adversaire pour l\'aveugler. La victime doit réussir un test d\'AGI difficulté 12 ou être aveuglée pour 1d6 rounds.'),
+      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 15 ou être surprise.'),
+      TemplateCapacity(name: 'Venin', actionType: '', description: 'La victime d\'une morsure de serpent venimeux doit faire un test de CON difficulté 15 à chaque morsure.'),
+      TemplateCapacity(name: 'Crachat', actionType: 'A', description: 'Certains serpents crachent leur venin dans les yeux de leur adversaire pour l\'aveugler.'),
     ],
   ),
   CharacterTemplate(
     name: 'Araignée géante',
-    description: 'Les araignées géantes (arthropodes) sont des monstres terrifiants : rapides, puissants et capables de survivre aux pires blessures. On trouve les araignées géantes dans les forêts sombres et reculées, mais aussi dans les souterrains, surtout les plus grosses d’entre elles. Il en existe de nombreuses variantes, mais celle que nous vous proposons ici fait le poids d’un humain, elle est donc moins haute mais occupe un espace de presque 2 m de diamètre.',
+    description: 'Les araignées géantes (arthropodes) sont des monstres terrifiants : rapides, puissants et capables de survivre aux pires blessures.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 30,
@@ -709,6 +669,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m, escalade 9m',
     nc: 3,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('spider-alt'),
     forVal: 3,
     agiVal: 4,
     conVal: 3,
@@ -716,25 +677,19 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -4,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'con',
-      'for'
-    },
+    superiorStats: {'agi', 'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Attaque', bonusAtk: 6, dm: '2d6+4'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Poison Mortel', actionType: '', description: 'Le poison inflige 2d6 DM supplémentaires à la victime à chaque attaque. Si la victime réussit un test de CON de la difficulté indiquée, elle subit seulement la moitié des DM.'),
-      TemplateCapacity(name: 'Vermine', actionType: '', description: 'Une araignée géante peut encore agir un round complet lorsqu\'elle atteint 0 PV. Une araignée se déplace de 15 m par action de mouvement.'),
-      TemplateCapacity(name: 'Variantes', actionType: '', description: 'Choisissez un type de poison et soit Toile (L), soit Araignée chasseuse.'),
-      TemplateCapacity(name: 'Araignée Chasseuse', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 19 3 OPPOSITION 0 INTRO ou être surprise. Si elle attaque avec succès 1 une cible surprise, la créature inflige +1d4 DM PERSO et toute créature dont la FOR est inférieure à 2 la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion. RÈGLES'),
-      TemplateCapacity(name: 'Toile', actionType: 'L', description: 'Sur un test d\'attaque réussi (portée 3 m), l\'araignée emprisonne sa cible dans une toile gluante et solide. Elle est immobilisée ; se libérer nécessite l\'usage d\'une action limitée et il faut réussir un test de FOR difficulté 12.'),
+      TemplateCapacity(name: 'Poison Mortel', actionType: '', description: 'Le poison inflige 2d6 DM supplémentaires à la victime à chaque attaque.'),
+      TemplateCapacity(name: 'Vermine', actionType: '', description: 'Une araignée géante peut encore agir un round complet lorsqu\'elle atteint 0 PV.'),
+      TemplateCapacity(name: 'Toile', actionType: 'L', description: 'Sur un test d\'attaque réussi (portée 3 m), l\'araignée emprisonne sa cible dans une toile gluante et solide.'),
     ],
   ),
   CharacterTemplate(
     name: 'Basilic',
-    description: 'Le basilic est un reptile à 8 pattes d’environ 150 kg particulièrement hideux. Toutefois, peu de personnes peuvent se vanter de connaître son apparence exacte, car son regard pétrifiant rend son observation directe particulièrement mortelle. Le basilic vit dans une grande variété de milieux naturels, mais il est très commun dans les déserts ou les montagnes. Un basilic voit dans le noir.',
+    description: 'Le basilic est un reptile à 8 pattes d’environ 150 kg particulièrement hideux.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 30,
@@ -743,6 +698,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('lizard-tongue'),
     forVal: 3,
     agiVal: 0,
     conVal: 3,
@@ -750,21 +706,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -1,
     volVal: 0,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 6, dm: '2d6+4'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Regard Pétrifiant', actionType: '', description: 'Celui qui regarde le basilic et croise son regard est pétrifié. Un personnage qui n\'est pas conscient du danger doit réussir un test de CON difficulté 15 à chaque round de combat (à son tour) ou être immédiatement transformé en pierre. La transformation est permanente, mais un sort de Délivrance (prêtre) lancé moins de 1 jour par niveau du prêtre après la pétrification peut ramener la victime à la vie.'),
-      TemplateCapacity(name: 'Détourner Le Regard', actionType: '', description: 'Un personnage qui combat le basilic sans tactique particulière, si ce n\'est éviter de croiser son regard doit réussir un test de CON difficulté 10 au début de son tour ou être pétrifié. Il subit un dé malus en attaque.'),
-      TemplateCapacity(name: 'Fermer Les Yeux', actionType: '', description: 'Le personnage est aveuglé (-5 en DEF et en attaque, pas d\'attaque à distance ni de sorts ciblés), mais il ne risque pas d\'être pétrifié, sauf échec critique en attaque (dans ce cas test de CON difficulté 10).'),
+      TemplateCapacity(name: 'Regard Pétrifiant', actionType: '', description: 'Celui qui regarde le basilic et croise son regard est pétrifié.'),
     ],
   ),
   CharacterTemplate(
     name: 'Chimère draconique',
-    description: 'La chimère draconique est une cousine de la chimère ordinaire, mais sa tête d’aigle est remplacée par une tête de dragon. Encore plus dangereuse, elle est dotée d’un souffle qui dépend de la couleur de la tête de dragon (rouge pour feu, blanc pour froid, etc.). Elle parle le draconique.',
+    description: 'La chimère draconique est une cousine de la chimère ordinaire, mais sa tête d’aigle est remplacée par une tête de dragon.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 100,
@@ -773,6 +725,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 7,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('double-dragon'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -780,24 +733,19 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -4,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure, bec ou cornes', nbAttacks: 3, bonusAtk: 14, dm: '1d6+6'),
       TemplateAttack(name: 'Morsure de serpent', bonusAtk: 14, dm: '1d4+3'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Poison', actionType: '', description: 'La victime subit 1d6 DM de poison et elle doit faire un test de CON difficulté 16. En cas d\'échec, elle subit 1d6 DM supplémentaires par round pendant 5 rounds.'),
-      TemplateCapacity(name: 'Riposte Sournoise', actionType: '', description: 'Si une créature attaque la chimère de dos, la chimère obtient une attaque supplémentaire de serpent contre cet attaquant en plus de ces attaques normales à ce tour.'),
-      TemplateCapacity(name: 'Vol Rapide', actionType: '', description: 'La créature obtient une action de mouvement supplémentaire par round lorsqu\'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d6 aux DM si elle est en vol et attaque une créature au sol.'),
-      TemplateCapacity(name: 'Souffle', actionType: 'L', description: 'Le souffle est une attaque de zone affectant toutes les créatures dans un cône de 10 m de long sur 10 m de large. L\'attaque inflige automatiquement (pas de test d\'attaque) 6d6+9 DM. Les DM sont divisés par deux si la victime réussit un test de DEX difficulté 15. La créature doit attendre 2d4 rounds avant d\'utiliser à nouveau son souffle après chaque utilisation.'),
+      TemplateCapacity(name: 'Poison', actionType: '', description: 'La victime subit 1d6 DM de poison.'),
+      TemplateCapacity(name: 'Souffle', actionType: 'L', description: 'Le souffle est une attaque de zone affectant toutes les créatures dans un cône de 10 m de long sur 10 m de large.'),
     ],
   ),
   CharacterTemplate(
     name: 'Chimère',
-    description: 'La chimère est un monstre improbable, mélange de trois créatures. On pourrait la comparer à un lion pourvu de deux têtes supplémentaires, à gauche une tête de chèvre et à droite une tête d’aigle, tandis que sa queue est un long serpent aux crocs dégoulinants de poison. Des ailes se déploient dans son dos et les mots peinent à décrire une créature issue des pires cauchemars. La chimère fait la taille d’un énorme taureau, elle voit dans le noir et comprend le noir parler.',
+    description: 'La chimère est un monstre improbable, mélange de trois créatures.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 100,
@@ -806,6 +754,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 7,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('double-dragon'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -813,18 +762,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -4,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure, bec ou cornes', nbAttacks: 3, bonusAtk: 14, dm: '1d6+6'),
       TemplateAttack(name: 'Morsure de serpent', bonusAtk: 14, dm: '1d4+3'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Poison', actionType: '', description: 'La victime subit 1d6 DM de poison et elle doit faire un test de CON difficulté 16. En cas d\'échec, elle subit 1d6 DM supplémentaires par round pendant 5 rounds.'),
-      TemplateCapacity(name: 'Riposte Sournoise', actionType: '', description: 'Si une créature attaque la chimère de dos, la chimère obtient une attaque supplémentaire de serpent contre cet attaquant en plus de ces attaques normales à ce tour.'),
-      TemplateCapacity(name: 'Vol Rapide', actionType: '', description: 'La créature obtient une action de mouvement supplémentaire par round lorsqu\'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d6 aux DM si elle est en vol et attaque une créature au sol.'),
+      TemplateCapacity(name: 'Poison', actionType: '', description: 'La victime subit 1d6 DM de poison.'),
+      TemplateCapacity(name: 'Riposte Sournoise', actionType: '', description: 'Si une créature attaque la chimère de dos, la chimère obtient une attaque supplémentaire.'),
     ],
   ),
   CharacterTemplate(
@@ -838,6 +783,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 11,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.enorme,
+    imageUrl: _icon('hydra'),
     forVal: 8,
     agiVal: 0,
     conVal: 8,
@@ -845,22 +791,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Morsure', nbAttacks: 10, bonusAtk: 13, dm: '1d8+4', additionalEffect: '1d6 DM de froid'),
       TemplateAttack(name: 'Souffle glacial', description: 'Cône de 20 m, tous les 1d4 rounds', nbAttacks: 10, bonusAtk: 13, dm: '6d6+18'),
     ],
     capacities: [
       TemplateCapacity(name: 'Guérison Accélérée', actionType: '', description: 'L\'hydre guérit de 5 PV par tour au début de son tour, sauf si les DM subis sont de feu.'),
-      TemplateCapacity(name: 'Attaques Multiples', actionType: '', description: 'L\'hydre peut effectuer un total de 10 attaques, mais pas plus de 4 attaques sur la même cible chaque round. Utilisez la règle des attaques groupées pour gagner du temps (par exemple, +5 pour l\'attaque de 2 têtes à la fois).'),
-      TemplateCapacity(name: 'Créature élémentaire', actionType: '', description: 'La cryohydre possède un souffle glacial (voir plus haut), elle est immunisée aux DM de froid et les DM de morsure augmentent de +1d6. Ces éléments augmentent le NC global de la créature de +1. Il existe aussi des hydres de feu, appelées pyrohydre. Elles sont immunisées aux DM de feu et seul l’acide permet de les empêcher de se régénérer.'),
     ],
   ),
   CharacterTemplate(
     name: 'Démonet',
-    description: 'Le démonet représente l’image d’Épinal d’un démon miniature, de celui qui se perche sur votre épaule pour vous suggérer des actions maléfiques. Il possède une tête humaine, des ailes de chauve‑souris, des cornes et une queue reptilienne fourchue à son extrémité.',
+    description: 'Le démonet représente l’image d’Épinal d’un démon miniature.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 15,
@@ -869,6 +811,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 2,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.tresPetite,
+    imageUrl: _icon('imp'),
     forVal: -2,
     agiVal: 3,
     conVal: -2,
@@ -876,31 +819,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: 0,
     volVal: -1,
-    superiorStats: {
-      'agi',
-      'con',
-      'per'
-    },
+    superiorStats: {'agi', 'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Griffes et morsure', bonusAtk: 4, dm: '1d4'),
       TemplateAttack(name: 'Queue fourchue', bonusAtk: 4, dm: '1'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Venin', actionType: '', description: '2 La victime doit réussir un test de CON diffi- RÈGLES culté 10 ou être affaiblie pendant 1d6 min.'),
-      TemplateCapacity(name: 'Transformation', actionType: 'L', description: 'Le démonet peut se transformer en n\'importe quel animal de taille très petite (chien, chat, rat, corbeau, etc.) aussi longtemps qu\'il le souhaite. INVISIBILITÉ (A)* : Le démon se rend invisible pendant 1d4 min. Une fois invisible, personne ne peut plus détecter sa présence ou lui porter d\'attaque directe. S\'il attaque, il redevient visible.'),
-      TemplateCapacity(name: 'Vol', actionType: '', description: 'Un démonet peut se déplacer en vol de 10 m par action de mouvement.'),
-      TemplateCapacity(name: 'Démon', actionType: '', description: 'Les démons ne sont pas considérés comme des créatures non vivantes. Toutefois, ils partagent avec celles-ci de nombreux traits. PARTIE III  PAGE 277 Ils ne respirent pas, ne dorment jamais, ne connaissent pas la fatigue et sont immunisés au poison et aux maladies non magiques. Ils n\'ont pas besoin de se sustenter, du moins pas de nourritures terrestres.'),
-      TemplateCapacity(name: 'Résistance', actionType: '', description: 'Tous les démons réduisent les DM de feu et d\'acide de 10 points.'),
-      TemplateCapacity(name: 'Résistance Aux Armes', actionType: '', description: 'Le démonet possède une RD 5 sur les armes non magiques. Si les PJ ne sont pas équipés des armes appropriées, le NC des démons augmente de 1.'),
-      TemplateCapacity(name: 'Télépathie', actionType: '', description: 'Les démons peuvent communiquer avec toutes les créatures par télépathie à une distance de 50 m sans avoir besoin de partager une langue commune. Ils parlent l\'abyssal.'),
       TemplateCapacity(name: 'Téléportation', actionType: 'L', description: 'Le démonet peut se téléporter à n\'importe quel endroit qu\'il voit ou qu\'il connaît à une distance maximale de 200 m jusqu\'à 3 fois par combat.'),
-      TemplateCapacity(name: 'Tentation Du Mal', actionType: '', description: 'Les démons aiment corrompre les mortels en leur offrant le pouvoir. Un démon peut donner un dé bonus à toutes les actions d\'un mortel durant 24 h (ce mortel doit avoir un niveau inférieur au NC du démon). À la fin de cette période, le mortel est affaibli pendant une semaine, ce qui le pousse généralement à négocier un nouveau don de pouvoir. Ce que le démon fait payer de plus en plus cher, jusqu\'à obtenir l\'âme de sa proie. Après chaque nouvelle période de 24 h, la période d\'affaiblissement augmente d\'une semaine.'),
-      TemplateCapacity(name: 'Vision Dans Le Noir', actionType: '', description: 'Tous les démons voient dans le noir comme en plein jour à une distance de 30 m. PAGE 278  PARTIE III TÉNÈBRES (L)* : Tous les démons peuvent invoquer à volonté une zone fixe de ténèbres magiques de 10 m de diamètre, à une portée de 20 m pour une durée de 1 min. Même les créatures capables de voir dans le noir sont aveuglées dans cette zone. Il ne peut maintenir plus d\'une zone de ténèbres à la fois.'),
     ],
   ),
   CharacterTemplate(
     name: 'Dragon des forêts',
-    description: 'Énormes créatures reptiliennes, les dragons possèdent quatre pattes et de grandes ailes membraneuses semblables à celles des chauves‑souris. Les dragons des forêts sont reconnaissables aux patchs de plumes qui poussent au creux de certaines de leurs articulations (cou notamment) et en vieillissant leurs écailles res‑ semblent à de l’écorce. Leur souffle est un nuage empoisonné et ils utilisent généralement la magie druidique. Le caractère de chaque dragon varie selon l’individu, mais tous sont orgueilleux et attirés par les trésors et ceux qui ont réuni un butin fabuleux évitent de s’en éloigner. Le profil du dragon fourni ci‑dessous, correspond à une jeune femelle d’environ un siècle.',
+    description: 'Énormes créatures reptiliennes, les dragons possèdent quatre pattes et de grandes ailes membraneuses semblables à celles des chauves‑souris.',
     isAlly: false,
     baseInitiative: 16,
     maxHp: 140,
@@ -909,6 +839,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 10,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.enorme,
+    imageUrl: _icon('dragon-head'),
     forVal: 8,
     agiVal: 3,
     conVal: 8,
@@ -916,26 +847,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 3,
     chaVal: 2,
     volVal: 5,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 14, dm: '1d12+8'),
       TemplateAttack(name: 'Attaque magique', bonusAtk: 15, dm: ''),
     ],
     capacities: [
-      TemplateCapacity(name: 'Coup De Queue', actionType: 'G', description: 'Chaque fois qu\'un adversaire attaque le dragon dans le dos, il subit une attaque de queue gratuite équivalant à une attaque avec des DM divisés par deux.'),
-      TemplateCapacity(name: 'Emporter Dans Les Airs', actionType: '', description: 'Sur un résultat de 17 à 20 au test d\'attaque, le dragon peut emporter dans les airs une victime de taille inférieure à la sienne au prix d\'une action de mouvement. Au premier round, si la victime se libère (test de FOR difficulté 18), elle subit, 4d4° DM de chute. Au round suivant, si la créature décide de prendre de l\'altitude, les DM passent à 7d4° et enfin 10d4° aux rounds suivants. Le dé évolutif des DM de chute est indexé sur le niveau de la victime, et non sur celui de la créature.'),
-      TemplateCapacity(name: 'Immunités', actionType: '', description: 'Un dragon des forêts est immunisé au sommeil et à la paralysie et ne subit aucun DM de poison.'),
-      TemplateCapacity(name: 'Inspirer La Terreur', actionType: '', description: 'Lorsque le dragon attaque pour la première fois, toutes les créatures à moins de 30 m doivent réussir un test d\'attaque magique contre 25 ou être submergées par la peur et subir l\'état affaibli pendant 1d4 rounds. Si le 3 OPPOSITION 0 INTRO test est raté avec une marge de 10 plus, la vic- 1 time doit fuir aussi loin que possible pendant PERSO la même durée. 2'),
-      TemplateCapacity(name: 'Souffle', actionType: 'L', description: 'Le souffle est un nuage de gaz empoisonné affectant toutes les créatures dans un cône 15 m × 15 m. Retenir sa respiration est inutile, le poison fonctionne par simple contact. L\'attaque inflige automatiquement (pas de test d\'attaque) 6d6+18 DM de poison. Les DM sont divisés par deux si la victime réussit un test d\'AGI difficulté 15. La créature doit attendre 1d4 rounds avant d\'utiliser à nouveau son souffle après chaque utilisation.'),
-      TemplateCapacity(name: 'Vol Rapide', actionType: '', description: 'La créature obtient une action de mouvement supplémentaire par round lorsqu\'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d8 DM si elle est en vol et attaque une créature au sol. Élémentaire d\'eau (grand) L\'élémentaire d\'eau est l\'incarnations de son élément primordial. Il peut être invoqué par magie et se manifeste dans notre monde sous la forme d\'une créature au buste vaguement humanoïde mêlée à un tourbillon d\'eau. L\'élémentaire d\'eau percute l\'adversaire ou le noie. PARTIE III  PAGE 279'),
+      TemplateCapacity(name: 'Souffle', actionType: 'L', description: 'Le souffle est un nuage de gaz empoisonné affectant toutes les créatures dans un cône 15 m × 15 m.'),
     ],
   ),
   CharacterTemplate(
     name: 'Élémentaire d\'eau (grand)',
-    description: 'L ’élémentaire d’eau est l’incarnations de son élément primordial. Il peut être invoqué par magie et se manifeste dans notre monde sous la forme d’une créature au buste vaguement humanoïde mêlée à un tourbillon d’eau. L’élémentaire d’eau percute l’adversaire ou le noie.',
+    description: 'L’élémentaire d’eau est l’incarnations de son élément primordial.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 70,
@@ -945,6 +868,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 5,
     creatureType: CreatureType.nonVivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('whirlwind'),
     forVal: 4,
     agiVal: 2,
     conVal: 0,
@@ -952,24 +876,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 3,
     chaVal: -3,
     volVal: -3,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Coup', nbAttacks: 2, bonusAtk: 10, dm: '1d8+6')
     ],
     capacities: [
-      TemplateCapacity(name: 'Eau de vie', actionType: '', description: 'L’élémentaire d’eau régénère 5 PV par round (sauf DM de feu).'),
-      TemplateCapacity(name: 'Fauchage', actionType: '', description: 'Sur 17 à 20 au test d’attaque, si l’attaque est réussie, la victime doit réussir au choix un test de FOR ou d’AGI difficulté 16 ou être renversée.'),
-      TemplateCapacity(name: 'Grand', actionType: '', description: 'La créature retranche 3 à tous les DM subis (RD 3).'),
-      TemplateCapacity(name: 'Résistance', actionType: '', description: 'Les élémentaires divisent par deux tous les DM des armes non magiques (de +0 à +1 au NC selon l’équipement des PJ). Les élémentaires d’eau sont immunisés aux DM d’acide.'),
-      TemplateCapacity(name: 'Tourbillon', actionType: 'L', description: 'Une fois par combat, un élémentaire peut se transformer en tourbillon liquide pendant 3 rounds. Sous cette forme, il peut se déplacer à travers les créatures et les objets à la vitesse de 10 m par action de mouvement (20 m pour les élémentaires d’air). Toute créature sur son passage doit faire un test d’AGI ou de FOR au choix de difficulté 16. En cas d’échec, la cible subit automatiquement les DM de base de l’élémentaire (selon la taille) et elle est renversée (si sa taille ne dépasse pas celle de l’élémentaire). En cas de succès, elle ne subit que la moitié des DM et peut rester debout.'),
-      TemplateCapacity(name: 'Vision', actionType: 'L', description: 'Ils voient dans le noir à 30 m et ils peuvent déterminer la localisation de toute créature en contact avec leur élément à moins de 30 m, même si celle‑ci est invisible.'),
+      TemplateCapacity(name: 'Tourbillon', actionType: 'L', description: 'Une fois par combat, un élémentaire peut se transformer en tourbillon liquide pendant 3 rounds.'),
     ],
   ),
   CharacterTemplate(
     name: 'Géant du feu',
-    description: 'Les géants du feu sont de grande créature à la peau charbonneuse, aux cheveux et à la barbe de feu. Le front des mâles est orné de cornes recourbées, plus ou moins longues selon leur âge. Ils aiment arborer des tatouages et des décorations en or.',
+    description: 'Les géants du feu sont de grande créature à la peau charbonneuse, aux cheveux et à la barbe de feu.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 160,
@@ -979,6 +896,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 9,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.enorme,
+    imageUrl: _icon('golem-head'),
     forVal: 12,
     agiVal: -1,
     conVal: 12,
@@ -986,22 +904,18 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: 0,
     volVal: 0,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Marteau de guerre', bonusAtk: 14, dm: '4d8+16'),
       TemplateAttack(name: 'Lancer de rocher', bonusAtk: 14, dm: '2d8+12'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Fauchage', actionType: '', description: 'Sur 15 à 20 au test d\'attaque, si l\'attaque est réussie, la victime doit réussir au choix un test de FOR ou d\'AGI difficulté 20 ou être renversée.'),
-      TemplateCapacity(name: 'Balayage', actionType: '', description: 'La créature utilise sa grande taille pour affecter deux créatures à son contact d\'un seul coup de patte/arme. Faites un seul test et comparez-le à la DEF des deux cibles. Si les deux cibles sont touchées, la cible secondaire (désignée par le MJ) subit la moitié des DM.'),
       TemplateCapacity(name: 'Immunisé Au Feu', actionType: '', description: 'Le géant du feu est immunisé aux DM de feu.'),
     ],
   ),
   CharacterTemplate(
     name: 'Geoselachis',
-    description: 'Aussi appelé requin terrestre, le geoselachis est un prédateur puissant et très dangereux capable de s’enterrer pour surprendre sa proie. Imaginez une taupe géante dotée d’un exosque- lette impénétrable, de la mâchoire d’un grand requin et enfin de la puissance et de la capacité à encorner d’un rhinocéros et vous aurez un aperçu de cette machine à tuer… Les multiples dents triangulaires qui constituent la mâchoire du geoselachis sont autant de cristaux transparents semblables à des diamants. La créature possède 50+1d60 dents récupérables (les autres sont en mauvais état), il faut environ 1 min pour retirer une dent sur son cadavre et chaque dent vaut environ 1 pa. Elles sont utilisées pour concevoir des outils tranchants, en particulier dans les tribus du désert qui n’ont pas d’accès à la manufacture de métaux. Chasseur de geoselachis est un des plus dangereux métiers du monde.',
+    description: 'Aussi appelé requin terrestre, le geoselachis est un prédateur puissant et très dangereux capable de s’enterrer pour surprendre sa proie.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 110,
@@ -1010,6 +924,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 7,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('shark-jaws'),
     forVal: 8,
     agiVal: 0,
     conVal: 8,
@@ -1017,22 +932,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', nbAttacks: 2, bonusAtk: 13, dm: '1d12+8'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si le geoselachis peut se dissimuler sous terre, la cible doit faire un test de PER difficulté 15 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d6 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion.'),
-      TemplateCapacity(name: 'Encorner', actionType: '', description: 'Lorsque la créature réussit une attaque avec un résultat de 17-20 au d20, elle encorne sa proie et lui inflige immédiatement une attaque gratuite supplémentaire. PARTIE III  PAGE 281'),
       TemplateCapacity(name: 'Déplacement Sous Terre', actionType: '', description: 'Le geoselachis est capable de parcourir 5 m par action de mouvement en creusant dans un sol meuble (le tunnel s\'effondre derrière lui).'),
     ],
   ),
   CharacterTemplate(
     name: 'Gnoll de base',
-    description: 'Le gnoll est un humanoïde puissant de plus de 2 m dont la particularité est une tête d’hyène et une fourrure jaune sale. Les gnolls combattent généralement en nombre et malgré leur force, ils sont souvent lâches préférant le harcèlement et la supériorité numérique pour affronter leurs adversaires. Il n’est pas rare de trouver des groupes de gnolls disposant des capacités supplémentaires indiquées ci‑après (NC+1) sous les ordres d’un chef plus expérimenté. Les quelques aventuriers qui ont survécu à une telle rencontre racontent une expérience traumatisante sous les rires irritants de leurs bourreaux.',
+    description: 'Le gnoll est un humanoïde puissant de plus de 2 m dont la particularité est une tête d’hyène et une fourrure jaune sale.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 15,
@@ -1040,6 +950,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('hyena-head'),
     forVal: 3,
     agiVal: 0,
     conVal: 3,
@@ -1051,9 +962,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Hache', bonusAtk: 4, dm: '1d8+3'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Rires Insupportables', actionType: '', description: 'À chaque round, un PJ qui combat des gnolls au contact doit réussir un test de VOL difficulté (5 + nombre de gnolls) à son contact ou subir un dé malus en attaque. MEUTE DE GNOLLS | +1 Niveau Une meute de gnolls comprend au moins 3 gnolls par PJ.'),
-      TemplateCapacity(name: 'Interchangeables', actionType: '', description: 'Tant que les gnolls sont plus nombreux que la cible, ils se relaient pour esquiver ses attaques et ils obtiennent un bonus de +3 en DEF. Si plusieurs gnolls sont au contact du PJ, le MJ a toute latitude pour infliger les DM d\'une attaque sur le gnoll de son choix, le personnage ne sait jamais lequel il blesse. L\'HALLALI : Les gnolls profitent d\'une erreur de leur victime pour lui porter des attaques fatales. Chaque fois que la victime de la meute rate une attaque ou obtient sur un test d\'attaque un résultat au d20 allant de 1 à 5 (inclus), elle déclenche la curée. Chaque gnoll à son contact bénéficie immédiatement et gratuitement d\'une attaque contre la victime.'),
-      TemplateCapacity(name: 'L’Hallali', actionType: '', description: 'Les gnolls profitent d’une erreur de leur victime pour lui porter des attaques fatales. Chaque fois que la victime de la meute rate une attaque ou obtient sur un test d’attaque un résultat au d20 allant de 1 à 5 (inclus), elle déclenche la curée. Chaque gnoll à son contact bénéficie immédiatement et gratuite- ment d’une attaque contre la victime. Note : Une meute de gnolls comprend au moins 3 gnolls par PJ.'),
+      TemplateCapacity(name: 'Rires Insupportables', actionType: '', description: 'À chaque round, un PJ qui combat des gnolls au contact doit réussir un test de VOL difficulté (5 + nombre de gnolls) à son contact ou subir un dé malus en attaque.'),
     ],
   ),
   CharacterTemplate(
@@ -1066,6 +975,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('hyena-head'),
     forVal: 4,
     agiVal: 0,
     conVal: 4,
@@ -1076,14 +986,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     attacks: [
       TemplateAttack(name: 'Hache', nbAttacks: 2, bonusAtk: 8, dm: '1d8+4'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Capitaine', actionType: '', description: 'Le chef donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.'),
-      TemplateCapacity(name: 'Commandant', actionType: '', description: 'Tant qu\'au moins 4 créatures sous ses ordres sont à moins de 20 m du commandant, il ne subit que la moitié des DM qui lui sont infligés. 3 OPPOSITION 0 INTRO'),
-    ],
   ),
   CharacterTemplate(
     name: 'Sergent gnoll',
-    description: 'Un sergent gnoll est généralement à la tête de cinq gnolls standard. Ils forment une rencontre de NC 4.',
+    description: 'Un sergent gnoll est généralement à la tête de cinq gnolls standard.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 25,
@@ -1091,6 +997,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('hyena-head'),
     forVal: 4,
     agiVal: 0,
     conVal: 4,
@@ -1101,13 +1008,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     attacks: [
       TemplateAttack(name: 'Hache', bonusAtk: 6, dm: '1d8+4'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Sergent', actionType: '', description: 'Une fois par round, le sergent peut donner une action supplémentaire à n\'importe quel allié sous ses ordres à portée de vue (attaque ou mouvement). Une fois par combat, une attaque qui aurait dû amener le sergent à 0 PV est ignorée.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Gobelin de base',
-    description: 'Le gobelin « peau verte » est une petite créature à la peau grisâtre d’environ un mètre de haut, cruelle, vicieuse et qui attaque en bande. Les gobelins sont généralement couards : blessés ou en sous‑nombre, ils s’enfuient la plupart du temps. Un groupe de cinq gobelins de base forme une rencontre ordinaire de niveau 1.',
+    description: 'Le gobelin « peau verte » est une petite créature à la peau grisâtre d’environ un mètre de haut.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 3,
@@ -1116,6 +1020,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('goblin-head'),
     forVal: -1,
     agiVal: 2,
     conVal: -1,
@@ -1123,20 +1028,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: -2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Arme', bonusAtk: 2, dm: '1d4-1'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Attaque En Meute', actionType: '', description: 'Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d\'un bonus de +2 en attaque (bonus qui peut s\'ajouter à une éventuelle attaque groupée).'),
+      TemplateCapacity(name: 'Attaque En Meute', actionType: '', description: 'Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d\'un bonus de +2 en attaque.'),
     ],
   ),
   CharacterTemplate(
     name: 'Chef gobelin',
-    description: 'Un chef gobelin accompagné d’un shaman, de ses deux gardes du corps (gobelins élite) et à la tête de quinze gobelins est une rencontre ordinaire de niveau 4 (ou difficile au niveau 3).',
+    description: 'Un chef gobelin accompagné d’un shaman, de ses deux gardes du corps.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 22,
@@ -1145,6 +1047,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 2,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('goblin-head'),
     forVal: 1,
     agiVal: 2,
     conVal: 1,
@@ -1152,16 +1055,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Arme', nbAttacks: 2, bonusAtk: 5, dm: '1d6+1'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Attaque En Meute', actionType: '', description: 'Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d\'un bonus de +2 en attaque (bonus qui peut s\'ajouter à une éventuelle attaque groupée).'),
-      TemplateCapacity(name: 'Sergent', actionType: '', description: 'Une fois par round, le sergent peut donner une action supplémentaire à n\'importe quel allié sous ses ordres à portée de vue (attaque ou mouvement). Une fois par combat, une attaque qui aurait dû amener le sergent à 0 PV est ignorée. PAGE 284  PARTIE III'),
     ],
   ),
   CharacterTemplate(
@@ -1175,6 +1071,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0.5,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('goblin-head'),
     forVal: 0,
     agiVal: 2,
     conVal: 0,
@@ -1182,15 +1079,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -1,
     volVal: -1,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Arme', bonusAtk: 4, dm: '1d6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Attaque En Meute', actionType: '', description: 'Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d\'un bonus de +2 en attaque (bonus qui peut s\'ajouter à une éventuelle attaque groupée). PARTIE III  PAGE 283'),
     ],
   ),
   CharacterTemplate(
@@ -1203,6 +1094,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 1,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('goblin-head'),
     forVal: 0,
     agiVal: 2,
     conVal: 1,
@@ -1210,22 +1102,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 1,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Arme', bonusAtk: 4, dm: '1d6'),
       TemplateAttack(name: 'Attaque magique', bonusAtk: 4, dm: '2d6'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Attaque En Meute', actionType: '', description: 'Lorsque au moins 2 gobelins attaquent la même cible en même temps, ils bénéficient d\'un bonus de +2 en attaque (bonus qui peut s\'ajouter à une éventuelle attaque groupée).'),
-      TemplateCapacity(name: 'Attaque magique', actionType: 'A', description: 'La créature possède un pouvoir magique qui inflige 2d6 DM sur un test d’attaque magique réussi (portée 30 m) sur une cible unique.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Golem de chair',
-    description: 'Un golem de chair ressemble approximativement au monstre de Frankenstein. Il fait preuve d’une force inhumaine. Créature à la fois pitoyable et effrayante, le golem est une créature imposante mesurant presque 2,50 m constituée de l’assemblage grossier de divers cadavres.',
+    description: 'Un golem de chair ressemble approximativement au monstre de Frankenstein.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 90,
@@ -1234,6 +1119,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 7,
     creatureType: CreatureType.nonVivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('frankenstein-creature'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1241,24 +1127,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -4,
     volVal: 6,
-    superiorStats: {
-      'con',
-      'per'
-    },
+    superiorStats: {'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Poings', nbAttacks: 2, bonusAtk: 11, dm: '1d10+6'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Une Petite Dernière', actionType: '', description: 'Si un adversaire au contact tente de s\'éloigner de la créature (généralement pour fuir), elle obtient une attaque de contact gratuite contre lui.'),
-      TemplateCapacity(name: 'Tape Dur', actionType: '', description: 'Si la créature obtient 17 à 20 au dé du test d\'attaque, l\'attaque est automatiquement réussie. De surcroît, la victime doit réussir un test de CON difficulté 16 ou être étourdie pendant 1 round.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle augmente de +3 sa valeur d\'attaque au contact et ses DM de +1d6. Elle peut encore agir un tour complet après avoir atteint 0 PV.'),
-      TemplateCapacity(name: 'Résistance', actionType: '', description: 'Le golem divise par 2 tous les DM élémentaires (feu, froid, acide) ainsi que les DM contondants. Il est immunisé au poison. ABSORBER L\'ÉLECTRICITÉ : Non seulement le golem de chair est immunisé à l\'électricité, mais en plus les DM de ce type lui permettent de guérir de ses blessures. Il régénère 1 PV pour 3 points de DM d\'électricité qui lui sont infligés. 3 OPPOSITION 0 INTRO Goule 1 La goule est un humanoïde mort d\'une maladie PERSO atroce appelée fièvre des goules. Son corps cada- 2 vérique est décharné, et même partiellement RÈGLES décomposé, des griffes noires et des dents acérées lui poussent tandis qu\'un appétit insatiable pour la chair humaine le submerge.'),
-      TemplateCapacity(name: 'Absorber l’électricité', actionType: '', description: 'Non seulement le golem de chair est immunisé à l’électricité, mais en plus les DM de ce type lui permettent de guérir de ses blessures. Il régénère 1 PV pour 3 points de DM d’électricité qui lui sont infligés.'),
+      TemplateCapacity(name: 'Absorber l’électricité', actionType: '', description: 'Non seulement le golem de chair est immunisé à l’électricité, mais en plus les DM de ce type lui permettent de guérir de ses blessures.'),
     ],
   ),
   CharacterTemplate(
     name: 'Abomination (goule)',
-    description: 'L’abomination est une goule plus puissante, plus ancienne et sans doute un meneur ou un personnage important de son vivant. Avec l’âge, elle a développé des excroissances osseuses acérées au niveau des articulations (coude, genou, épine dorsale) et sa bouche s’est totalement déformée en une gueule immonde.',
+    description: 'L’abomination est une goule plus puissante, plus ancienne.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 35,
@@ -1266,6 +1145,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('shambling-zombie'),
     forVal: 4,
     agiVal: 1,
     conVal: 4,
@@ -1277,15 +1157,12 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Morsure et griffes', nbAttacks: 2, bonusAtk: 9, dm: '1d6+4', additionalEffect: 'Paralysie'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Paralysie', actionType: '', description: 'Une créature blessée par la morsure d\'une goule puissante doit réussir un test de CON difficulté 15 ou être paralysée pendant 1d6 rounds.'),
-      TemplateCapacity(name: 'Devenir Une Goule', actionType: '', description: 'Une créature tuée par une goule en devient une à son tour au prochain crépuscule.'),
-      TemplateCapacity(name: 'Miasmes', actionType: '', description: 'La goule puissante émet une odeur de cadavre en décomposition absolument infâme et des miasmes toxiques dans un rayon de 2 m. À chaque round, à la fin du tour de la goule, ses adversaires au contact doivent réussir un test de CON difficulté 10 ou être affaiblis et perdre 1d4 PV.'),
-      TemplateCapacity(name: 'Fièvre Des Goules', actionType: '', description: 'Comme pour la goule, avec un test de CON difficulté 18.'),
+      TemplateCapacity(name: 'Miasmes', actionType: '', description: 'La goule puissante émet une odeur de cadavre en décomposition absolument infâme et des miasmes toxiques dans un rayon de 2 m.'),
     ],
   ),
   CharacterTemplate(
     name: 'Goule',
-    description: 'La goule est un humanoïde mort d’une maladie atroce appelée fièvre des goules. Son corps cadavérique est décharné, et même partiellement décomposé, des griffes noires et des dents acé- rées lui poussent tandis qu’un appétit insatiable pour la chair humaine le submerge.',
+    description: 'La goule est un humanoïde mort d’une maladie atroce appelée fièvre des goules.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 19,
@@ -1293,6 +1170,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('shambling-zombie'),
     forVal: 1,
     agiVal: 1,
     conVal: 1,
@@ -1303,15 +1181,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 5, dm: '1d6+2', additionalEffect: 'paralysie'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Paralysie', actionType: '', description: 'Une créature blessée par la morsure d\'une goule doit réussir un test de CON difficulté 10 ou être paralysée pendant 1d6 rounds. PARTIE III  PAGE 285'),
-      TemplateCapacity(name: 'Devenir Une Goule', actionType: '', description: 'Une créature tuée par une goule en devient une à son tour au prochain crépuscule.'),
-      TemplateCapacity(name: 'Fièvre Des Goules', actionType: '', description: 'À la fin du combat, si le personnage a été blessé au moins une fois par la morsure d\'une goule, il doit réussir un test de CON difficulté 15 ou contracter la maladie. Chaque jour, il subit 1d4° DM retranchés directement à sa valeur de PV maximale (il ne peut plus dépasser cette nouvelle valeur) et doit faire un nouveau test de CON difficulté 15 pour vaincre la maladie. Lorsqu\'il arrive à 0 PV, il meurt et se transforme en goule. S\'il guérit, les PV perdus peuvent être récupérés normalement. Un sort de Délivrance (rang 3 de la voie de la spiritualité) peut mettre fin à la fièvre des goules.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Griffon',
-    description: 'Le griffon est une puissante créature au corps de lion pourvue de la tête et des ailes d’un aigle. Ce mélange ne manque pas de majesté et cet animal fantastique est parfois utilisé comme monture par les chevaliers. La créature pèse environ 300 kg pour une envergure de 7 m. Un griffon est plus intelligent qu’un simple animal et, même s’il ne parle pas, il peut apprendre à comprendre une langue s’il y est habitué très tôt. Un œuf de griffon viable est un bien très précieux, il vaut 3 000 pa, un tout jeune animal se vend autour de 5 000 pa. Les dresseurs professionnels demandent 1 000 pa pour apprivoiser ou entraîner un griffon.',
+    description: 'Le griffon est une puissante créature au corps de lion pourvue de la tête et des ailes d’un aigle.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 50,
@@ -1320,6 +1193,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('griffin-symbol'),
     forVal: 6,
     agiVal: 3,
     conVal: 6,
@@ -1327,21 +1201,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: 0,
     volVal: 1,
-    superiorStats: {
-      'per'
-    },
+    superiorStats: {'per'},
     attacks: [
       TemplateAttack(name: 'Morsures et griffes', bonusAtk: 8, dm: '2d6+8'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Vol Rapide', actionType: '', description: 'La créature obtient une action de mouvement supplémentaire par round lorsqu\'elle est en vol. Au premier round de combat, la créature obtient un dé bonus en attaque et +1d4 aux DM si elle est en vol et attaque une créature au sol.'),
-      TemplateCapacity(name: 'Agripper', actionType: '', description: 'Sur un résultat de 15-20 au d20 en attaque, la créature agrippe sa proie et ne la lâche plus. Elle obtient un bonus de +5 en attaque et inflige +1d4 aux DM contre la cible qu\'elle agrippe et celle-ci est immobilisée si elle est de taille inférieure. Une fois par round, la victime peut essayer de se libérer au prix d\'une action de mouvement en réussissant un test de FOR difficulté 16. Un œuf de griffon viable est un bien très précieux, il vaut 3 000 pa, un tout jeune animal se vend autour de 5 000 pa. Les dresseurs professionnels demandent 1 000 pa pour apprivoiser ou entraîner un griffon.'),
-      TemplateCapacity(name: 'Couper Une Tête', actionType: '', description: 'L\'hydre est un adversaire très dangereux à cause de son nombre élevé d\'attaques. Pour réduire le nombre de têtes, un personnage 3 OPPOSITION 0 INTRO peut tenter de la décapiter. Dans ce cas, l\'at- 1 taque souffre d\'une pénalité de -5 et elle doit PERSO infliger au moins 10 DM en une seule fois. En 2 cas de réussite, la tête est coupée et les PV du monstre baissent de 10. Toutefois, la guérison RÈGLES accélérée de l\'hydre fait repousser la tête en 2 rounds (sauf DM de feu). En cas d\'échec, l\'hydre ne subit aucun DM. Ajouter des têtes : pour chaque tête supplémentaire, ajoutez 20 PV, +1 en attaque et en DEF et une attaque supplémentaire. Le NC augmente de +1.'),
     ],
   ),
   CharacterTemplate(
     name: 'Hydre à cinq têtes',
-    description: 'L’hydre est une grande créature reptilienne de presque 2 tonnes pourvue de multiples têtes. Imaginez un petit diplodocus doté de 5 à 12 têtes de dragon et vous aurez une idée de l’apparence de cet épouvantable monstre.',
+    description: 'L’hydre est une grande créature reptilienne de presque 2 tonnes pourvue de multiples têtes.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 50,
@@ -1350,6 +1217,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 5,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.enorme,
+    imageUrl: _icon('hydra'),
     forVal: 10,
     agiVal: 0,
     conVal: 10,
@@ -1357,22 +1225,17 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Morsure', nbAttacks: 5, bonusAtk: 8, dm: '1d8+4'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Attaques Multiples', actionType: '', description: 'L’hydre est un adversaire très dangereux à cause de son nombre élevé d’attaques. Pour réduire le nombre de têtes, un personnage peut tenter de la décapiter. Dans ce cas, l’at‑ taque souffre d’une pénalité de ‑5 et elle doit infliger au moins 10 DM en une seule fois. En cas de réussite, la tête est coupée et les PV du monstre baissent de 10. Toutefois, la guérison accélérée de l’hydre fait repousser la tête en 2 rounds (sauf DM de feu). En cas d’échec, l’hydre ne subit aucun DM.'),
-      TemplateCapacity(name: 'Ajouter des têtes', actionType: '', description: 'Ajouter des têtes : pour chaque tête supplémentaire, ajoutez 20 PV, +1 en attaque et en DEF et une attaque supplémentaire. Le NC augmente de +1.'),
       TemplateCapacity(name: 'Guérison Accélérée', actionType: '', description: 'L\'hydre régénère 5 PV par round sauf contre les DM de feu.'),
-      TemplateCapacity(name: 'Couper une tête', actionType: '', description: 'L\'hydre régénère 5 PV par round sauf contre les DM de feu.'),
     ],
   ),
   CharacterTemplate(
     name: 'Kobold de base',
-    description: 'Les Kobolds sont de petits humanoïdes reptiliens dont le faciès fait penser au crocodile. Vicieux et malins, ils sont passés maîtres dans l’art de tendres pièges et embuscades. Ils mesurent moins d’un mètre pour une vingtaine de kilos.',
+    description: 'Les Kobolds sont de petits humanoïdes reptiliens dont le faciès fait penser au crocodile.',
     isAlly: false,
     baseInitiative: 11,
     maxHp: 3,
@@ -1381,6 +1244,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('lizardman'),
     forVal: -1,
     agiVal: 2,
     conVal: -1,
@@ -1395,7 +1259,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
   ),
   CharacterTemplate(
     name: 'Chef kobold',
-    description: 'Un chef kobold accompagné de 5 kobolds de base est une rencontre ordinaire pour un groupe de niveau 2 (difficile pour un groupe de niveau 1). Ajoutez un prêtre et vous obtiendrez une ren- contre ordinaire de niveau 3.',
+    description: 'Un chef kobold accompagné de 5 kobolds de base est une rencontre ordinaire.',
     isAlly: false,
     baseInitiative: 11,
     maxHp: 15,
@@ -1404,6 +1268,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 1,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('lizardman'),
     forVal: 0,
     agiVal: 2,
     conVal: 0,
@@ -1411,19 +1276,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 1,
     chaVal: 1,
     volVal: 0,
-    superiorStats: {
-      'cha'
-    },
+    superiorStats: {'cha'},
     attacks: [
       TemplateAttack(name: 'Lance', bonusAtk: 3, dm: '1d6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Imparable', actionType: '', description: 'Si la créature obtient 15-20 au d20 d\'un test d\'attaque, elle inflige 2d4 DM supplémentaires et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique.'),
     ],
   ),
   CharacterTemplate(
     name: 'Prêtre kobold',
-    description: 'Les prêtres kobolds vénèrent les dragons qui les ont créés (c’est ce qu’ils pensent, mais rien ne le prouve…). Les prêtres sont choisis parmi ceux dont la couleur des écailles correspond à la couleur du dragon qu’ils vénèrent et ils utilisent une magie élémentaire qui correspond à cette couleur (par exemple, un sort de feu si sa peau est rouge).',
+    description: 'Les prêtres kobolds vénèrent les dragons qui les ont créés.',
     isAlly: false,
     baseInitiative: 11,
     maxHp: 30,
@@ -1432,6 +1292,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 2,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('lizardman'),
     forVal: -1,
     agiVal: 2,
     conVal: -1,
@@ -1439,9 +1300,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 1,
     chaVal: 1,
     volVal: 1,
-    superiorStats: {
-      'cha'
-    },
+    superiorStats: {'cha'},
     attacks: [
       TemplateAttack(name: 'Dague', bonusAtk: 4, dm: '1d4-1'),
       TemplateAttack(name: 'Attaque magique', description: 'portée 20 m', bonusAtk: 6, dm: '3d6', additionalEffect: 'DM élémentaires selon la couleur du prêtre'),
@@ -1449,7 +1308,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
   ),
   CharacterTemplate(
     name: 'Licorne',
-    description: 'La licorne ressemble à un cheval aux proportions parfaites et à la robe immaculée et elle est pourvue d’une corne torsadée unique. Cet animal féérique et majestueux habite seulement au sein des forêts sauvages et vierges. Il est très rare de l’apercevoir tant elle est discrète et prompte à s’éclipser. La corne de la licorne conserve ses propriétés magiques, même si elle est sectionnée, ce qui pousse souvent les créatures sans scrupule comme les orcs et même les humains à la chasser. Les légendes disent que la licorne accepte parfois de servir de monture à une jeune fille au cœur pur.',
+    description: 'La licorne ressemble à un cheval aux proportions parfaites et à la robe immaculée et elle est pourvue d’une corne torsadée unique.',
     isAlly: false,
     baseInitiative: 17,
     maxHp: 35,
@@ -1458,6 +1317,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('unicorn'),
     forVal: 5,
     agiVal: 4,
     conVal: 5,
@@ -1465,18 +1325,12 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 4,
     chaVal: 4,
     volVal: 4,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Corne et sabots', bonusAtk: 8, dm: '2d6+5'),
     ],
     capacities: [
-      TemplateCapacity(name: 'Célérité', actionType: '', description: 'Si la licorne ne transporte aucune charge supérieure à 50 kg, elle peut parcourir jusqu\'à 15 m par action de mouvement.'),
-      TemplateCapacity(name: 'Corne magique', actionType: 'L', description: 'Si la licorne touche une créature à 0 PV de sa corne, celle‑ci récupère 2d4° PV. Si la créature est empoisonnée, elle a immédiatement droit à un test de CON difficulté 10 pour neutraliser les effets du poison.'),
-      TemplateCapacity(name: 'Déplacement magique', actionType: 'L', description: '3 fois par combat, la licorne peut se téléporter à une portée de 60 m. Toutefois, cette capacité ne peut être utilisée que dans les limites de la forêt natale de la licorne.'),
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'Une licorne réduit de 5 les DM de toutes les armes qui ne sont pas en fer froid (un alliage spécial forgé à froid et particulièrement rare). En revanche, elle double les DM reçus par de telles armes.'),
+      TemplateCapacity(name: 'Corne magique', actionType: 'L', description: 'Si la licorne touche une créature à 0 PV de sa corne, celle‑ci récupère 2d4° PV.'),
     ],
   ),
   CharacterTemplate(
@@ -1488,6 +1342,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 10,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('mummy-head'),
     forVal: 6,
     agiVal: 3,
     conVal: 6,
@@ -1495,28 +1350,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 6,
-    superiorStats: {
-      'con',
-      'for',
-      'int'
-    },
+    superiorStats: {'con', 'for', 'int'},
     attacks: [
       TemplateAttack(name: 'Coup', bonusAtk: 16, nbAttacks: 2, dm: '2d6+8', additionalEffect: 'Putréfaction'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'La momie réduit de 5 tous les DM subis, sauf par le feu.'),
-      TemplateCapacity(name: 'Putréfaction', actionType: '', description: 'Toute créature blessée par une momie doit réussir un test de CON difficulté 15 ou contracter une horrible maladie qui occasionne le pourrissement rapide de ses chairs. Une sorte de lèpre fulgurante. La victime subit 1d10 DM par round pendant 5 rounds. Tant qu\'elle est sous l\'effet de la putréfaction, il n\'est pas nécessaire de réaliser un nouveau test de CON lorsque la victime est la cible d\'une attaque de la momie.'),
-      TemplateCapacity(name: 'Injonction Mortelle', actionType: 'L', description: 'Une cible située à une distance maximale de 30 m doit réussir un test de CON difficulté 15 ou tomber à 0 PV (et mourir immédiatement s\'il s\'agit d\'un PNJ). En cas de succès, la cible subit tout de même 2d8+10 DM. Ce pouvoir ne peut prendre une même créature pour cible qu\'une seule fois par combat. VOIE DE LA MAGIE UNIVERSELLE RANG 5 : La momie auguste peut lancer tous les sorts de cette voie à volonté.'),
-      TemplateCapacity(name: 'Lumière', actionType: 'L', description: 'Le magicien désigne un objet à moins de 10 m. Celui-ci produit de la lumière dans un rayon de 10 m pendant INT heures. Cette source de lumière n\'émet pas de chaleur. Une fois par combat, le magicien peut lancer ce sort sur les yeux d\'une créature dont le NC ne dépasse pas le rang atteint dans la voie. S\'il réussit un test opposé d\'attaque magique, elle est aveuglée pendant 1 round.'),
-      TemplateCapacity(name: 'Familier', actionType: 'A', description: 'Le magicien choisit un petit animal (écureuil, corbeau, chat, dragonnet). Il peut utiliser les sens de son familier (voir par ses yeux, entendre ce qu\'il entend, etc.) et communiquer avec lui à distance illimitée. Il gagne +2 en Initiative et en DEF lorsque son familier est en vue. S\'il est réduit à 0 PV, le familier disparaît dans un nuage de fumée et le personnage perd 1d4° PV en contrecoup. Toutefois, le maître pourra à nouveau invoquer son familier dès qu\'il aura terminé une récupération complète (c\'est toujours le même animal qui apparaît). Le familier récupère tous les PV perdus après une récupération rapide.'),
-      TemplateCapacity(name: 'Invisibilité', actionType: 'A', description: 'Le magicien se rend invisible pendant [1d4°+INT] minutes. Une fois invisible, personne ne peut plus détecter sa présence ou lui porter d\'attaque directe. Si le magicien attaque, il redevient visible. À partir du rang 5, le magicien peut lancer ce sort sur un allié au prix d\'une action limitée.'),
-      TemplateCapacity(name: 'Vol', actionType: 'A', description: 'Le magicien peut voler pendant [2d4°+INT] minutes. Sa vitesse de déplacement est la même qu\'au sol. Il peut rester en vol stationnaire s\'il le désire et cela est une action gratuite.'),
-      TemplateCapacity(name: 'Téléportation', actionType: 'L', description: 'Une fois par jour, le magicien disparaît et réapparaît à un autre endroit situé à moins de (niveau x INT) kilomètres. Le lieu d\'arrivée doit être soit en vue, soit parfaitement connu par le magicien. Le magicien peut emmener avec lui un allié à partir du niveau 10, un deuxième au niveau 13, un troisième au niveau 16 et enfin un quatrième au niveau 19.'),
     ],
   ),
   CharacterTemplate(
     name: 'Momie',
-    description: 'La momie est un mort‑vivant couvert de bandelettes, un cadavre animé par une magie antique qui permet à un humanoïde une parodie de vie après la mort. La momie doit rester éternellement immobile au fond de son sarcophage et elle ne peut que rarement trouver l’énergie de s’en extraire. Toutefois, lorsque cela arrive, elle fait preuve d’une haine des vivants qui dérangent son sommeil et d’une force impie qui défie les lois de la physique.',
+    description: 'La momie est un mort‑vivant couvert de bandelettes, un cadavre animé par une magie antique.',
     isAlly: false,
     baseInitiative: 11,
     maxHp: 70,
@@ -1524,6 +1365,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 5,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('mummy-head'),
     forVal: 5,
     agiVal: 1,
     conVal: 3,
@@ -1531,21 +1373,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 1,
     chaVal: -2,
     volVal: 4,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Coup', bonusAtk: 10, nbAttacks: 2, dm: '1d8+5', additionalEffect: 'Putréfaction'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'La momie réduit de 5 tous les DM subis, sauf par le feu.'),
-      TemplateCapacity(name: 'Putréfaction', actionType: '', description: 'Toute créature blessée par une momie doit réussir un test de CON difficulté 15 ou contracter une horrible maladie qui occasionne le pourrissement rapide de ses chairs, une sorte de lèpre fulgurante. La victime subit 1d6 DM par round pendant 5 rounds. Tant qu\'elle est sous l\'effet de la putréfaction, il n\'est pas nécessaire de réaliser un nouveau test de CON lorsque la victime est la cible d\'une attaque de la momie. L\'utilisation de la capacité de prêtre Délivrance permet de soigner cette maladie.'),
     ],
   ),
   CharacterTemplate(
     name: 'Ogre de base',
-    description: 'L’ogre est une brute épaisse mesurant plus de 2,50 m (pour 300 kg). Cette créature maléfique a un penchant pour les armes démesurées et la boucherie gratuite. C’est un adversaire formidable et un combat contre un ogre n’est jamais sans risque. Il parle le noir parler et parfois le commun.',
+    description: 'L’ogre est une brute épaisse mesurant plus de 2,50 m (pour 300 kg).',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 40,
@@ -1554,6 +1389,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('ogre'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1561,18 +1397,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 0,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Hachoir', bonusAtk: 7, dm: '2d6+6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Note', actionType: '', description: 'Une capacité au choix parmi Tape dur ou Imparable.'),
-      TemplateCapacity(name: 'Tape Dur', actionType: '', description: 'Si la créature obtient 15 à 20 au dé du test d\'attaque, l\'attaque est automatiquement réussie. De surcroît, la victime doit réussir un test de CON difficulté 16 ou être étourdie pendant 1 round.'),
-      TemplateCapacity(name: 'Imparable', actionType: 'L', description: 'L\'ogre réalise une attaque avec un dé bonus et garde le meilleur résultat. S\'il obtient 15-20 au d20 d\'un test d\'attaque (même sans utiliser Imparable), il inflige +1d6 DM et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire).'),
-      TemplateCapacity(name: 'Note De Conception', actionType: '', description: 'Attention, même à haut niveau des ogres dotés de la capacité Tape dur en grand nombre sont des adversaires redoutables, si vous n\'utilisez pas la règle de l\'attaque groupée, les chances sont grandes que leur victime passe plus de temps étourdie que dans la capacité d\'agir… PARTIE III  PAGE 291'),
     ],
   ),
   CharacterTemplate(
@@ -1586,6 +1413,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 6,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('ogre'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1593,24 +1421,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 1,
-    superiorStats: {
-      'con',
-      'for'
-    },
+    superiorStats: {'con', 'for'},
     attacks: [
       TemplateAttack(name: 'Hachoir', bonusAtk: 12, nbAttacks: 2, dm: '2d6+6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Note', actionType: '', description: 'Une capacité au choix parmi Tape dur ou Imparable.'),
-      TemplateCapacity(name: 'Tape Dur', actionType: '', description: 'Si la créature obtient 15 à 20 au dé du test d\'attaque, l\'attaque est automatiquement réussie. De surcroît, la victime doit réussir un test de CON difficulté 16 ou être étourdie pendant 1 round.'),
-      TemplateCapacity(name: 'Imparable', actionType: 'L', description: 'L\'ogre réalise une attaque avec un dé bonus et garde le meilleur résultat. S\'il obtient 15-20 au d20 d\'un test d\'attaque (même sans utiliser Imparable), il inflige +1d6 DM et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire).'),
-      TemplateCapacity(name: 'Teigneuse', actionType: '', description: 'Si la créature rate une attaque, sa prochaine attaque bénéficie d\'un dé bonus et de +2d6 DM.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée. Elle ignore les pénalités de douleur ou la peur, augmente de +3 sa valeur d\'attaque au contact et de +1d6 ses DM. Elle peut encore agir un tour complet après avoir atteint 0 PV.'),
     ],
   ),
   CharacterTemplate(
     name: 'Orc de base',
-    description: 'Les orcs sont des créatures robustes, un peu plus grandes que les humains, dotées de traits bestiaux et habituellement violentes. Ils vivent en tribus sous la domination d’un chef qui règne par la loi du plus fort. Les orcs parlent le noir parler.',
+    description: 'Les orcs sont des créatures robustes, un peu plus grandes que les humains, dotées de traits bestiaux et habituellement violentes.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 12,
@@ -1618,6 +1436,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 0.5,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 2,
     agiVal: 0,
     conVal: 2,
@@ -1625,14 +1444,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: -1,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Hache ou masse', bonusAtk: 3, dm: '1d8+2'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Sensible À La Lumière', actionType: '', description: 'Créatures souterraines, les orcs détestent la lumière du jour. La lumière du soleil leur inflige un dé malus en attaque.'),
     ],
   ),
   CharacterTemplate(
@@ -1644,6 +1458,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 3,
     agiVal: 0,
     conVal: 3,
@@ -1651,15 +1466,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 4,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Arme à deux mains', bonusAtk: 6, dm: '2d6+3'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Imparable', actionType: '', description: 'Si la créature obtient 15-20 sur le d20 d\'un test d\'attaque, elle inflige +2d4 DM et l\'attaque est automatiquement réussie (quelle que soit la 3 OPPOSITION 0 INTRO DEF de son adversaire). Les dés bonus ne sont 1 pas multipliés en cas de critique. PERSO'),
-      TemplateCapacity(name: 'Teigneuse', actionType: '', description: '2 Si la créature rate une attaque, sa pro- RÈGLES chaine attaque bénéficie d\'un dé bonus et de +2d4 DM.'),
     ],
   ),
   CharacterTemplate(
@@ -1671,6 +1480,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 6,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 5,
     agiVal: 0,
     conVal: 5,
@@ -1678,22 +1488,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 2,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Épée deux mains', bonusAtk: 10, nbAttacks: 2, dm: '2d6+5'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Imparable', actionType: '', description: 'Si la créature obtient 15-20 sur le d20 d\'un test d\'attaque, elle inflige +2d6 DM et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique. BRISE-GENOU : Si un adversaire au contact tente de s\'éloigner de la créature (généralement pour fuir), celle-ci obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.'),
-      TemplateCapacity(name: 'Brise-genou', actionType: '', description: 'Si un adversaire au contact tente de s’éloigner de la créature (généralement pour fuir), celle‑ci obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.'),
-      TemplateCapacity(name: 'Capitaine', actionType: '', description: 'Le capitaine donne un bonus de +2 en Init., en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.'),
-      TemplateCapacity(name: 'Commandant', actionType: '', description: 'Tant qu\'au moins 4 créatures sous ses ordres sont à moins de 20 m du commandant, il ne subit que la moitié des DM qui lui sont infligés.'),
     ],
   ),
   CharacterTemplate(
     name: 'Orc noir',
-    description: 'Les orcs noirs sont une race d’orcs d’élite obtenue par sélection et reproduction par de puissants maîtres maléfiques souhaitant construire l’armée ultime. Leur peau est plus sombre et leur musculature plus imposante. Ils manient des armes à deux mains, mais surtout, ils ne sont plus sensibles à la lumière du jour.',
+    description: 'Les orcs noirs sont une race d’orcs d’élite obtenue par sélection.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 15,
@@ -1701,6 +1503,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 3,
     agiVal: 0,
     conVal: 3,
@@ -1708,9 +1511,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -2,
     volVal: 1,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Arme à deux mains', bonusAtk: 4, dm: '2d6+3'),
     ],
@@ -1724,6 +1525,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 3,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 4,
     agiVal: 0,
     conVal: 3,
@@ -1731,14 +1533,9 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: -1,
     volVal: 1,
-    superiorStats: {
-      'for'
-    },
+    superiorStats: {'for'},
     attacks: [
       TemplateAttack(name: 'Épée deux mains', bonusAtk: 7, dm: '2d6+6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Imparable', actionType: '', description: 'Si la créature obtient 15-20 sur le d20 d\'un test d\'attaque, elle inflige +2d4 DM et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique.'),
     ],
   ),
   CharacterTemplate(
@@ -1750,6 +1547,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 3,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('orc-head'),
     forVal: 1,
     agiVal: 0,
     conVal: 3,
@@ -1761,14 +1559,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Dague', bonusAtk: 6, nbAttacks: 2, dm: '1d4+1'),
       TemplateAttack(name: 'Attaque magique', bonusAtk: 6, dm: ''),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Vampirisation', actionType: 'L', description: 'La créature doit réussir un test opposé d\'attaque magique contre une cible vivante à une distance maximale de 30 m. En cas de réussite, la cible subit 2d8 DM et la créature régénère autant de PV que de DM infligés. De plus, chaque fois qu\'une créature meurt à moins de 20 m d\'elle, la créature siphonne son énergie et gagne un nombre de PV égal au double du NC de la créature.'),
-      TemplateCapacity(name: 'Animer Un Cadavre', actionType: 'L', description: 'Ce pouvoir permet d\'animer le cadavre d\'une créature morte (portée 10 m) pendant le combat. La créature se relève avec les mêmes caractéristiques, mais elle subit une pénalité de -2 en attaque, en DEF et en Init. Lorsque le cadavre est à nouveau vaincu, il ne peut plus être réanimé. Le cadavre de la créature animée ne peut être d\'un NC supérieur à 2. PAGE 294  PARTIE III'),
-    ],
   ),
   CharacterTemplate(
     name: 'Ourhible',
-    description: 'Les ourhibles sont des ours mutants dont la tête a été remplacée par celle d’un autre ani- mal : crapaud, sanglier, rapace ou même croco- dile. Les ourhibles ont les membres supérieurs hypertrophiés prolongés de griffes puissantes. Très agressifs, ils attaquent sans sommation, les yeux injectés de sang et le regard fou. Dans les Terres d’Osgild : les ourhibles ont été créés lors de la période sombre des guerres qui ont succédé à la chute de l’empire d’Osgild. Le plus célèbre et plus commun des ourhibles est le terrible choursette, mélange de chouette et d’ours.',
+    description: 'Les ourhibles sont des ours mutants dont la tête a été remplacée par celle d’un autre animal.',
     isAlly: false,
     baseInitiative: 12,
     maxHp: 70,
@@ -1777,6 +1571,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 5,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('owl'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1784,20 +1579,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 3,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Morsure/défense/bec et griffes', bonusAtk: 10, nbAttacks: 2, dm: '1d8+6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Charge', actionType: 'L', description: 'La créature parcourt une distance maximale de 20 m et réalise une attaque avec un dé bonus. Si l\'attaque est réussie, en plus des DM normaux, une victime de taille inférieure ou égale à la créature doit réussir un test de FOR difficulté 16 ou être renversée. Dans ce cas, la créature piétine sa victime et les DM sont doublés.'),
-      TemplateCapacity(name: 'Enragé', actionType: '', description: 'Lorsqu\'elle reçoit un coup critique, la créature devient enragée.'),
     ],
   ),
   CharacterTemplate(
     name: 'Rat géant',
-    description: 'Ce rongeur de la taille d’un chien est beaucoup plus agressif qu’un rat ordinaire. Il pue autant qu’il est laid. Et il est particulièrement laid.',
+    description: 'Ce rongeur de la taille d’un chien est beaucoup plus agressif qu’un rat ordinaire.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 4,
@@ -1806,6 +1595,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 0.5,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.petite,
+    imageUrl: _icon('rat'),
     forVal: 1,
     agiVal: 1,
     conVal: 1,
@@ -1813,19 +1603,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -4,
     volVal: -2,
-    superiorStats: {
-      'per'
-    },
+    superiorStats: {'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 3, dm: '1d4+1'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Maladie', actionType: '', description: 'Chaque créature mordue par un rat doit faire un test de CON difficulté 10 à la fin du combat. En cas d\'échec, elle contracte une maladie dont les symptômes se manifestent après 2d6 h. La victime est affaiblie et perd 1d4 PV toutes les 24 h, qui ne peuvent pas être soignés par le repos.'),
     ],
   ),
   CharacterTemplate(
     name: 'Skrambler',
-    description: 'Le skrambler est une horrible créature souterraine qui ressemble à une énorme mante religieuse. Son corps est muni d’une épaisse carapace de chitine et de huit pattes. Ses pattes antérieures sont similaires à des faux géantes et sont chargées de saisir et découper ses proies. Le skrambler est capable de se déplacer sous terre grâce à un cône d’onde vibratoire qui fracture la roche. Il n’a alors plus qu’à se dégager un passage à l’aide de ses terribles pattes avant. Il mesure environ 3 m pour 400 kg.',
+    description: 'Le skrambler est une horrible créature souterraine qui ressemble à une énorme mante religieuse.',
     isAlly: false,
     baseInitiative: 14,
     maxHp: 30,
@@ -1834,6 +1619,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 3,
     creatureType: CreatureType.vivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('praying-mantis'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1841,22 +1627,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -4,
     volVal: 2,
-    superiorStats: {
-      'per',
-      'agi'
-    },
+    superiorStats: {'per', 'agi'},
     attacks: [
       TemplateAttack(name: 'Pattes', bonusAtk: 8, dm: '2d6+6'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Creuser', actionType: 'L', description: 'Au prix d\'une action limitée, le skrambler est capable de creuser sur une profondeur de 10 m par round. Le tunnel s\'effondre PAGE 296  PARTIE III derrière lui. Il peut utiliser sa capacité Embuscade pour surgir du sol et attaquer.'),
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion et en Init.'),
-      TemplateCapacity(name: 'Onde Dévastatrice', actionType: 'A', description: 'Cette onde fracture la roche dans un cône de 10 m de long pour 3 m de large. Une créature dans la zone d\'effet (même s\'il n\'y a pas de roche !) subit 5d6 DM et peut faire un test de CON difficulté 15 pour diviser les DM par deux.'),
     ],
   ),
   CharacterTemplate(
     name: 'Squelette de base',
-    description: 'En animant par magie les ossements d’une créature défunte, on obtient un mort‑vivant assez fragile appelé le squelette. Un squelette est une créature sans cervelle immunisée à toute forme d’attaque mentale. Et non, il ne parle pas !',
+    description: 'En animant par magie les ossements d’une créature défunte, on obtient un mort‑vivant assez fragile appelé le squelette.',
     isAlly: false,
     baseInitiative: 9,
     maxHp: 9,
@@ -1864,6 +1642,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('skeleton'),
     forVal: 1,
     agiVal: 1,
     conVal: 1,
@@ -1873,11 +1652,6 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     volVal: 6,
     attacks: [
       TemplateAttack(name: 'Épée (ou autre)', bonusAtk: 4, dm: '1d6+1'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Sans Esprit', actionType: '', description: 'Aucune âme n\'habite la carcasse morte, le squelette est immunisé à tous les sorts qui affectent l\'esprit.'),
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'Tous les DM infligés à un squelette avec des armes sont divisés par deux, sauf si l\'attaquant utilise une arme contondante.'),
-      TemplateCapacity(name: 'Réduction Des Dm De Froid', actionType: '', description: 'Réduit de 5 tous les DM de froid reçus.'),
     ],
   ),
   CharacterTemplate(
@@ -1890,6 +1664,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('skeleton'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1900,15 +1675,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     attacks: [
       TemplateAttack(name: 'Massue à deux mains', bonusAtk: 9, dm: '2d8+6'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Sans Esprit', actionType: '', description: 'Aucune âme n\'habite la carcasse morte, le squelette est immunisé à tous les sorts qui affectent l\'esprit.'),
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'Tous les DM infligés à un squelette avec des armes sont divisés par deux, sauf si l\'attaquant utilise une arme contondante.'),
-      TemplateCapacity(name: 'Réduction Des Dm De Froid', actionType: '', description: 'Réduit de 5 tous les DM de froid reçus. 3 OPPOSITION 0 INTRO Troll 1 Les trolls sont de grands humanoïdes de 2,70 m PERSO à la peau caoutchouteuse verdâtre couverte d\'ex- 2 croissances et de champignons. Non seulement les armes rebondissent sur cette épaisse peau élastique, mais en plus les blessures infligées se referment comme par magie. Aussi, le troll est un monstre dénué de peur, confiant en sa capacité à échapper à la mort et il combat férocement. Les trolls parlent en général le noir parler. Ils vivent le plus souvent dans des endroits reculés : forêts profondes, marais nauséabonds.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Troll',
-    description: 'Les trolls sont de grands humanoïdes de 2,70 m à la peau caoutchouteuse verdâtre couverte d’excroissances et de champignons. Non seulement les armes rebondissent sur cette épaisse peau élastique, mais en plus les blessures infligées se referment comme par magie. Aussi, le troll est un monstre dénué de peur, confiant en sa capacité à échapper à la mort et il combat férocement. Les trolls parlent en général le noir parler. Ils vivent le plus souvent dans des endroits reculés : forêts profondes, marais nauséabonds.',
+    description: 'Les trolls sont de grands humanoïdes de 2,70 m à la peau caoutchouteuse verdâtre couverte d’excroissances.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 70,
@@ -1918,6 +1688,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 5,
     creatureType: CreatureType.humanoide,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('troll'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -1929,14 +1700,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Griffes ou gourdin', bonusAtk: 10, nbAttacks: 2, dm: '1d6+6'),
       TemplateAttack(name: 'Lancer de rocher',  description: 'Portée 10m', bonusAtk: 10, dm: '2d6+6'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Fauchage', actionType: '', description: 'Sur 17 à 20 sur le d20 d\'un test d\'attaque, si l\'attaque est réussie, la victime doit réussir au choix un test de FOR ou d\'AGI PAGE 298  PARTIE III difficulté 16 ou être renversée. La créature retranche 3 à tous les DM subis (RD 3).'),
-      TemplateCapacity(name: 'Vitalité Surnaturelle', actionType: '', description: 'Un troll récupère 5 PV par tour, sauf si les DM subis sont de feu ou d\'acide. Même à 0 PV, il continue à régénérer les tissus morts à moins qu\'on ne brûle son corps ou si un PJ utilise une action limitée pour achever la créature (par exemple, en séparant la tête du corps).'),
-    ],
   ),
   CharacterTemplate(
     name: 'Vampire ancien',
-    description: 'Après quelques millénaires, un vampire devient une créature vicieuse, calculatrice et dominatrice capable de contrôler un mortel d’un seul regard.',
+    description: 'Après quelques millénaires, un vampire devient une créature vicieuse, calculatrice et dominatrice.',
     isAlly: false,
     baseInitiative: 17,
     maxHp: 160,
@@ -1944,6 +1711,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 13,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('vampire-dracula'),
     forVal: 5,
     agiVal: 4,
     conVal: 5,
@@ -1951,32 +1719,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 4,
     chaVal: 4,
     volVal: 6,
-    superiorStats: {
-      'agi',
-      'con',
-      'per'
-    },
+    superiorStats: {'agi', 'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Griffes et morsure', bonusAtk: 14, nbAttacks: 2, dm: '1d8+8', additionalEffect: "1d8 DM de froid + absorption d’énergie"),
       TemplateAttack(name: 'Epée longue', bonusAtk: 14, nbAttacks: 2, dm: '1d8+8', additionalEffect: "1d8 DM de froid"),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Absorption d’énergie', actionType: '', description: 'Le vampire récupère 5 PV chaque fois qu’il blesse une créature avec ses armes naturelles. Si la victime est réduite à 0 PV par une telle attaque, elle se transforme en vampirien au prochain crépuscule.'),
-      TemplateCapacity(name: 'Immortel', actionType: '', description: 'Lorsqu\'il tombe à 0 PV, il passe automatiquement en forme gazeuse et se dirige vers son cercueil où il reprend forme de chair. Il se réveille avec tous ses PV au prochain crépuscule. Pour le tuer, il est alors nécessaire de lui planter un pieu dans le cœur pendant qu\'il dort pour l\'empêcher de se réveiller et de repasser en forme gazeuse, puis de brûler son corps et son cercueil.'),
-      TemplateCapacity(name: 'Forme Gazeuse', actionType: 'A', description: 'Le vampire prend la consistance d\'un gaz. Il se déplace au ras du sol (s\'il chute, il le fait au ralenti) à une vitesse de 5 m par action de mouvement (M). Il peut s\'introduire par les plus petits interstices (comme sous une porte), mais ne peut utiliser aucune capacité ni subir de DM.'),
-      TemplateCapacity(name: 'Pattes d\'araignée', actionType: '', description: 'Le vampire peut se déplacer de 10 m par action de mouvement sur les murs et les plafonds.'),
-      TemplateCapacity(name: 'Résistance Impie', actionType: '', description: 'Le vampire retranche 10 à tous les DM qu\'il subit (magie incluse) à l\'exception des blessures des armes en argent et du feu. Cette RD ne s\'ajoute pas à celle que tous les morts-vivants ont contre le froid.'),
-      TemplateCapacity(name: 'Riposte Éclair', actionType: '', description: 'La créature peut effectuer une attaque en action gratuite contre chaque adversaire qui l\'attaque à l\'exception de celui qu\'elle a elle-même choisi d\'attaquer à son tour. TRANSFORMATION EN CHAUVE-SOURIS (L) : Sous cette forme, le vampire ne peut plus attaquer, mais il se déplace de 20 m par action de mouvement.'),
-      TemplateCapacity(name: 'Transformation en chauve-souris', actionType: 'L', description: 'Sous cette forme, le vampire ne peut plus attaquer, mais il se déplace de 20 m par action de mouvement.'),
-      TemplateCapacity(name: 'Vulnérabilité Au Soleil', actionType: '', description: '1 Un vampire exposé au soleil subit 2d10 DM PERSO par tour sur son maximum de PV (il ne peut pas le régénérer tant qu\'il reste à la lumière). 2 Si son maximum de PV est réduit à 0 de cette façon, il est réduit en cendre et définitivement détruit.'),
-      TemplateCapacity(name: 'Estropier', actionType: '', description: 'Le vampire inflige des blessures qui se nécrosent et laissent de terribles cicatrices. Ses attaques infligent des DM que vous devez comptabiliser à part, car les effets des sorts et des capacités de guérison sont divisés par deux. De plus, il triple les DM en cas de coup critique au lieu de les doubler.'),
-      TemplateCapacity(name: 'Regard Envoûtant', actionType: 'M', description: 'Le regard du vampire sape la volonté de ses opposants. Il peut utiliser une action de mouvement pour tenter d\'envoûter son adversaire. La cible doit réussir un test de VOL PARTIE III  PAGE 299 difficulté 20 ou être affaiblie pour 1d6 rounds ; les créatures de niveau 3 ou inférieur passent sous le contrôle du vampire.'),
-      TemplateCapacity(name: 'Magicien', actionType: '', description: 'La plupart des vampires anciens sont aussi des magiciens ; choisissez une voie de mage au rang 5 (souvent une voie de sorcier).'),
-    ],
   ),
   CharacterTemplate(
     name: 'Vampire',
-    description: 'Le vampire est un humanoïde mort‑vivant qui se nourrit du sang des vivants, il peut aisément passer pour un être humain lorsqu’il vient de se gaver de sang frais. Toutefois, il peut aussi prendre une apparence plus ou moins cadavérique ou encore la forme d’une chauve‑souris.',
+    description: 'Le vampire est un humanoïde mort‑vivant qui se nourrit du sang des vivants.',
     isAlly: false,
     baseInitiative: 17,
     maxHp: 70,
@@ -1984,6 +1735,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 8,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('vampire-dracula'),
     forVal: 5,
     agiVal: 4,
     conVal: 5,
@@ -1991,30 +1743,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 4,
     chaVal: 4,
     volVal: 4,
-    superiorStats: {
-      'agi',
-      'con',
-      'per'
-    },
+    superiorStats: {'agi', 'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Griffes et morsure', bonusAtk: 11, nbAttacks:2, dm: '1d8+5', additionalEffect: 'Absortion d\'énergie'),
       TemplateAttack(name: 'Épée longue', nbAttacks: 2, bonusAtk: 11, dm: '1d8+7'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Absortion d\'énergie', actionType: '', description: 'Le vampire récupère 5 PV chaque fois qu’il blesse une créature avec ses armes naturelles. Si la victime est réduite à 0 PV par une telle attaque, elle se transforme en vampirien au prochain crépuscule.'),
-      TemplateCapacity(name: 'Immortel', actionType: '', description: 'Lorsqu\'il tombe à 0 PV, il passe automatiquement en forme gazeuse et se dirige vers son cercueil où il reprend forme de chair. Il se réveille avec tous ses PV au prochain crépuscule. Pour le tuer, il est alors nécessaire de lui planter un pieu dans le cœur pendant qu\'il dort pour l\'empêcher de se réveiller et de repasser en forme gazeuse, puis de brûler son corps et son cercueil.'),
-      TemplateCapacity(name: 'Forme Gazeuse', actionType: 'A', description: 'Le vampire prend la consistance d\'un gaz. Il se déplace au ras du sol (s\'il chute, il le fait au ralenti) à une vitesse de 5 m par action de mouvement (M). Il peut s\'introduire par les plus petits interstices (comme sous une porte), mais ne peut utiliser aucune capacité ni subir de DM.'),
-      TemplateCapacity(name: 'Pattes d\'araignée', actionType: '', description: 'Le vampire peut se déplacer de 10 m par action de mouvement sur les murs et les plafonds.'),
-      TemplateCapacity(name: 'Regard Envoûtant', actionType: 'M', description: 'Le regard du vampire sape la volonté de ses opposants. 3 fois par combat, il peut utiliser une action de mouvement pour tenter d\'envoûter son adversaire. La cible doit réussir un test de VOL difficulté 15 ou être affaiblie pour 1d6 rounds. Les créatures de niveau 1 ou inférieur passent sous le contrôle du vampire.'),
-      TemplateCapacity(name: 'Résistance Impie', actionType: '', description: 'Le vampire retranche 10 à tous les DM qu\'il subit (magie incluse) à l\'exception des blessures des armes en argent et du feu. Cette RD ne s\'ajoute pas à celle que tous les morts-vivants ont contre le froid.'),
-      TemplateCapacity(name: 'Riposte Éclair', actionType: '', description: 'La créature peut effectuer une attaque en action gratuite contre chaque adversaire qui l\'attaque à l\'exception de celui qu\'elle a elle-même choisi d\'attaquer à son tour. TRANSFORMATION EN CHAUVE-SOURIS (L) : Sous cette forme, le vampire ne peut plus attaquer, mais il se déplace de 20 m par action de mouvement.'),
-      TemplateCapacity(name: 'Transformation en chauve-souris', actionType: 'L', description: 'Sous cette forme, le vampire ne peut plus attaquer, mais il se déplace de 20 m par action de mouvement.'),
-      TemplateCapacity(name: 'Vulnérabilité Au Soleil', actionType: '', description: '1 Un vampire exposé au soleil subit 2d10 DM PERSO par tour sur son maximum de PV (il ne peut pas le régénérer tant qu\'il reste à la lumière). 2 Si son maximum de PV est réduit à 0 de cette façon, il est réduit en cendre et définitivement détruit.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Vampirien',
-    description: 'Le vampirien est un mort‑vivant mineur au service du vampire qui l’a créé, il ressemble à un humain d’une pâleur mortelle.',
+    description: 'Le vampirien est un mort‑vivant mineur au service du vampire qui l’a créé.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 35,
@@ -2023,6 +1760,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('vampire-dracula'),
     forVal: 3,
     agiVal: 2,
     conVal: 3,
@@ -2030,25 +1768,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'con'
-    },
+    superiorStats: {'agi', 'con'},
     attacks: [
       TemplateAttack(name: 'Morsure et griffes', bonusAtk: 6, nbAttacks: 2, dm: '1d6+3', additionalEffect: 'Absorption d\'énergie'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Absorption d\'énergie', actionType: '', description: 'Chaque fois que le vampirien blesse une créature, il récupère 5 PV.'),
-      TemplateCapacity(name: 'Forme Gazeuse', actionType: 'A', description: 'Une fois par jour, le vampirien prend la consistance d\'un gaz pendant 1 min. Il se déplace au ras du sol (s\'il chute, il le fait au ralenti) à une vitesse de 5 m par action de mouvement (M). Il peut s\'introduire par les plus petits interstices (comme sous une porte), mais ne peut utiliser aucune capacité ni subir de DM. PATTES D\'ARAIGNÉE : Le vampirien peut se déplacer de 10 m par action de mouvement sur les murs et les plafonds.'),
-      TemplateCapacity(name: 'Pattes d\'araignée', actionType: '', description: 'Le vampirien peut se déplacer de 10 m par action de mouvement sur les murs et les plafonds.'),
-      TemplateCapacity(name: 'Regard Envoûtant', actionType: 'A', description: 'Le regard du vampirien sape la volonté de ses opposants. Une fois par combat, il peut utiliser une action d\'attaque pour tenter d\'envoûter son adversaire. La cible doit réussir un test de VOL difficulté 10 ou être affaiblie tant qu\'elle est sous le regard du vampirien. PAGE 300  PARTIE III'),
-      TemplateCapacity(name: 'Résistances', actionType: '', description: 'Le vampirien retranche 5 à tous les DM, sauf s\'ils sont infligés par des armes en argent ou par le feu.'),
-      TemplateCapacity(name: 'Vulnérabilité Au Soleil', actionType: '', description: 'Un vampirien exposé au soleil subit 2d6 DM par tour sur son maximum de PV (il ne peut pas le régénérer tant qu\'il reste à la lumière). Si son maximum de PV est réduit à 0 de cette façon, il est réduit en cendre et définitivement détruit.'),
     ],
   ),
   CharacterTemplate(
     name: 'Worg',
-    description: 'Les worgs sont des cousins maléfiques des loups, plus puissants (jusqu’à 150 kg) et plus intelligents. Ils comprennent le noir parler et ils servent parfois de monture aux gobelins.',
+    description: 'Les worgs sont des cousins maléfiques des loups, plus puissants (jusqu’à 150 kg) et plus intelligents.',
     isAlly: false,
     baseInitiative: 15,
     maxHp: 35,
@@ -2056,6 +1783,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 3,
     creatureType: CreatureType.vivant,
+    imageUrl: _icon('wolf-head'),
     forVal: 5,
     agiVal: 1,
     conVal: 5,
@@ -2063,25 +1791,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 2,
     chaVal: -2,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'con',
-      'per'
-    },
+    superiorStats: {'agi', 'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Morsure', bonusAtk: 7, dm: '1d6+5'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet à la créature de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise. Si elle attaque avec succès une cible surprise, la créature inflige +1d4 DM et toute créature dont la FOR est inférieure à la sienne est renversée. La créature obtient un bonus de +5 à tous les tests de discrétion. BRISE-GENOU : Si un adversaire au contact tente de s\'éloigner de la créature (généralement pour fuir), elle obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.'),
-      TemplateCapacity(name: 'Brise-genou', actionType: '', description: 'Si un adversaire au contact tente de s’éloigner de la créature (généralement pour fuir), elle obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.'),
-      TemplateCapacity(name: 'Worg en meute', actionType: '', description: 'En meute d’au moins 4 individus, les worgs sont des prédateurs vicieux qui s’acharnent sur une proie. Une meute de 6 worgs est une rencontre ordinaire de niveau 8. Leur NC augmente de +1 et elles obtiennent les capacités suivantes'),
-      TemplateCapacity(name: 'Attaque en traître', actionType: '', description: 'Si le worg attaque en même temps qu’un autre worg, de dos ou par surprise, il réalise une attaque sournoise avec un dé bonus et +2d4 DM'),
-      TemplateCapacity(name: 'L\'hallali', actionType: '', description: 'Les worgs profitent d’une erreur de leur victime pour lui porter des attaques fatales. Chaque fois que la victime de la meute rate une attaque ou obtient un résultat de 1 à 5 sur le d20 lors d’un test d’attaque, elle déclenche la curée. Chaque créature dotée de cette capacité bénéficie immédiatement et gratuitement d’une attaque en traître.'),
     ],
   ),
   CharacterTemplate(
     name: 'Zombie choursette',
-    description: 'Le zombie choursette voit son NC réduit par rapport à la créature originale, car il a perdu les capacités charge et enragé.',
+    description: 'Le zombie choursette voit son NC réduit par rapport à la créature originale.',
     isAlly: false,
     baseInitiative: 8,
     maxHp: 85,
@@ -2090,6 +1807,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     nc: 4,
     creatureType: CreatureType.nonVivant,
     taille: CreatureTaille.grande,
+    imageUrl: _icon('shambling-zombie'),
     forVal: 6,
     agiVal: 1,
     conVal: 6,
@@ -2097,22 +1815,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: -2,
     chaVal: -2,
     volVal: 6,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Bec et griffes', bonusAtk: 12, dm: '2d8+10'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'Divisez par deux tous les DM infligés au zombie par des armes, sauf s\'il s\'agit d\'armes tranchantes.'),
-      TemplateCapacity(name: 'Sans Esprit', actionType: '', description: 'Aucune âme n\'habite la carcasse morte, le zombie est immunisé à tous les sorts qui affectent l\'esprit.'),
-      TemplateCapacity(name: 'Lenteur', actionType: '', description: 'Le zombie voit son AGI réduite à -1 et sa PER à -2, et il ne se déplace que de 5 m par action de mouvement.'),
-      TemplateCapacity(name: 'Insensible À La Douleur', actionType: '', description: 'Ajoutez 3 x NC aux PV et retranchez 5 à la DEF. La créature peut encore faire une action (attaque ou mouvement) après avoir été réduite à 0 PV.'),
     ],
   ),
   CharacterTemplate(
     name: 'Zombie humain',
-    description: 'Un zombie est un mort‑vivant animé à partir d’un cadavre récent. Les chairs peuvent être à un stade plus ou moins avancé de putréfaction, mais le corps doit être globalement complet. Le zombie est une créature stupide qui suit les ordres de son créateur ou erre sans but et attaque toute créature vivante à portée. Pour obtenir un zombie, vous pouvez partir de n’importe quelle créature, qui acquiert le type non‑vivante (ce qui inclus une RD de 5 contre le froid).',
+    description: 'Un zombie est un mort‑vivant animé à partir d’un cadavre récent.',
     isAlly: false,
     baseInitiative: 8,
     maxHp: 18,
@@ -2120,6 +1830,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.nonVivant,
+    imageUrl: _icon('shambling-zombie'),
     forVal: 2,
     agiVal: -1,
     conVal: 1,
@@ -2129,12 +1840,6 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     volVal: 6,
     attacks: [
       TemplateAttack(name: 'Attaque', bonusAtk: 4, dm: '1d6+3'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Résistance Aux Dm', actionType: '', description: 'Divisez par deux tous les DM infligés au zombie par des armes, sauf s\'il s\'agit d\'armes tranchantes.'),
-      TemplateCapacity(name: 'Sans Esprit', actionType: '', description: 'Aucune âme n\'habite la carcasse morte, le zombie est immunisé à tous les sorts qui affectent l\'esprit.'),
-      TemplateCapacity(name: 'Lenteur', actionType: '', description: 'Le zombie voit son AGI réduite à -1 et sa PER à -2, et il ne se déplace que de 5 m par action de mouvement.'),
-      TemplateCapacity(name: 'Insensible À La Douleur', actionType: '', description: 'Ajoutez 3 x NC aux PV et retranchez 5 à la DEF. La créature peut encore faire une action (attaque ou mouvement) après avoir été réduite à 0 PV.'),
     ],
   ),
   CharacterTemplate(
@@ -2146,6 +1851,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('hooded-assassin'),
     forVal: 2,
     agiVal: 3,
     conVal: 3,
@@ -2153,22 +1859,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 1,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per',
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Épée courte', bonusAtk: 7, dm: '1d6+3'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Attaque Mortelle', actionType: 'A', description: 'Une attaque qui doit être exécutée de dos ou par surprise. L\'assassin obtient un dé bonus en attaque et ajoute +4d6 aux DM de sa première attaque (il fait ensuite sa seconde attaque dans des conditions normales).'),
-      TemplateCapacity(name: 'Assassinat', actionType: 'L', description: 'Au premier round de combat, si la cible est Surprise, une Attaque mortelle réussie l\'oblige à réussir un test de CON difficulté 13 ou tomber à 0 PV.'),
-      TemplateCapacity(name: 'Disparition', actionType: 'L', description: 'L\'assassin devient invisible (passage dans les ombres, cape magique, sort, etc.) et peut se déplacer de 20 m. Il réapparaît à son prochain tour et s\'il emporte un test opposé d\'AGI (discrétion +5) contre la PER (vigilance) de sa cible, il peut effectuer une Attaque mortelle.'),
     ],
   ),
   CharacterTemplate(
     name: 'Bandit de base',
-    description: 'Ce profil regroupe les différents types de bandits et de brigands croisés sur les routes ainsi que les bandes de pillards ou les soldats démobilisés appelés écorcheurs. Vous trouverez également, dans la section des PNJ, des escrimeurs qui peuvent correspondre à des profils avancés de ce type d’adversaires.',
+    description: 'Ce profil regroupe les différents types de bandits et de brigands croisés sur les routes.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 9,
@@ -2176,6 +1874,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 0.5,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('robber'),
     forVal: 1,
     agiVal: 1,
     conVal: 1,
@@ -2183,20 +1882,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 0,
     volVal: -1,
-    superiorStats: {
-      'agi'
-    },
+    superiorStats: {'agi'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 2, dm: '1d8+1'),
       TemplateAttack(name: 'Arc', bonusAtk: 2, dm: '1d6'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Bandit vétéran',
-    description: 'Un bandit vétéran peut servir de chef à un groupe de petites frappes (augmentez son CHA de +1). Un bandit vétéran accompagné de 4 bandits est une rencontre assez difficile (entre ordinaire et difficile) pour un groupe de niveau 2.',
+    description: 'Un bandit vétéran peut servir de chef à un groupe de petites frappes.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 15,
@@ -2204,6 +1898,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('robber'),
     forVal: 2,
     agiVal: 1,
     conVal: 3,
@@ -2211,21 +1906,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 0,
     volVal: 0,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 4, dm: '1d8+2'),
       TemplateAttack(name: 'Arc', bonusAtk: 3, dm: '1d6'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: '1 Au premier round de combat, si l\'environ- PERSO nement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou 2 être surprise. RÈGLES'),
-    ],
   ),
   CharacterTemplate(
     name: 'Capitaine',
-    description: 'Le capitaine est un officier qui a gravi les échelons grâce à ses compétences ou qui est bien né et a profité des meilleurs mentors et du meilleur équipement possible',
+    description: 'Le capitaine est un officier qui a gravi les échelons.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 50,
@@ -2233,6 +1922,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 4,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('cavalry'),
     forVal: 3,
     agiVal: 1,
     conVal: 2,
@@ -2240,20 +1930,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 2,
     volVal: 2,
-    superiorStats: {
-      'con'
-    },
+    superiorStats: {'con'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 8, dm: '1d8+3'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Capitaine', actionType: '', description: 'Le capitaine donne un bonus de +2 en initiative, en attaque et aux DM à toutes les créatures sous ses ordres à portée de vue.'),
-      TemplateCapacity(name: 'Riposte', actionType: '', description: 'La créature peut effectuer une attaque en action gratuite contre chaque adversaire qui l\'attaque à l\'exception de celui qu\'elle a elle-même choisi d\'attaquer à son tour.'),
     ],
   ),
   CharacterTemplate(
     name: 'Chef bandit',
-    description: 'Un chef bandit, ses deux lieutenants (vétérans) et huit bandits forment une rencontre difficile de niveau 3 ou une rencontre ordinaire de niveau 4.',
+    description: 'Un chef bandit, ses deux lieutenants et huit bandits forment une rencontre difficile.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 25,
@@ -2261,6 +1945,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('robber'),
     forVal: 3,
     agiVal: 2,
     conVal: 3,
@@ -2268,23 +1953,15 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 2,
     volVal: 2,
-    superiorStats: {
-      'agi',
-      'per'
-    },
+    superiorStats: {'agi', 'per'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 6, dm: '1d8+3'),
       TemplateAttack(name: 'Arc', bonusAtk: 5, dm: '1d6+2'),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Embuscade', actionType: '', description: 'Au premier round de combat, si l\'environnement permet de se dissimuler, la cible doit faire un test de PER difficulté 16 ou être surprise.'),
-      TemplateCapacity(name: 'Attaque En Traître', actionType: 'L', description: 'Si la créature attaque en même temps qu\'un allié ou par surprise, elle obtient +1d4 DM.'),
-      TemplateCapacity(name: 'Chef', actionType: '', description: 'Le chef bandit donne un bonus de +1 en Init., en attaque et aux DM à tous les bandits à portée de vue.'),
-    ],
   ),
   CharacterTemplate(
     name: 'Garde de la ville',
-    description: 'Le garde de la ville est un garde professionnel, mieux équipé et entraîné qu’un simple milicien.',
+    description: 'Le garde de la ville est un garde professionnel.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 15,
@@ -2292,6 +1969,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 1,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('guards'),
     forVal: 2,
     agiVal: 0,
     conVal: 1,
@@ -2314,6 +1992,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 3,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('visored-helm'),
     forVal: 3,
     agiVal: 1,
     conVal: 3,
@@ -2321,20 +2000,14 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 0,
     volVal: 2,
-    superiorStats: {
-      'per'
-    },
+    superiorStats: {'per'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 6, dm: '1d8+3'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Garde Du Corps', actionType: '', description: 'La créature peut désigner gratuitement une cible à son contact chaque round (ce peut être une créature, mais aussi un objet). Elle réduit tous les DM que la cible 3 OPPOSITION 0 INTRO subit de 5 points. Elle ne peut pas se dési- 1 gner elle-même. PERSO'),
-      TemplateCapacity(name: 'Inamovible', actionType: '', description: '2 La créature est immunisée aux états préjudi- RÈGLES ciables suivants : Surpris, Immobilisé, Renversé et elle ne peut être désarmée. De plus, elle ne subit aucun DM de la capacité Attaque sournoise du voleur ou d\'autres capacités similaires.'),
     ],
   ),
   CharacterTemplate(
     name: 'Milicien',
-    description: 'Le milicien est un simple citoyen qui a été un peu entraîné et armé pour défendre son village ou patrouiller.',
+    description: 'Le milicien est un simple citoyen qui a été un peu entraîné.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 9,
@@ -2342,6 +2015,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 0.5,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('pitchfork'),
     forVal: 1,
     agiVal: 0,
     conVal: 1,
@@ -2355,7 +2029,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
   ),
   CharacterTemplate(
     name: 'Sorcier',
-    description: 'L’archétype du vil sorcier qui trafique avec la mort et les démons, il est forcément coupable de toutes les horreurs dont vos PJ cherchent l’origine… ou pas.',
+    description: 'L’archétype du vil sorcier qui trafique avec la mort et les démons.',
     isAlly: false,
     baseInitiative: 10,
     maxHp: 45,
@@ -2363,6 +2037,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 5,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('warlock-hood'),
     forVal: -1,
     agiVal: 1,
     conVal: 1,
@@ -2374,16 +2049,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
       TemplateAttack(name: 'Dague', bonusAtk: 6, dm: '1d4+2+2d6'),
       TemplateAttack(name: 'Attaque magique', bonusAtk: 10, dm: ''),
     ],
-    capacities: [
-      TemplateCapacity(name: 'Animer Un Cadavre', actionType: 'L', description: 'Ce pouvoir permet d\'animer le cadavre d\'une créature morte (portée 10 m) pendant le combat. La créature conserve son profil, mais elle subit une pénalité de -2 en attaque, en DEF et en Initiative. Lorsque le cadavre est à nouveau vaincu, il ne peut pas être réanimé. Le cadavre de la créature animée ne peut être d\'un NC supérieur à 2.'),
-      TemplateCapacity(name: 'Injonction Mortelle', actionType: 'L', description: 'Une cible située à une distance maximum de 30 m doit réussir un test de CON difficulté 15 ou tomber à 0 PV (et mourir immédiatement s\'il s\'agit d\'un PNJ). En cas de succès, la cible subit tout de même 2d6+5 DM. Ce PARTIE III  PAGE 265 pouvoir ne peut prendre une même créature pour cible qu\'une seule fois par combat. PAS DE L\'OMBRE (L) : Le sorcier se fond dans les ombres et se téléporter à une distance maximum de 100 m jusqu\'à 3 fois par combat. Le lieu d\'arrivée doit être en ligne de vue ou parfaitement connu (10 minutes pour étudier le lieu).'),
-      TemplateCapacity(name: 'Pas de l’ombre', actionType: 'L', description: 'Le sorcier se fond dans les ombres et se téléporter à une distance maximum de 100 m jusqu’à 3 fois par combat. Le lieu d’arrivée doit être en ligne de vue ou parfaitement connu (10 minutes pour étudier le lieu).'),
-      TemplateCapacity(name: 'Vampirisation', actionType: 'L', description: 'Le sorcier doit réussir un test opposé d\'attaque magique contre une cible vivante à une distance maximum de 30 m. En cas de réussite, la cible subit 2d8 DM et le sorcier régénère autant de PV que de DM infligés. De plus, à chaque fois qu\'une créature meurt à moins de 20 mètres de lui, il siphonne son énergie et gagne un nombre de PV égal au double du NC de la créature qui vient de mourir. PROFILS DE CRÉATURES : ANIMAUX'),
-    ],
   ),
   CharacterTemplate(
     name: 'Vétéran / Garde de palais ducal',
-    description: 'Un vétéran ou un garde de palais ducal a déjà connu la guerre ou fait partie d’une force d’élite, ce qui lui vaut d’être au service direct de son seigneur. Il peut aussi diriger une équipe de milicien.',
+    description: 'Un vétéran ou un garde de palais ducal a déjà connu la guerre.',
     isAlly: false,
     baseInitiative: 13,
     maxHp: 25,
@@ -2391,6 +2060,7 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     vitesse: '10m',
     nc: 2,
     creatureType: CreatureType.humanoide,
+    imageUrl: _icon('visored-helm'),
     forVal: 2,
     agiVal: 0,
     conVal: 2,
@@ -2398,18 +2068,10 @@ List<CharacterTemplate> buildBestiarySeeds() => [
     perVal: 0,
     chaVal: 0,
     volVal: 1,
-    superiorStats: {
-      'con',
-      'per'
-    },
+    superiorStats: {'con', 'per'},
     attacks: [
       TemplateAttack(name: 'Épée longue', bonusAtk: 6, dm: '1d8+4'),
       TemplateAttack(name: 'Arbalète lourde', bonusAtk: 6, dm: '3d4'),
-    ],
-    capacities: [
-      TemplateCapacity(name: 'Brise-genou', actionType: '', description: 'Si un adversaire au contact tente de s’éloigner de la créature (généralement pour fuir), elle obtient une attaque de contact gratuite contre lui. Si cette attaque est réussie, en plus des DM habituels, la cible doit réussir un test de CON difficulté 15 ou diviser par deux tous ses déplacements pour le reste du combat.'),
-      TemplateCapacity(name: 'Imparable', actionType: '', description: 'Si la créature obtient 15-20 au d20 d\'un test d\'attaque (17 à 20 si la créature possède 2 attaques), elle inflige +2d4 DM supplémentaire et l\'attaque est automatiquement réussie (quelle que soit la DEF de son adversaire). Les dés bonus ne sont pas multipliés en cas de critique.'),
-      TemplateCapacity(name: 'Sergent', actionType: 'G', description: 'Une fois par round, le sergent peut donner une action supplémentaire à n\'importe quel allié sous ses ordres à portée de vue (attaque ou mouvement). Une fois par combat, une attaque qui aurait dû amener le sergent à 0 PV est ignorée.'),
     ],
   ),
 ];

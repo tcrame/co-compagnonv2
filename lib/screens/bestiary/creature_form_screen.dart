@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../models/character_template.dart';
 import '../../providers/bestiary_provider.dart';
+import '../../widgets/image_picker_field.dart';
+import '../../widgets/participant_avatar.dart';
 
 class CreatureFormScreen extends StatefulWidget {
   final CharacterTemplate? templateToEdit;
@@ -19,12 +21,14 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
   late TextEditingController _initCtrl;
   late TextEditingController _hpCtrl;
   late TextEditingController _defCtrl;
-  late TextEditingController _ncCtrl;
+
+  double? _selectedNc; // 💡 NOUVEAU : Gère la valeur du menu déroulant (null = Aucun)
 
   bool _isAlly = false;
   CreatureType _selectedType = CreatureType.nonVivant;
   CreatureTaille _selectedTaille = CreatureTaille.moyenne;
   CreatureArchetype _selectedArchetype = CreatureArchetype.standard;
+  String? _imageUrl;
 
   // ── ONGLET 2 : STATS ──
   late TextEditingController _forCtrl, _agiCtrl, _conCtrl, _intCtrl, _perCtrl, _chaCtrl, _volCtrl;
@@ -39,18 +43,20 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
     super.initState();
     final t = widget.templateToEdit;
 
+    _selectedNc = t?.nc;
+
     // Initialisation Général
     _nameCtrl = TextEditingController(text: t?.name ?? '');
     _initCtrl = TextEditingController(text: '${t?.baseInitiative ?? 10}');
     _hpCtrl = TextEditingController(text: '${t?.maxHp ?? 10}');
     _defCtrl = TextEditingController(text: '${t?.def ?? 10}');
-    _ncCtrl = TextEditingController(text: t?.nc != null ? '${t!.nc}' : '');
 
     if (t != null) {
       _isAlly = t.isAlly;
       _selectedType = t.creatureType;
       _selectedTaille = t.taille;
       _selectedArchetype = t.archetype;
+      _imageUrl = t.imageUrl;
     }
 
     // Initialisation Stats
@@ -70,7 +76,7 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _initCtrl.dispose(); _hpCtrl.dispose(); _defCtrl.dispose(); _ncCtrl.dispose();
+    _nameCtrl.dispose(); _initCtrl.dispose(); _hpCtrl.dispose(); _defCtrl.dispose();
     _forCtrl.dispose(); _agiCtrl.dispose(); _conCtrl.dispose(); _intCtrl.dispose(); _perCtrl.dispose(); _chaCtrl.dispose(); _volCtrl.dispose();
     super.dispose();
   }
@@ -83,7 +89,19 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
         backgroundColor: const Color(0xFF1E1E1E),
         appBar: AppBar(
           backgroundColor: const Color(0xFF1E1E1E),
-          title: Text(widget.templateToEdit == null ? 'Créer une créature' : 'Modifier la créature'),
+          // 💡 AJOUT DE L'AVATAR EN TEMPS RÉEL DANS LE TITRE
+          title: Row(
+            children: [
+              ParticipantAvatar(
+                name: _nameCtrl.text.isNotEmpty ? _nameCtrl.text : '?',
+                isAlly: _isAlly,
+                imageUrl: _imageUrl,
+                radius: 16,
+              ),
+              const SizedBox(width: 12),
+              Text(widget.templateToEdit == null ? 'Créer une créature' : 'Modifier la créature'),
+            ],
+          ),
           leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
           bottom: const TabBar(
             isScrollable: true,
@@ -170,13 +188,48 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        _buildTextField('NC (Niveau de Danger) — optionnel', _ncCtrl, icon: Icons.star_border, isNumber: true),
+        // 💡 NOUVEAU MENU DÉROULANT DU NC
+        DropdownButtonFormField<double?>(
+          value: _selectedNc,
+          dropdownColor: const Color(0xFF2A2A2A),
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: 'NC (Niveau de Danger) — optionnel',
+            labelStyle: const TextStyle(color: Colors.grey),
+            prefixIcon: const Icon(Icons.star_border, color: Colors.amber),
+            filled: true,
+            fillColor: const Color(0xFF2A2A2A),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+          ),
+          // Génération automatique des options : null, 0.0, 0.5, puis 1 à 20
+          items: [null, 0.0, 0.5, ...List.generate(20, (i) => (i + 1).toDouble())].map((val) {
+            String label = 'Aucun';
+            if (val != null) {
+              label = val == 0.5 ? '1/2' : val.toInt().toString();
+            }
+            return DropdownMenuItem<double?>(
+              value: val,
+              child: Text(label),
+            );
+          }).toList(),
+          onChanged: (v) => setState(() => _selectedNc = v),
+        ),
         const SizedBox(height: 16),
         _buildDropdown<CreatureType>('Type', _selectedType, CreatureType.values, (e) => e.label, (v) => setState(() => _selectedType = v!)),
         const SizedBox(height: 12),
         _buildDropdown<CreatureTaille>('Taille', _selectedTaille, CreatureTaille.values, (e) => e.label, (v) => setState(() => _selectedTaille = v!)),
         const SizedBox(height: 12),
         _buildDropdown<CreatureArchetype>('Archétype', _selectedArchetype, CreatureArchetype.values, (e) => e.label, (v) => setState(() => _selectedArchetype = v!)),
+        const SizedBox(height: 24),
+
+        // 💡 AJOUT DU SÉLECTEUR D'IMAGE (Identique à celui de l'écran de combat)
+        ImagePickerField(
+          initialUrl: _imageUrl,
+          participantName: _nameCtrl.text.isNotEmpty ? _nameCtrl.text : (_isAlly ? 'Aventurier' : 'Ennemi'),
+          isAlly: _isAlly,
+          onChanged: (url) => setState(() => _imageUrl = url),
+        ),
+        const SizedBox(height: 24), // Un peu d'espace avant le bouton sauvegarder en bas
       ],
     );
   }
@@ -516,10 +569,11 @@ class _CreatureFormScreenState extends State<CreatureFormScreen> {
       baseInitiative: int.tryParse(_initCtrl.text) ?? 10,
       maxHp: int.tryParse(_hpCtrl.text) ?? 10,
       def: int.tryParse(_defCtrl.text) ?? 10,
-      nc: double.tryParse(_ncCtrl.text),
+      nc: _selectedNc,
       creatureType: _selectedType,
       taille: _selectedTaille,
       archetype: _selectedArchetype,
+      imageUrl: _imageUrl,
       forVal: int.tryParse(_forCtrl.text) ?? 10,
       agiVal: int.tryParse(_agiCtrl.text) ?? 10,
       conVal: int.tryParse(_conCtrl.text) ?? 10,

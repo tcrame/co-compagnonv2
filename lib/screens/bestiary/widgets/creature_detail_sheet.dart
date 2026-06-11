@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/character_template.dart';
 import '../creature_form_screen.dart';
+import '../../../widgets/participant_avatar.dart';
 
 class CreatureDetailSheet extends StatelessWidget {
   final CharacterTemplate template;
@@ -14,13 +15,24 @@ class CreatureDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 💡 On rapatrie la fonction de formatage intelligent ici aussi
+    String formatNc(double nc) {
+      if (nc == 0.5) return '1/2';
+      if (nc == 0.25) return '1/4';
+      if (nc % 1 == 0) return nc.toInt().toString();
+      return nc.toString();
+    }
+
     // 💡 SÉCURITÉ : On utilise les labels de tes Énumérations !
     final subtitleParts = <String>[
       template.creatureType.label,
       template.taille.label,
       template.archetype.label,
     ];
-    if (template.nc != null) subtitleParts.add('NC ${template.nc}');
+
+    // 💡 NOUVEAU : On applique le formatage propre au NC
+    if (template.nc != null) subtitleParts.add('NC ${formatNc(template.nc!)}');
+
     final subtitleInfo = subtitleParts.join(' • ');
 
     return DraggableScrollableSheet(
@@ -42,13 +54,12 @@ class CreatureDetailSheet extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
+                  // 💡 REMPLACE LE CircleAvatar PAR TON COMPOSANT DYMANIQUE
+                  ParticipantAvatar(
                     radius: 28,
-                    backgroundColor: template.isAlly ? Colors.green.shade800 : Colors.red.shade900,
-                    child: Text(
-                      template.name.isNotEmpty ? template.name[0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                    name: template.name,
+                    isAlly: template.isAlly,
+                    imageUrl: template.imageUrl,
                   ),
                   const SizedBox(width: 16),
                   Expanded(

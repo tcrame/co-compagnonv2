@@ -9,6 +9,7 @@ import '../../providers/collection_provider.dart';
 import '../../services/auth_service.dart';
 import 'widgets/creature_detail_sheet.dart';
 import 'creature_form_screen.dart'; // Import nécessaire pour l'édition de créature
+import '../../widgets/participant_avatar.dart';
 
 class BestiaryScreen extends StatefulWidget {
   const BestiaryScreen({super.key});
@@ -97,22 +98,33 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
               .map((t) => t.creatureType.label)
               .where((text) => text.trim().isNotEmpty)
         };
-
         final sortedTypes = ['Tous', ...allTypes.where((t) => t != 'Tous').toList()..sort()];
-        final allNcs = {'Tous', ...provider.templates.map((t) => t.nc?.toString() ?? '0')};
 
-        final cleanNumbers = allNcs
-            .where((nc) => nc != 'Tous')
-            .map((nc) => int.tryParse(nc) ?? 0)
+        // 💡 FIX 1 : On extrait les NC sous forme de vrais chiffres (double), puis on les trie
+        final uniqueNcs = provider.templates
+            .map((t) => t.nc ?? 0.0)
+            .toSet()
             .toList()
           ..sort();
 
-        final sortedNcs = ['Tous', ...cleanNumbers.map((nc) => nc.toString())];
+        // 💡 FIX 2 : On réutilise la belle fonction de formatage pour le filtre
+        String formatNc(double nc) {
+          if (nc == 0.5) return '1/2';
+          if (nc == 0.25) return '1/4';
+          if (nc % 1 == 0) return nc.toInt().toString();
+          return nc.toString();
+        }
+
+        // On crée la liste finale des filtres textuels ('Tous', '0', '1/2', '1', '4', etc.)
+        final sortedNcs = ['Tous', ...uniqueNcs.map((nc) => formatNc(nc))];
 
         final filtered = provider.templates.where((t) {
           final matchesSearch = t.name.toLowerCase().contains(_searchQuery.toLowerCase());
           final matchesType = _selectedType == 'Tous' || t.creatureType.label == _selectedType;
-          final matchesNc = _selectedNc == 'Tous' || (t.nc?.toString() ?? '0') == _selectedNc;
+
+          // 💡 FIX 3 : On compare la valeur sélectionnée avec la valeur formatée du monstre !
+          final matchesNc = _selectedNc == 'Tous' || formatNc(t.nc ?? 0.0) == _selectedNc;
+
           final matchesFaction = _selectedFaction == 'Tous' ||
               (_selectedFaction == 'Alliés' && t.isAlly) ||
               (_selectedFaction == 'Ennemis' && !t.isAlly);
@@ -164,12 +176,14 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
                   final template = filtered[index];
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    leading: CircleAvatar(
-                      backgroundColor: template.isAlly ? Colors.green.shade800 : Colors.red.shade800,
-                      child: Icon(template.isAlly ? Icons.shield : Icons.gavel, color: Colors.white, size: 20),
+                    leading: ParticipantAvatar(
+                      name: template.name,
+                      isAlly: template.isAlly,
+                      imageUrl: template.imageUrl,
+                      radius: 20,
                     ),
                     title: Text(template.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('NC ${template.nc ?? 0} • PV Max: ${template.maxHp} • Type: ${template.creatureType.label}'),
+                    subtitle: _buildMonsterSubtitle(template),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -310,24 +324,34 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
                 ],
               ),
               children: collection.templates.map((template) {
-                return ListTile(
-                  contentPadding: const EdgeInsets.only(left: 32, right: 16),
-                  leading: const Icon(Icons.pets, size: 18),
-                  title: Text(template.name),
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (context) => CreatureDetailSheet(template: template),
-                    );
-                  },
-                  trailing: IconButton(
-                    icon: const Icon(Icons.layers_clear, size: 18, color: Colors.grey),
-                    tooltip: 'Retirer du dossier',
-                    onPressed: () => colProd.removeMonsterFromCollection(collection, template.id!),
+                return Padding(
+                  padding: const EdgeInsets.only(left: 16.0), // Indentation pour l'effet "Dossier"
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: ParticipantAvatar(
+                      name: template.name,
+                      isAlly: template.isAlly,
+                      imageUrl: template.imageUrl,
+                      radius: 20,
+                    ),
+                    title: Text(template.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: _buildMonsterSubtitle(template),
+                    onTap: () {
+                      // Clic sur un monstre du dossier -> Ouvre sa fiche
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (context) => CreatureDetailSheet(template: template),
+                      );
+                    },
+                    trailing: IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                      tooltip: 'Retirer du dossier',
+                      onPressed: () => colProd.removeMonsterFromCollection(collection, template.id!),
+                    ),
                   ),
                 );
               }).toList(),
@@ -549,5 +573,52 @@ class _BestiaryScreenState extends State<BestiaryScreen> {
         SnackBar(content: Text(errorResult)),
       );
     }
+  }
+  Widget _buildMonsterSubtitle(CharacterTemplate template) {
+    // Formatage intelligent du NC (conserve ton réglage précédent)
+    String formatNc(double nc) {
+      if (nc == 0.5) return '1/2';
+      if (nc == 0.25) return '1/4';
+      if (nc % 1 == 0) return nc.toInt().toString();
+      return nc.toString();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // 💡 Aligne tout à gauche
+        children: [
+          // 1ère ligne : Les icônes de statistiques
+          Wrap(
+            spacing: 12,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (template.nc != null)
+                _buildStatIcon(Icons.star_border, formatNc(template.nc!), Colors.amber),
+              _buildStatIcon(Icons.favorite, '${template.maxHp}', Colors.red),
+              _buildStatIcon(Icons.shield, '${template.def}', Colors.blueGrey),
+            ],
+          ),
+          const SizedBox(height: 4), // 💡 Petit espace entre les stats et le type
+
+          // 2ème ligne : Le type de créature à la ligne
+          Text(
+            template.creatureType.label,
+            style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatIcon(IconData icon, String value, Color iconColor) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: iconColor),
+        const SizedBox(width: 4),
+        Text(value, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+      ],
+    );
   }
 }
