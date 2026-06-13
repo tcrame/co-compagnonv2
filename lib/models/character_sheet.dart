@@ -120,6 +120,10 @@ class CharacterSheet {
   /// from their original peuple voie (heritage bonus).
   final bool voieMageRang2Pris;
 
+  /// ID of the prestige path currently assigned to this character.
+  /// Empty string means no prestige path has been chosen yet.
+  final String voiePrestigeId;
+
   /// Set of stat keys (lowercase: 'for', 'agi', etc.) that are "supérieures".
   /// A superior stat grants a bonus d20 roll (keep best of 2) on any test.
   final Set<String> superiorStats;
@@ -213,6 +217,7 @@ class CharacterSheet {
     this.voiePeupleId = '',
     this.voiePeupleOrigineId = '',
     this.voieMageRang2Pris = false,
+    this.voiePrestigeId = '',
     this.superiorStats = const {},
   }) : createdAt = createdAt ?? DateTime.now(),
        lastModifiedAt = lastModifiedAt ?? createdAt ?? DateTime.now();
@@ -379,6 +384,7 @@ class CharacterSheet {
     'voie_peuple_id': voiePeupleId,
     'voie_peuple_origine_id': voiePeupleOrigineId,
     'voie_mage_rang2_pris': voieMageRang2Pris ? 1 : 0,
+    'voie_prestige_id': voiePrestigeId,
     'superior_stats_json': jsonEncode(superiorStats.toList()),
   };
 
@@ -468,6 +474,7 @@ class CharacterSheet {
     voiePeupleId: m['voie_peuple_id'] as String? ?? '',
     voiePeupleOrigineId: m['voie_peuple_origine_id'] as String? ?? '',
     voieMageRang2Pris: (m['voie_mage_rang2_pris'] as int? ?? 0) == 1,
+    voiePrestigeId: m['voie_prestige_id'] as String? ?? '',
     superiorStats: () {
       try {
         final raw = m['superior_stats_json'] as String?;
@@ -556,6 +563,7 @@ class CharacterSheet {
     String? voiePeupleId,
     String? voiePeupleOrigineId,
     bool? voieMageRang2Pris,
+    String? voiePrestigeId,
     Set<String>? superiorStats,
   }) => CharacterSheet(
     id: id ?? this.id,
@@ -634,6 +642,7 @@ class CharacterSheet {
     voiePeupleId: voiePeupleId ?? this.voiePeupleId,
     voiePeupleOrigineId: voiePeupleOrigineId ?? this.voiePeupleOrigineId,
     voieMageRang2Pris: voieMageRang2Pris ?? this.voieMageRang2Pris,
+    voiePrestigeId: voiePrestigeId ?? this.voiePrestigeId,
     superiorStats: superiorStats ?? this.superiorStats,
   );
 }

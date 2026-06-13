@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../app_theme.dart';
 import '../../constants/cof2_data.dart';
 import '../../constants/voies_data.dart';
+import '../../constants/voies_prestige_data.dart';
 import '../../models/character_sheet.dart';
 import '../../models/combat_armor.dart';
 import '../../models/combat_capacity.dart';
@@ -694,6 +695,7 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                   voiePeupleId: _sheet!.voiePeupleId,
                   voiePeupleOrigineId: _sheet!.voiePeupleOrigineId,
                   voieMageRang2Pris: _sheet!.voieMageRang2Pris,
+                  voiePrestigeId: _sheet!.voiePrestigeId,
                   onSetRang: (voieId, rang) async {
                     final id = _sheet!.id;
                     if (id != null) {
@@ -728,6 +730,22 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen>
                         () =>
                             _sheet = _sheet!.copyWith(voieMageRang2Pris: false),
                       );
+                    }
+                  },
+                  onSetVoiePrestige: (voieId) async {
+                    final id = _sheet!.id;
+                    if (id != null) {
+                      await context
+                          .read<CharacterSheetProvider>()
+                          .setVoiePrestige(id, voieId);
+                      if (mounted) {
+                        setState(
+                          () => _sheet = _sheet!.copyWith(
+                            voiePrestigeId: voieId,
+                          ),
+                        );
+                        _markDirty();
+                      }
                     }
                   },
                 ),

@@ -189,4 +189,15 @@ class CharacterSheetProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  /// Sets the prestige path for a character. Unlike voie peuple, prestige paths
+  /// do not auto-select any rank; the player must manually select capabilities.
+  Future<void> setVoiePrestige(int sheetId, String voieId) async {
+    await _db.setVoiePrestigeId(sheetId, voieId);
+    final idx = _sheets.indexWhere((s) => s.id == sheetId);
+    if (idx != -1) {
+      _sheets[idx] = _sheets[idx].copyWith(voiePrestigeId: voieId);
+    }
+    notifyListeners();
+  }
 }

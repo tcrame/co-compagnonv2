@@ -35,7 +35,7 @@ class DatabaseService {
       return databaseFactory.openDatabase(
         'co_compagnon.db',
         options: OpenDatabaseOptions(
-          version: 24, // 💡 CHANGE ICI ! Passer de 23 à 24
+          version: 25, // 💡 CHANGE ICI ! Passer de 24 à 25
           onCreate: (db, version) async {
             await _createTables(db);
             await _seedBestiary(db);
@@ -50,7 +50,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 24, // 💡 CHANGE ICI ! Passer de 23 à 24
+      version: 25, // 💡 CHANGE ICI ! Passer de 24 à 25
       onCreate: (db, version) async {
         await _createTables(db);
         await _seedBestiary(db);
@@ -304,6 +304,14 @@ class DatabaseService {
         ''');
     }
 
+    if (oldVersion < 25) {
+      try {
+        await db.execute(
+          "ALTER TABLE character_sheets ADD COLUMN voie_prestige_id TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+    }
+
 
     // 🎰 AJOUT : Migration à la volée de la table sessions pour la colonne share_code
     try {
@@ -488,6 +496,7 @@ class DatabaseService {
         voie_peuple_id TEXT NOT NULL DEFAULT '',
         voie_peuple_origine_id TEXT NOT NULL DEFAULT '',
         voie_mage_rang2_pris INTEGER NOT NULL DEFAULT 0,
+        voie_prestige_id TEXT NOT NULL DEFAULT '',
         superior_stats_json TEXT NOT NULL DEFAULT '[]'
       )
     ''');
@@ -1397,6 +1406,19 @@ class DatabaseService {
     await db.update(
       'character_sheets',
       {'voie_mage_rang2_pris': pris ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [sheetId],
+    );
+  }
+
+  /// Sets the prestige path for a character.
+  /// Prestige paths do not auto-select any rank; the player must manually
+  /// select capabilities at ranks 3+ (each costs 2 PC).
+  Future<void> setVoiePrestigeId(int sheetId, String voieId) async {
+    final db = await database;
+    await db.update(
+      'character_sheets',
+      {'voie_prestige_id': voieId},
       where: 'id = ?',
       whereArgs: [sheetId],
     );

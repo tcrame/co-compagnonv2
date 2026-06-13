@@ -9,9 +9,11 @@ class _VoiesTab extends StatelessWidget {
   final String voiePeupleId;
   final String voiePeupleOrigineId;
   final bool voieMageRang2Pris;
+  final String voiePrestigeId;
   final Future<void> Function(String voieId, int rang) onSetRang;
   final Future<void> Function() onMageRang2Pris;
   final Future<void> Function() onMageRang2Reset;
+  final Future<void> Function(String voieId) onSetVoiePrestige;
 
   const _VoiesTab({
     required this.sheet,
@@ -22,9 +24,11 @@ class _VoiesTab extends StatelessWidget {
     required this.voiePeupleId,
     required this.voiePeupleOrigineId,
     required this.voieMageRang2Pris,
+    required this.voiePrestigeId,
     required this.onSetRang,
     required this.onMageRang2Pris,
     required this.onMageRang2Reset,
+    required this.onSetVoiePrestige,
   });
 
   @override
@@ -167,7 +171,7 @@ class _VoiesTab extends StatelessWidget {
             )
           else
             ...voies.map((voie) {
-              final rangActuel = voieRangs[voie.id] ?? 0;
+              final rangActuel = voieRangs[voie!.id] ?? 0;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _VoieCard(
@@ -185,6 +189,84 @@ class _VoiesTab extends StatelessWidget {
             }),
 
           const SizedBox(height: 16),
+
+          // ── Voie de prestige ────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Voie de prestige',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.onSurfaceMuted,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          if (voiePrestigeId.isNotEmpty)
+            Builder(
+              builder: (context) {
+                VoieCatalogue? voie = getVoieById(voiePrestigeId);
+
+                if (voie == null) {
+                  for (final listVoies in kVoiesDePrestigeParProfil.values) {
+                    for (final v in listVoies) {
+                      if (v.id == voiePrestigeId) {
+                        voie = v;
+                        break;
+                      }
+                    }
+                    if (voie != null) break;
+                  }
+                }
+
+                if (voie == null) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.onSurfaceMuted.withOpacity(0.2)),
+                    ),
+                    child: const Text('Voie de prestige introuvable', style: TextStyle(color: AppColors.enemyPrimary, fontSize: 13)),
+                  );
+                }
+
+                final rangActuel = voieRangs[voie.id] ?? 0;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _VoieCard(
+                    voie: voie, // On passe l'objet original (avec sa description)
+                    rangActuel: rangActuel,
+                    pcRestants: remaining,
+                    profil: sheet.profile,
+                    niveau: sheet.level,
+                    onSetRang: (r) => onSetRang(voie!.id, r),
+                    mageRang2Disponible: false,
+                    trailing: PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          child: const Text('Retirer la voie'),
+                          onTap: () => onSetVoiePrestige(''),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _PrestigeVoieSelector(
+                profile: sheet.profile,
+                onSelectVoie: onSetVoiePrestige,
+              ),
+            ),
+          const Divider(height: 1),
+
+          const SizedBox(height: 12),
 
           // ── Notes libres ─────────────────────────────────────────────
           const Divider(),
@@ -513,6 +595,7 @@ class _VoieCard extends StatefulWidget {
   final bool mageRang2Disponible;
   final Future<void> Function()? onMageRang2Pris;
   final Future<void> Function()? onMageRang2Reset;
+  final Widget? trailing;
 
   const _VoieCard({
     required this.voie,
@@ -525,6 +608,7 @@ class _VoieCard extends StatefulWidget {
     this.mageRang2Disponible = false,
     this.onMageRang2Pris,
     this.onMageRang2Reset,
+    this.trailing,
   });
 
   @override
@@ -654,6 +738,13 @@ class _VoieCardState extends State<_VoieCard> {
                     }),
                   ),
                   const SizedBox(width: 8),
+
+                  if (widget.trailing != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: widget.trailing!,
+                    ),
+
                   Icon(
                     _expanded
                         ? Icons.keyboard_arrow_up
@@ -958,6 +1049,411 @@ class _RangRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Widget to select a prestige path
+/// Widget to select a prestige path
+class _PrestigeVoieSelector extends StatelessWidget {
+  final String profile;
+  final Future<void> Function(String voieId) onSelectVoie;
+
+  const _PrestigeVoieSelector({
+    required this.profile,
+    required this.onSelectVoie,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppColors.onSurfaceMuted.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Optionnel : tu peux choisir une voie de prestige',
+            style: const TextStyle(
+              color: AppColors.onSurfaceMuted,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () async {
+              final voie = await showDialog<VoieCatalogue>(
+                context: context,
+                builder: (context) => _ChoosePrestigeVoieDialog(
+                  profile: profile,
+                ),
+              );
+              if (voie != null) {
+                // CORRECTION : On extrait l'id (selectedVoie.id) au lieu de passer
+                // l'instance complète du catalogue de la voie.
+                await onSelectVoie(voie.id);
+              }
+            },
+            icon: const Icon(Icons.star_outline),
+            label: const Text('Choisir une voie de prestige'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Widget to display the selected prestige path with capacity selection
+/// Widget to display the selected prestige path with capacity selection
+/// Widget to display the selected prestige path with capacity selection
+class _PrestigeVoieCard extends StatelessWidget {
+  final String voieId;
+  final Map<String, int> voieRangs;
+  final int pcRestants;
+  final int niveau;
+  final Future<void> Function(int rang) onSetRang;
+  final Future<void> Function() onRemove;
+
+  const _PrestigeVoieCard({
+    required this.voieId,
+    required this.voieRangs,
+    required this.pcRestants,
+    required this.niveau,
+    required this.onSetRang,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 1. Tente de récupérer via la méthode globale standard
+    VoieCatalogue? voie = getVoieById(voieId);
+
+    // 2. Si non trouvée, cherche manuellement dans le catalogue de prestige
+    if (voie == null) {
+      for (final listVoies in kVoiesDePrestigeParProfil.values) {
+        for (final v in listVoies) {
+          if (v.id == voieId) {
+            voie = v;
+            break;
+          }
+        }
+        if (voie != null) break;
+      }
+    }
+
+    // 3. Si elle reste introuvable, affiche l'erreur
+    if (voie == null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppColors.onSurfaceMuted.withOpacity(0.2),
+          ),
+        ),
+        child: const Text(
+          'Voie de prestige non trouvée',
+          style: TextStyle(
+            color: AppColors.enemyPrimary,
+            fontSize: 13,
+          ),
+        ),
+      );
+    }
+
+    final rangActuel = voieRangs[voieId] ?? 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.onSurfaceMuted.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(7),
+                topRight: Radius.circular(7),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        voie.nom,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      if (voie.description.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            voie.description,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.onSurfaceMuted,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PopupMenuButton(
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      child: const Text('Retirer'),
+                      onTap: () => onRemove(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (voie.capacites.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  ...voie.capacites.map((cap) {
+                    final isUnlocked = niveau >= cap.rang;
+                    final isSelected = rangActuel >= cap.rang;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.allyPrimary.withOpacity(0.1)
+                              : AppColors.surface,
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.allyPrimary
+                                : AppColors.onSurfaceMuted.withOpacity(0.2),
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '${cap.nom} (rang ${cap.rang})',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          if (cap.type.isNotEmpty)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 6),
+                                              child: Container(
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.allyPrimary
+                                                      .withOpacity(0.2),
+                                                  borderRadius:
+                                                  BorderRadius.circular(
+                                                      3),
+                                                ),
+                                                child: Text(
+                                                  cap.type,
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color:
+                                                    AppColors.allyPrimary,
+                                                    fontWeight:
+                                                    FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      if (cap.description.isNotEmpty)
+                                        Padding(
+                                          padding:
+                                          const EdgeInsets.only(top: 6),
+                                          child: Text(
+                                            cap.description,
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color:
+                                              AppColors.onSurfaceMuted,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Checkbox(
+                                  value: isSelected && isUnlocked,
+                                  onChanged: isUnlocked
+                                      ? (val) {
+                                    if (val ?? false) {
+                                      onSetRang(cap.rang);
+                                    } else {
+                                      // SOLUTION COMPILATION : Séparation propre de la récupération des rangs
+                                      final previousRangs = voie!.capacites
+                                          .where((c) => c.rang < cap.rang)
+                                          .map((c) => c.rang)
+                                          .toList();
+
+                                      // Tri manuel sécurisé
+                                      previousRangs.sort();
+
+                                      final newRang = previousRangs.isEmpty
+                                          ? 0
+                                          : previousRangs.last;
+                                      onSetRang(newRang);
+                                    }
+                                  }
+                                      : null,
+                                ),
+                              ],
+                            ),
+                            if (!isUnlocked)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  'Nécessite niveau ${cap.rang}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.onSurfaceMuted
+                                        .withOpacity(0.6),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dialog to choose a prestige path
+/// Dialog to choose a prestige path
+class _ChoosePrestigeVoieDialog extends StatelessWidget {
+  final String profile;
+
+  const _ChoosePrestigeVoieDialog({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    // 1. Récupère la famille du profil au singulier (ex: 'Aventurier', 'Combattant'...)
+    final familleProfil = getFamilleForProfil(profile) ?? '';
+
+    // Normalisation de la famille pour éviter les problèmes de casse/pluriel
+    final familleNormalisee = familleProfil.toLowerCase().trim();
+
+    // 2. Recherche des voies de la famille avec une correspondance permissive (ex: 'Aventurier' match avec 'Aventuriers')
+    List<VoieCatalogue> voiesFamille = [];
+    for (final entry in kVoiesDePrestigeParProfil.entries) {
+      final keyNormalisee = entry.key.toLowerCase().trim();
+      if (keyNormalisee.contains(familleNormalisee) || familleNormalisee.contains(keyNormalisee)) {
+        voiesFamille = entry.value;
+        break;
+      }
+    }
+
+    // 3. Récupère les voies génériques accessibles à tous ('Tout profil')
+    final voiesGeneriques = kVoiesDePrestigeParProfil['Tout profil'] ?? [];
+
+    // 4. Fusionne les deux listes pour avoir toutes les options éligibles
+    final prestigeVoies = [...voiesFamille, ...voiesGeneriques];
+
+    if (prestigeVoies.isEmpty) {
+      return AlertDialog(
+        title: const Text('Voies de prestige'),
+        content: Text(
+          'Aucune voie de prestige disponible pour le profil "$profile".',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
+        ],
+      );
+    }
+
+    return AlertDialog(
+      title: const Text('Choisir une voie de prestige'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: prestigeVoies.length,
+          itemBuilder: (context, index) {
+            final voie = prestigeVoies[index];
+            final estGenerique = voie.profil == 'Tout profil';
+
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                estGenerique
+                    ? Icons.star_purple500_outlined // Étoile pleine pour les voies universelles
+                    : Icons.star_outline,           // Étoile vide pour la famille
+              ),
+              title: Text(voie.nom),
+              subtitle: Text(
+                voie.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+              onTap: () => Navigator.pop(context, voie),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annuler'),
+        ),
+      ],
     );
   }
 }
